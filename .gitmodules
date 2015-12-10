@@ -1,0 +1,6 @@
+[submodule "Structural Analysis/3rd party libraries/graphviz4matlab"]
+	path = Structural Analysis/3rd party libraries/graphviz4matlab
+	url = https://github.com/graphviz4matlab/graphviz4matlab.git
+[submodule "Structural Analysis/3rd party libraries/octave-networks-toolbox"]
+	path = Structural Analysis/3rd party libraries/octave-networks-toolbox
+	url = https://github.com/aeolianine/octave-networks-toolbox.git

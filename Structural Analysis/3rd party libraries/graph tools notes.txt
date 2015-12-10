@@ -1,0 +1,174 @@
+GrTheory
+    MATRIX FORMAT: Mx2 or Mx3 edge matrix
+    grCycleBasis: % all independent cycles for a connected simple graph without loops and multiple edges
+    grDecOrd(E): solve the problem about decomposition of the digraph to the sections with mutually accessed vertexes (strongly connected components).
+    grDistances(E): find the distances between any vertexes of graph.
+    grEccentricity(E): find the (weighted) eccentricity of all vertexes of graph.
+    grMaxFlows(E,s,t) solve the problem about the maximal flow in the network. (single source and drain)
+    grMaxFlows(E,s,t) solve the problem about the maximal flow in the network.
+    grMaxMath(E) solve the maximal matching problem.
+    grMinEdgeCover(E) solve the minimal edge cover problem.
+    grMinSpanTree(E) solve the minimal spanning tree problem for a connected graph.
+    grMinVerCover(E,d) solve the minimal vertex cover problem.
+    grPERT(E) solve the project evaluation research task.
+    grPlot(V,E,kind,vkind,ekind,sa) draw the plot of the graph (digraph).
+    grShortPath(E) solve the problem about the shortest path between any vertexes of digraph.
+    grShortVerPath(E,Wv) for digraph with weighted vertexes solve the problem about the path with minimal weight of verticies.
+    grValidation(E) The validation of array E - auxiliary function for GrTheory Toolbox.
+
+matgraph
+    MATRIX FORMAT: Proprietary class
+    All graphs handled by M ATGRAPH are simple and
+    undirected. That is, these graphs do not have loops
+    or multiple edges. Each pair of distinct vertices either
+    is not adjacent or else is joined by a single edge.
+    THIS IS A DEAL-BREAKER!!!
+
+matlab_bgl
+    MATRIX FORMAT: uses sparse matrices.
+    Check all the included algorithms for useful methods
+
+    % Searching through a graph
+    % bfs                       - Breadth first search
+    % dfs                       - Depth first search
+    % astar_search              - Heuristic astar graph search
+    % breadth_first_search      - Breadth first search with visitors
+    % depth_first_search        - Depth first search with visitors
+    %
+    % Shortest Path Algorithms
+    % shortest_paths            - Single source shortest path wrapper
+    % all_shortest_paths        - All pairs shortest path wrapper
+    % dijkstra_sp               - Dijkstra's shorest path algorithm
+    % bellman_ford_sp           - Bellman-Ford shortest path algorithm
+    % dag_sp                    - Shortest path on directed acyclic graph
+    % johnson_all_sp            - Johnson all pairs shortest path algorithm
+    % floyd_warshall_all_sp     - Floyd-Warshall all pairs shortest path alg
+    %
+    % Minimum Spanning Tree
+    UNDIRECTED % mst                       - Minimum spanning tree wrapper
+    SYMMETRIC % kruskal_mst               - Kruskal's minimum spanning tree algorithm
+    SYMMETRIC % prim_mst                  - Prim's minimum spanning tree algorithm
+    %
+    % Connected Components
+    % components                - Connected components of a graph
+    UNDIRECTED % biconnected_components    - Biconnected connected components of a graph
+    %
+    % Flow Algorithms
+    % max_flow                  - Solve a maximum flow problem
+    % edmunds_karp_max_flow     - Edmunds-Karp max flow algorithm
+    % kolmogorov_max_flow       - Kolmogorov's max flow algorithm
+    % push_relabel_max_flow     - Goldberg's push-relabel max flow algorithm
+    %
+    % Layouts
+    % circle_graph_layout       - Simple layout of vertices on a circle
+    % random_graph_layout       - Random layout of vertices in plane or lattice
+    % kamada_kawai_spring_layout- Spring based graph layout
+    % gursoy_atun_layout        - Topology based graph layout
+    UNDIRECTED % fruchterman_reingold_force_directed_layout - Force directed graph layout
+    %
+    % Matchings
+    UNDIRECTED % matching                  - Compute a maximum cardinality matching
+    UNDIRECTED % edmonds_maximum_cardinality_matching - Edmonds' algorithm for matching
+    UNDIRECTED % maximal_matching          - Compute maximal (not maximum) matchings
+    UNDIRECTED % test_matching             - Test if a matching is maximum cardinality
+    %
+    % Statistics
+    % betweenness_centrality    - Betweeness centrality scores for all nodes
+    % clustering_coefficients   - Clustering coefficients for all nodes
+    % core_numbers              - Compute in-degree core numbers for all nodes
+    INTERESTING % lengauer_tarjan_dominator_tree - Compute a dominator tree for a graph
+    % num_edges                 - The number of edges in a graph
+    % num_vertices              - The number of vertices in a graph
+    DAG % topological_order         - Compute a topological order for a dag
+    % test_dag                  - Test if a graph is directed and acyclic
+    %
+    % Graphs
+    % clique_graph              - Generates a clique or bipartite clique
+    % cycle_graph               - Generates a cycle graph
+    % erdos_reyni               - Generates an erdos_reyni, or Gnp, graph
+    % grid_graph                - Generate a grid or hypergrid graph
+    % star_graph                - Generates a star graph
+    % wheel_graph               - Generates a wheel graph
+    %
+    % Visitors
+    % combine_visitors          - Produce a new combination visitor
+    %
+    % Utilities
+    % edge_weight_index         - Convert between graphs and edge indices
+    % edge_weight_vector        - Generate edge_weight vectors from matrices
+    % indexed_sparse            - Generate a sparse matrix with edge indices
+    % path_from_pred            - Convert a predecessor array to a path
+    % tree_from_pred            - Convert predecessor array to a tree
+    %
+    % Examples and Demos
+    % EXAMPLES/RED_BLACK        - Compute a red-black ordering of a matrix
+    % examples/record_alg       - Use visitors to show how an algorithm works
+    % examples/reweighted_graphs    - Show how reweighted graphs work
+    % examples/core_numbers_example - Demonstrate core numbers
+    % examples/planar_graph     - A few planar graph examples
+    % examples/new_in_3_0       - New features in version 3.0
+    % examples/new_in_4_0       - New features in version 4.0
+    % examples/layouts          - Simple demonstrations of layout algorithms
+    %
+    % Options
+    % set_matlab_bgl_default    - Set default options
+
+
+    % future functions...
+    % sample_paths              - Computes path statistics
+
+    % Matrix Orderings
+    % graph_perm                 - Graph permutation wrapper
+    % reverse_cuthill_mckee_perm - Reverse Cuthill-McKee ordering
+    % minimum_degree_perm        - Minimum degree ordering
+    % king_perm                  - King ordering
+    % sloan_perm                 - Sloan ordering
+
+
+matlab_networks_routines
+
+    Has a problem with TLS (thread local storage). Do not open the doc window. http://stackoverflow.com/questions/19268293/matlab-error-cannot-open-with-static-tls
+
+    add_edge_weight threw an error during the test script
+
+    Latest code runs on Octave ONLY
+
+    pdf manual for the Octave version exists in the corresponding folder
+
+    Interesting section 7 on randomly/proceduraly generated graphs
+
+    More focused on networks than graphs themselves
+
+    Interesting functions:
+    selfLoops.m: Number of self-loops, i.e. number of edges that start and end at the same node.
+    averageDegree.m
+    numConnComp.m
+    findConnComp.m
+    tarjan.m: Return the strongly connected components in a directed graph
+    DFS.m Currently, no edge weights are implemented in the path length, but that should be straighforward to modify.
+    BFS.m
+    isDirected.m
+    isConnected.m
+    isBipartite.m
+    simpleDijkstra.m Computing distances from a given node to all other nodes in the graph, without remembering the paths.
+    dijkstra.m Dijkstra’s algorithm. This routine returns the shortest distances, as well as the paths.
+    shortestPathDP.m Shortest path algorithm using dynamic programming. Returns the minimum weight path length and the route.
+    findAllShortestPaths.m Find all shortest paths between two nodes. In a graph which contains even cycles, there are multiple shortest paths between some pairs of nodes
+    diameter.m The diameter is the longest shortest path in the graph
+    numLoops.m Calculate the number of independent loops/cycles
+    canonicalNets.m Building simple graphs such as trees and lattices with prescribed number of nodes and branch factor
+    randomDirectedGraph.m A random directed graph routine, similar to Section 7.1.3, but the links are symmetric/undirected
+    dotMatrixPlot.m
+    drawCircGraph.m
+    radialPlot.m Does not respect cycles, graph must be connected
+    laplacianMatrix.m FOR SIMPLE GRAPHS, WHAT IS IT?
+
+
+graph_gui
+    Requires pre-defined vertex coordinates
+    Isn't visually helpful, lacks arrow-styled edges
+
+graphViz4Matlab
+    Visually pleasing
+    I can create rectangle nodes with the 'curvature' node attribute
+    Very slow-reacting in large graphs
