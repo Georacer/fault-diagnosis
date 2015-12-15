@@ -18,7 +18,7 @@ GrTheory
 
 matgraph
     MATRIX FORMAT: Proprietary class
-    All graphs handled by M ATGRAPH are simple and
+    All graphs handled by MATGRAPH are simple and
     undirected. That is, these graphs do not have loops
     or multiple edges. Each pair of distinct vertices either
     is not adjacent or else is joined by a single edge.
