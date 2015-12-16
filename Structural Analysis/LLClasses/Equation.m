@@ -1,4 +1,4 @@
-classdef Equation
+classdef Equation < handle
     %EQUATION Equation class definition
     %   Detailed explanation goes here
     
@@ -13,24 +13,26 @@ classdef Equation
         IsDynamic = false;
         IsNonLinear = false;
         IsMatched = false;
-        VariableArray = [];
-        VariableAliasArray = {};
-        FunctionArray = [];
+        VariableArray = Variable.empty;
+        FunctionArray
         NumVars = 0;
         Coordinates = [0,0];
     end
     
-    properties (Dependent)
-        
+    properties (SetAccess = private)
+        VariableAliasArray = {}        
     end
     
+   
     methods
         
+        % Constructor
         function obj = Equation(exprStr)
             
-            if (nargin==0)    
+            if (nargin==0)
+            end
                
-            elseif (nargin==1)
+            if (nargin>=1)
                 % legend:
                 % {} - normal term
                 % dot - differential term
@@ -41,24 +43,26 @@ classdef Equation
                 % out - output variable % NOT SUPPORTED
                 % msr - measured variable
                 debug = true;
-                operators = {'dot','int','ni','inp','out','msr'};
-                isKnown = false;
-                isMeasured = false;
-                isInput = false;
-                isOutput = false;
-                isMatched = false;
-                isDerivative = false;
-                isIntegral = false;
-                isNonSolvable = false;
-                msrVar = false;
-                words = strsplit(exprStr,' ');
+                operators = {'dot','int','ni','inp','out','msr'}; % Available operators
+                words = strsplit(exprStr,' '); % Split expression to operands and variables
+                newVar = true; % New variable flag for properties initialization
                 for i=1:size(words,2)
+                    if initProperties
+                        isKnown = false;
+                        isMeasured = false;
+                        isInput = false;
+                        isOutput = false;
+                        isMatched = false;
+                        isDerivative = false;
+                        isIntegral = false;
+                        isNonSolvable = false;
+                    end
                     word = words{i};
                     opIndex = find(strcmp(operators, word));
                     if isempty(opIndex)
-                        opIndex = -1;
+                        opIndex = -1; % Found a new variable alias
                     end
-                    if debug disp(sprintf('opIndex=%i',opIndex)); end
+%                     if debug disp(sprintf('opIndex=%i',opIndex)); end
                     switch opIndex % Test if the word is an operator
                         case 1
                             isDerivative = true;
@@ -76,55 +80,31 @@ classdef Equation
                             isKnown = true;
                         otherwise % Found a variable
                             % Lookup the variable
-                            exists = false;
                             varIndex = find(strcmp(obj.VariableAliasArray,word));
-                            if (inputVar) % It is an input variable
-            %                     inputVar = false;
-            %                     varIndex = find(strcmp(IVars,word));
-            %                     if isempty(varIndex) % This input variable was not yet met
-            %                         IVars = {IVars{:},word};
-            %                         splitIndex = UVarsNo+IVarsNo;
-            %                         IVarsNo = IVarsNo + 1;
-            %                     else % This input variable already exists
-            %                         entryIndex = UVarsNo + varIndex;
-            %                         exists = true;
-            %                     end
-                            elseif (outputVar) % It is an output variable
-            %                     outputVar = false;
-            %                     varIndex = find(strcmp(OVars,word));
-            %                     if isempty(varIndex) % This output variable was not yet met
-            %                         OVars = {OVars{:},word};
-            %                         splitIndex = UVarsNo+IVarsNo+OVarsNo;
-            %                         OVarsNo = OVarsNo + 1;
-            %                     else % This input variable already exists
-            %                         entryIndex = UVarsNo + IVarsNo + varIndex;
-            %                         exists = true;
-            %                     end
-                            elseif (msrVar)
-                                msrVar = false;
-                                varIndex = find(strcmp(KVars,word)); % Check if the variable is already met
-                                if isempty(varIndex) % This known variable was not yet met
-                                    KVars = [KVars,{word}];
-                                    splitIndex = UVarsNo+KVarsNo; % Place the new variable at the end
-                                    KVarsNo = KVarsNo + 1;
-                                else % This input variable already exists
-                                    entryIndex = UVarsNo + varIndex; % Place the variable in its correct index
-                                    exists = true;
-                                end                    
-                            else % It is an unknown variable
-                                varIndex = find(strcmp(UVars,word)); % Check if the variable is already met
-                                if isempty(varIndex) % This output variable was not yet met
-                                    UVars = [UVars, {word}];
-                                    splitIndex = UVarsNo; % Place the new variable at the end of the unknown variables list
-                                    UVarsNo = UVarsNo + 1;
-                                else % This input variable already exists
-                                    entryIndex = varIndex;
-                                    exists = true;
-                                end                   
+                            if isemtpy(varIndex) % This variable was not yet met
+                                tempVar = Variable();
+                                tempVar.isKnown = isKnown;
+                                tempVar.isMeasured = isMeasured;
+                                tempVar.isInput = isInput;
+                                tempVar.isOutput = isOutput;
+                                tempVar.isMatched = [];
+                                tempVar.isDerivative = isDerivative;
+                                tempVar.isIntegral = isIntegral;
+                                tempVar.isNonSolvable = isNonSolvable;
+                                obj.VariableArray(end+1) = tempVar;
+                                obj.updateVariableAliasArray;
+                            else % We have already met this variable
+                                obj.VariableArray(varIndex).propertyOR('isKnown',isKnown);
+                                obj.VariableArray(varIndex).propertyOR('isMeasured',isMeasured);
+                                obj.VariableArray(varIndex).propertyOR('isInput',isInput);
+                                obj.VariableArray(varIndex).propertyOR('isOutput',isOutput);
+                                obj.VariableArray(varIndex).propertyOR('isDerivative',isDerivative);
+                                obj.VariableArray(varIndex).propertyOR('isIntegral',isIntegral);
+                                obj.VariableArray(varIndex).propertyOR('isNonSolvable',isNonSolvable);
                             end
                             
-                            obj.VariableArray = [obj.VariableArray newVariable];
-                            obj.updateVariableAliasArray;
+                            initProperties = true;
+                            
                     end
                 end
                
@@ -132,20 +112,43 @@ classdef Equation
             
         end
         
-        function obj = updateVariableAliasArray(obj)
+        % Update the array holding the variable objects
+        function updateVariableAliasArray(obj)
             obj.VariableAliasArray = cell(size(obj.VariableArray));
             for i=1:length(obj.VariableAliasArray)
-                obj.VariableAliasArray{i} = obj.VariableArray[i].alias;
+                obj.VariableAliasArray{i} = obj.VariableArray(i).alias;
             end
         end
-                
+           
+        % Display function override
         function [] = disp(obj)
-            fprintf('This is an equation class object');
+            fprintf('Equation object:\n');
+            fprintf('name = %s\n',obj.Alias);
+            fprintf('equations = [');
+            fprintf('%s, ',obj.VariableAliasArray{:});
+            fprintf(']\n');
         end
         
+        % Return the referenced variables
         function vars = getVars(obj)
-            vars = obj.variableArray;
+            vars = obj.VariableAliasArray;
         end
+        
+        % Set teh VariableArray property and update the ViarableAliaArray
+        % property
+        function set.VariableArray(obj,value)
+            obj.VariableArray = value;
+            obj.updateVariableAliasArray();            
+        end
+        
+        % Disable the VariableAiasArray method - Not sure if this can work:
+        % Is it used only on external calls?
+%         function set.VariableAliasArray(obj)
+%             warning('The VariableAliasArray structure is automatically updated on udpate of the VariableArray property');
+%         end
+
+
+        
     end
     
 end
