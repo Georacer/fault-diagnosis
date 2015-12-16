@@ -1,0 +1,51 @@
+\BOOKMARK [0][-]{chapter.1}{Why Do UAVs Need FDD Systems}{}% 1
+\BOOKMARK [0][-]{chapter.2}{Historical FDD Overview}{}% 2
+\BOOKMARK [0][-]{chapter.3}{The Current FDD Scope w.r.t. Fixed-Wing UAVs}{}% 3
+\BOOKMARK [0][-]{chapter.4}{The Need for Holistic System Health Monitoring}{}% 4
+\BOOKMARK [0][-]{chapter.5}{Tackling System Complexity}{}% 5
+\BOOKMARK [1][-]{section.5.1}{Component Model}{chapter.5}% 6
+\BOOKMARK [1][-]{section.5.2}{Structural Model}{chapter.5}% 7
+\BOOKMARK [0][-]{chapter.6}{The Matching Problem}{}% 8
+\BOOKMARK [1][-]{section.6.1}{Matchings in Bi-Partite Graphs}{chapter.6}% 9
+\BOOKMARK [1][-]{section.6.2}{Constraints in Matchings of Graphs Representing Real-World Systems}{chapter.6}% 10
+\BOOKMARK [0][-]{chapter.7}{Uncovering Analytical Redundancy}{}% 11
+\BOOKMARK [1][-]{section.7.1}{Solving the System Graph}{chapter.7}% 12
+\BOOKMARK [1][-]{section.7.2}{Residuals and Monitorability}{chapter.7}% 13
+\BOOKMARK [0][-]{chapter.8}{Kinematic Equations}{}% 14
+\BOOKMARK [1][-]{section.8.1}{Position}{chapter.8}% 15
+\BOOKMARK [1][-]{section.8.2}{Orientation}{chapter.8}% 16
+\BOOKMARK [1][-]{section.8.3}{Angular velocity}{chapter.8}% 17
+\BOOKMARK [1][-]{section.8.4}{Linear Velocity}{chapter.8}% 18
+\BOOKMARK [1][-]{section.8.5}{Mass Distribution}{chapter.8}% 19
+\BOOKMARK [1][-]{section.8.6}{Wind Disturbances}{chapter.8}% 20
+\BOOKMARK [0][-]{chapter.9}{Dynamic Equations}{}% 21
+\BOOKMARK [1][-]{section.9.1}{Gravity}{chapter.9}% 22
+\BOOKMARK [1][-]{section.9.2}{Aerodynamics}{chapter.9}% 23
+\BOOKMARK [1][-]{section.9.3}{Propulsion}{chapter.9}% 24
+\BOOKMARK [2][-]{subsection.9.3.1}{Propeller Model}{section.9.3}% 25
+\BOOKMARK [2][-]{subsection.9.3.2}{Electric Motor Model}{section.9.3}% 26
+\BOOKMARK [2][-]{subsection.9.3.3}{Battery and Electronic Speed Controller}{section.9.3}% 27
+\BOOKMARK [0][-]{chapter.10}{Sensory Equipment Equations}{}% 28
+\BOOKMARK [1][-]{section.10.1}{Inertial Measurements}{chapter.10}% 29
+\BOOKMARK [2][-]{subsection.10.1.1}{Accelerometer}{section.10.1}% 30
+\BOOKMARK [2][-]{subsection.10.1.2}{Gyroscope}{section.10.1}% 31
+\BOOKMARK [2][-]{subsection.10.1.3}{Magnetometer}{section.10.1}% 32
+\BOOKMARK [2][-]{subsection.10.1.4}{AHRS}{section.10.1}% 33
+\BOOKMARK [1][-]{section.10.2}{GPS Measurements}{chapter.10}% 34
+\BOOKMARK [2][-]{subsection.10.2.1}{Earth Model}{section.10.2}% 35
+\BOOKMARK [1][-]{section.10.3}{Atmospheric Measurements}{chapter.10}% 36
+\BOOKMARK [2][-]{subsection.10.3.1}{Atmosphere Model}{section.10.3}% 37
+\BOOKMARK [2][-]{subsection.10.3.2}{Pressure}{section.10.3}% 38
+\BOOKMARK [2][-]{subsection.10.3.3}{Temperature}{section.10.3}% 39
+\BOOKMARK [1][-]{section.10.4}{Air Data}{chapter.10}% 40
+\BOOKMARK [1][-]{section.10.5}{Distance Measurement}{chapter.10}% 41
+\BOOKMARK [1][-]{section.10.6}{Voltage Measurement}{chapter.10}% 42
+\BOOKMARK [1][-]{section.10.7}{Current Measurement}{chapter.10}% 43
+\BOOKMARK [1][-]{section.10.8}{Motor Angular Velocity Measurement}{chapter.10}% 44
+\BOOKMARK [0][-]{chapter.11}{Other Future Directions}{}% 45
+\BOOKMARK [1][-]{section.11.1}{Residual Analysis}{chapter.11}% 46
+\BOOKMARK [1][-]{section.11.2}{Separating Faults from Disturbances}{chapter.11}% 47
+\BOOKMARK [1][-]{section.11.3}{Hybrid Systems}{chapter.11}% 48
+\BOOKMARK [1][-]{section.11.4}{Fault Identification and Reconfigurable/Restructurable Control}{chapter.11}% 49
+\BOOKMARK [1][-]{section.11.5}{Mission Planning}{chapter.11}% 50
+\BOOKMARK [0][-]{appendix*.7}{Bibliography}{}% 51

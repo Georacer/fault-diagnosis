@@ -1,0 +1,66 @@
+\chapter{The Need for Holistic System Health Monitoring}
+
+As is often quoted "The whole is more than the sum of its parts". In the case of fw-UAVs, the low-level system components have attributes and effects which not only affect themselves or the components they are connected to, but also the subsystem they belong to or even the whole airframe. Electrical, mechanical and dynamic interdependencies between components form a mesh of interactions, the knowledge of which is valuable. Each component is not isolated; its faults affect other parts of the system, even beyond its subsystem, and in turn said component may depend on other components working properly for itself to operate nominally. As an example, consider the case of an electric UAV, where a part of the propeller blade gets clipped, as a result of a hardware failure. Immediately, because of the imbalanced load on the motor shaft, the propeller angular inertia is increased and the motor struggles to maintain its commanded RPM. This results in excessive current draw and also reduced thrust power. Moreover, vibrations are generated and transmitted throughout the airframe, cluttering the accelerometer sensor bandwidth and possibly affecting the autopilot performance. Even in simple, single-component failures, the implications on a fast-evolving, tightly-coupled system may be severe and in ways that may not be directly apparent or so complex that are difficult to keep track of.
+
+To showcase the extent of the problem, an indicative list of an UAV system resources and potential failures is presented.
+
+\begin{table}[rc]
+%\centering
+\begin{minipage}[t]{0.45\textwidth}
+\vspace{0pt}
+\begin{tabular}{l}
+{\textbf{System Resources}}\\
+\hline
+\underline{Hardware} \\
+motor \\
+actuators \\
+sensors \\
+video \& data tranceivers \\
+antennae \\
+fuel\\battery capacity \\
+processing units (on-board computers) \\
+aerodynamics surfaces \\
+structural support \vspace{5pt}\\
+
+\underline{Software} \\
+Computational power \\
+Computational memory \vspace{5pt} \\
+\underline{Other}\\
+Airspeed \\
+Altitude
+\end{tabular}
+\end{minipage} %
+%
+\begin{minipage}[t]{0.45\textwidth}
+\vspace{0pt}
+\begin{tabular}{l}
+{\textbf{System Faults}}\\
+\hline
+\underline{Hardware} \\
+propeller damage \\
+propeller dislocation \\
+motor loss of power \\
+motor total failure \\
+power supply cut-off \\
+power supply total failure \\
+battery shortened life \\
+battery fire \\
+actuator failure \\
+control surface dislocation\\
+control surface break-off\\
+sensor elevated noise floor \\
+sensor failure\\
+communication partial/total loss\\
+structural failure partial/total\\
+aerodynamic surface alteration\\
+center of gravity dislocation \\
+processor damage \vspace{5pt}\\
+\underline{Software}\\
+bugs\\
+unexpected states
+\end{tabular}
+\end{minipage} %
+
+\end{table}
+
+It is apparent that in order to investigate the dependencies between system resources and system faults, with regard to component descriptions, we need to handle the system complexity using a formal, scalable representation method for this kind of dependencies.

@@ -1,0 +1,32 @@
+\begin{tikzpicture}[node distance = 2cm, bend angle=45, auto]
+\tikzstyle{known_var}=[circle, thick,fill=gray]
+\tikzstyle{unkno_var}=[circle, draw=black, thick]
+\tikzstyle{constr}=[rectangle, fill=black, thick, minimum height=10mm, minimum width = 1mm]
+%
+\begin{scope}
+
+\node [known_var] [](xm) {$x_m$};
+\node [constr] (m1) [below of=xm,label=$m_1$] {}
+	edge [] (xm);
+\node [unkno_var] (x) [below of=m1] {$x$}
+	edge [ultra thick] (m1);
+\node [constr] (c1) [right of=x, label=$c_1$] {}
+	edge [pre] (x);
+\node [unkno_var] [right of=c1](xdot) {$\dot{x}$}
+	edge [pre,ultra thick] (c1);
+\node [constr] [right of=xdot, label=$c_2$] (c2) {}
+	edge [] (xdot);
+\node [unkno_var] [right of=c2] (v) {$v$}
+	edge [ultra thick] (c2);
+\node [constr] (c3) [right of=v, label=$c_3$] {}
+	edge [pre] (v);
+\node [unkno_var] [right of=c3] (vdot) {$\dot{v}$}
+	edge [pre] (c3);
+\node [constr] [below of=c2, label=$c_4$] (c4) {}
+	edge [bend right,ultra thick] (vdot)
+	edge [bend left] (x);
+\node [known_var] [above of=c3] (zeroC3) {\tiny{ZERO}}
+	edge [] (c3);
+\end{scope}
+%
+\end{tikzpicture}
