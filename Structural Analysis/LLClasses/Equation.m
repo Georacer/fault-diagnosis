@@ -1,4 +1,4 @@
-classdef Equation < handle
+classdef Equation < matlab.mixin.Copyable
     %EQUATION Equation class definition
     %   Initialization arguments:
     %       ID:

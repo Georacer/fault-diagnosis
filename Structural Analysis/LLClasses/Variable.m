@@ -1,4 +1,4 @@
-classdef Variable < handle
+classdef Variable < matlab.mixin.Copyable
     %VARIABLE Variable class definition
     %   Initialization arguments:
     %       ID:

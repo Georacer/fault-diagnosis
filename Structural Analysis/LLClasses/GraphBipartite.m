@@ -1,11 +1,17 @@
-classdef GraphBipartite < handle
+classdef GraphBipartite < matlab.mixin.Copyable
     %GRAPHBIPARTITE Bipartite graph class definition
     %   Detailed explanation goes here
     
     properties
         equationArray = Equation.empty; % Array with equations contained in the graph
         variableArray = Variable.empty; % Array with viariables contained in the graph
+        adjacency = Adjacency.empty; % Adjacency object
         coords = [];
+    end
+    
+    properties (Dependent)
+        numVars
+        numEqs
     end
     
     properties (SetAccess = private)
@@ -13,7 +19,6 @@ classdef GraphBipartite < handle
         equationAliasArray = {};
         equationIdArray = [];
         variableIdArray = [];
-        adjacency = []; % The adjacency matrix
         adjacencyUndir = []; % Undirected copy of the adjacency matrix
         adjacencyCtrl = []; % The controlability adjacency matrix
         adjacencyObsrv = []; % The observability adjacency matrix
@@ -29,6 +34,7 @@ classdef GraphBipartite < handle
     
     methods
         
+        %%
         function obj = GraphBipartite(model,coords)
             % Constructor
             
@@ -39,7 +45,10 @@ classdef GraphBipartite < handle
                 group = model{groupIndex,1};
                 grEqNum = size(group,1);
                 grPrefix = model{groupIndex,2};
-                grEqAliases = cell(1,grEqNum);
+                grEqAliases = cell(1,grEqNum); % Create unique equation aliases
+                for i=1:grEqNum
+                    grEqAliases{i} = sprintf('eq%d',i);
+                end
                 for i=1:grEqNum
                     tempEquation = Equation([],group{i,1},grEqAliases{i},grPrefix);
                     obj.equationArray(end+1) = tempEquation;
@@ -59,7 +68,7 @@ classdef GraphBipartite < handle
             obj.constructing = false; % End construction
         end
         
-        
+        %%
         function set.variableArray(obj,value)
         % Set the VariableArray property and update the VariableAliaArray property
             obj.variableArray = value;
@@ -68,6 +77,7 @@ classdef GraphBipartite < handle
             end
         end
         
+        %%
         function updateVariableArray(obj)
         % Re-build the variableArray from the contents of equationArray
             obj.constructing = true;
@@ -91,6 +101,7 @@ classdef GraphBipartite < handle
             if obj.debug fprintf('variableArray length = %d\n',length(obj.variableArray)); end;
         end
         
+        %%
         function updateVariableAliasArray(obj)
         % Update the array holding the variable objects
             obj.variableAliasArray = cell(size(obj.variableArray));
@@ -99,6 +110,7 @@ classdef GraphBipartite < handle
             end
         end
         
+        %%
         function set.equationArray(obj,value)
         % Set the equationArray property and update the equationAliasArray property
             obj.equationArray = value;
@@ -107,6 +119,7 @@ classdef GraphBipartite < handle
             end
         end
         
+        %%
         function updateEquationAliasArray(obj)
         % Update the array holding the equation objects aliases
             obj.equationAliasArray = cell(size(obj.equationArray));
@@ -115,6 +128,7 @@ classdef GraphBipartite < handle
             end
         end
         
+        %%
         function updateEquationIdArray(obj)
         % Update the array holding the equation objects IDs
             obj.equationIdArray = zeros(size(obj.equationArray));
@@ -123,12 +137,13 @@ classdef GraphBipartite < handle
             end
         end        
         
+        %%
         function createAdjacency(obj)
         % Create the graph adjacency matrix
-            numVars = length(obj.variableArray);
-            numEqs = length(obj.equationArray);
+            numVars = obj.numVars;
+            numEqs = obj.numEqs;
             numEls = numVars + numEqs;
-            obj.adjacency = zeros(numEls,numEls);
+            adjacency = zeros(numEls,numEls);
             for i=1:length(obj.equationArray)
                 for j=1:length(obj.variableArray)
                     varId = obj.variableIdArray(j);
@@ -136,40 +151,43 @@ classdef GraphBipartite < handle
                     if obj.debug fprintf('GRA: (%d,%d) Found %d instance(s) of %s in %s\n',i,j,length(index), obj.variableArray(j).prAlias,obj.equationArray(i).prAlias); end
                     if ~isempty(index) % If yes, fill the corresponding cells accordingly
                         % General case
-                        obj.adjacency(numVars+i,j) = 1;
-                        obj.adjacency(j,numVars+i) = 1;
+                        adjacency(numVars+i,j) = 1;
+                        adjacency(j,numVars+i) = 1;
                         if obj.equationArray(i).variableArray(index).isKnown % TODO specify mutually exclusive properties
-                            obj.adjacency(j,numVars+i) = 1;
+                            adjacency(j,numVars+i) = 1;
                         end
                         if obj.equationArray(i).variableArray(index).isMeasured
-                            obj.adjacency(j,numVars+i) = 1;
+                            adjacency(j,numVars+i) = 1;
                         end
                         if obj.equationArray(i).variableArray(index).isInput
-                            obj.adjacency(j,numVars+i) = 1;
+                            adjacency(j,numVars+i) = 1;
                         end
                         if obj.equationArray(i).variableArray(index).isOutput
-                            obj.adjacency(numVars+i,j) = 1;
+                            adjacency(numVars+i,j) = 1;
                         end
                         if obj.equationArray(i).variableArray(index).isMatched
-                            obj.adjacency(j,numVars+i) = 1;
+                            adjacency(j,numVars+i) = 1;
                         end
                         if obj.equationArray(i).variableArray(index).isDerivative
-                            obj.adjacency(numVars+i,j) = 1;
-                            obj.adjacency(j,numVars+i) = 1;
+                            adjacency(numVars+i,j) = 1;
+                            adjacency(j,numVars+i) = 1;
                         end
                         if obj.equationArray(i).variableArray(index).isIntegral
-                            obj.adjacency(numVars+i,j) = 1;
-                            obj.adjacency(j,numVars+i) = 1;
+                            adjacency(numVars+i,j) = 1;
+                            adjacency(j,numVars+i) = 1;
                         end
                         if obj.equationArray(i).variableArray(index).isNonSolvable
-                            obj.adjacency(j,numVars+i) = 1;
+                            adjacency(j,numVars+i) = 1;
                         end
                     end
                 end
             end
             
+            obj.adjacency(end+1) = Adjacency(adjacency,obj.equationAliasArray,obj.variableAliasArray);
+            
         end
         
+        %%
         function plotG4M(obj)
             % Plot graph using Graphviz4Matlab library
             
@@ -223,6 +241,16 @@ classdef GraphBipartite < handle
             obj.ph.increaseFontSize;
             obj.ph.increaseFontSize;
             
+        end
+        
+        %%
+        function res = get.numVars(obj)
+            res = length(obj.variableArray);
+        end
+        
+        %%
+        function res = get.numEqs(obj)
+            res = length(obj.equationArray);
         end
         
     end

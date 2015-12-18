@@ -1,4 +1,4 @@
-classdef IDProvider < handle
+classdef IDProvider < matlab.mixin.Copyable
     %IDPROVIDER Provides unique IDs on demand
     
     properties (SetAccess = private)
