@@ -21,8 +21,10 @@ spy(mygraph.adjacency.V2E);
 %     coords = mygraph.coords;
 % end
 % 
-% % % Let the use re-arrange the nodes
+% % Let the use re-arrange the nodes
 % disp('Rearrange node positions if needed and press ENTER');
 % pause();
 % coords = mygraph.ph.getNodePositions();
 % mygraph.coords = coords;
+
+mygraph.plotDot();

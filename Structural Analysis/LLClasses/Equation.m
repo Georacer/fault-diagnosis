@@ -35,6 +35,7 @@ classdef Equation < matlab.mixin.Copyable
     
     properties (Dependent)
         prAlias
+        numVars
     end    
    
     methods
@@ -159,6 +160,7 @@ classdef Equation < matlab.mixin.Copyable
             
         end
         
+        %%
         function updateVariableAliasArray(obj)
         % Update the array holding the variable objects aliases
             obj.variableAliasArray = cell(size(obj.variableArray));
@@ -209,8 +211,14 @@ classdef Equation < matlab.mixin.Copyable
             end
         end
         
+        %%
         function prAlias = get.prAlias(obj)
             prAlias = [obj.prefix obj.alias];
+        end
+        
+        %%
+        function num = get.numVars(obj)
+            num = length(obj.variableArray);
         end
         
     end
