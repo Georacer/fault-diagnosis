@@ -85,15 +85,17 @@ classdef GraphBipartite < matlab.mixin.Copyable
             obj.variableAliasArray = cell(0,0);
             for i=1:length(obj.equationArray) % For each equation
                 for j=1:length(obj.equationArray(i).variableArray) % For each variable
-                    prAlias = obj.equationArray(i).variableArray(j).prAlias;
-                    index = find(strcmp(obj.variableAliasArray,prAlias));
+                    alias = obj.equationArray(i).variableArray(j).alias;
+                    index = find(strcmp(obj.variableAliasArray,alias));
                     if isempty(index) % This variable is not stored yet
-                        obj.variableArray(end+1) = obj.equationArray(i).variableArray(j); %TODO decide on propertyOR method
-                        obj.variableAliasArray{end+1} = prAlias;
+                        obj.variableArray(end+1) = obj.equationArray(i).variableArray(j).copy(); % Modify variable objects only via their equation array
+                        obj.variableAliasArray{end+1} = alias;
                         obj.variableIdArray(end+1) = obj.equationArray(i).variableArray(j).id;
-                        if obj.debug fprintf('GRA: Parsed new variable %s\n',prAlias); end
+                        if obj.debug fprintf('GRA: Parsed new variable %s\n',alias); end
                     else
-                        if obj.debug fprintf('GRA: Already have variable %s stored\n',prAlias); end
+                        % We are not interested in merging is* properties.
+                        % This wouldn't make sense.
+                        if obj.debug fprintf('GRA: Already have variable %s stored\n',alias); end
                     end
                 end
             end
@@ -106,7 +108,7 @@ classdef GraphBipartite < matlab.mixin.Copyable
         % Update the array holding the variable objects
             obj.variableAliasArray = cell(size(obj.variableArray));
             for i=1:length(obj.variableAliasArray)
-                obj.variableAliasArray{i} = [obj.variableArray(i).prefix obj.variableArray(i).alias];
+                obj.variableAliasArray{i} = obj.variableArray(i).alias;
             end
         end
         
@@ -151,33 +153,31 @@ classdef GraphBipartite < matlab.mixin.Copyable
                     if obj.debug fprintf('GRA: (%d,%d) Found %d instance(s) of %s in %s\n',i,j,length(index), obj.variableArray(j).prAlias,obj.equationArray(i).prAlias); end
                     if ~isempty(index) % If yes, fill the corresponding cells accordingly
                         % General case
-                        adjacency(numVars+i,j) = 1;
-                        adjacency(j,numVars+i) = 1;
+                        adjacency(numVars+i,j) = 1; % From equation to variable
+                        adjacency(j,numVars+i) = 1; % From variable to equation
                         if obj.equationArray(i).variableArray(index).isKnown % TODO specify mutually exclusive properties
-                            adjacency(j,numVars+i) = 1;
+                            % No operation
                         end
                         if obj.equationArray(i).variableArray(index).isMeasured
-                            adjacency(j,numVars+i) = 1;
+                            % No operation
                         end
                         if obj.equationArray(i).variableArray(index).isInput
-                            adjacency(j,numVars+i) = 1;
+                            adjacency(numVars+i,j) = 0; % From equation to variable
                         end
                         if obj.equationArray(i).variableArray(index).isOutput
-                            adjacency(numVars+i,j) = 1;
+                            % No operation
                         end
                         if obj.equationArray(i).variableArray(index).isMatched
-                            adjacency(j,numVars+i) = 1;
+                            adjacency(j,numVars+i) = 0; % From variable to equation
                         end
                         if obj.equationArray(i).variableArray(index).isDerivative
-                            adjacency(numVars+i,j) = 1;
-                            adjacency(j,numVars+i) = 1;
+                            % No operation, unless causality says otherwise
                         end
                         if obj.equationArray(i).variableArray(index).isIntegral
-                            adjacency(numVars+i,j) = 1;
-                            adjacency(j,numVars+i) = 1;
+                            % No operation, unless causality says otherwise
                         end
                         if obj.equationArray(i).variableArray(index).isNonSolvable
-                            adjacency(j,numVars+i) = 1;
+                            adjacency(numVars+i,j) = 0; % From equation to variable
                         end
                     end
                 end
@@ -216,7 +216,7 @@ classdef GraphBipartite < matlab.mixin.Copyable
             % disp(size(adjacency));
             % disp(size(nodeLabels));
             
-            obj.ph = drawNetwork(obj.adjacency, '-nodeLabels', nodeLabels, '-nodeColors', nodeColors);
+            obj.ph = drawNetwork(obj.adjacency.BD, '-nodeLabels', nodeLabels, '-nodeColors', nodeColors);
             
             if (~isempty(obj.coords))
                 obj.ph.setNodePositions(obj.coords);
