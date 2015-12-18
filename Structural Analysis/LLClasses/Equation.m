@@ -1,58 +1,81 @@
 classdef Equation < handle
     %EQUATION Equation class definition
-    %   Initializaion arguments:
+    %   Initialization arguments:
     %       ID:
     %       EXPRSTR:
     %       ALIAS:
     %       PREFIX:
     
     properties
-        Id = 0;
-        Prefix = '';
-        Alias = 'con';
-        ExpressionStructural
-        Expression
-        Description
-        IsStatic = false;
-        IsDynamic = false;
-        IsNonLinear = false;
-        IsMatched = false;
-        VariableArray = Variable.empty;
-        FunctionArray
-        Coordinates = [0,0];
+        id = 0;
+        prefix = '';
+        alias = 'con';
+        expressionStructural
+        expression
+        description
+        isStatic = false;
+        isDynamic = false;
+        isNonLinear = false;
+        isMatched = false;
+        variableArray = Variable.empty;
+        functionArray
+        coordinates = [0,0];
     end
     
     properties (SetAccess = private)
-        VariableAliasArray = {};
-        debug = false;
+        variableAliasArray = {};
+        variableIdArray = [];
     end
     
+    properties (Hidden = true)
+        constructing = false;
+        debug = false;
+%         debug = true;
+    end
+    
+    properties (Dependent)
+        prAlias
+    end    
    
     methods
         
-        % Constructor
         function obj = Equation(id, exprStr, alias, prefix)
+        % Constructor
             global IDProviderObj;
+            obj.constructing = true; % Doing construction work
 
             if (nargin==0)
                 error('No arguments provided to Equation constructor');
             end
+                
+            % If an alias is provided...
+            if nargin>=3
+                if ~isempty(alias)
+                    obj.alias = alias;
+                end
+            end
             
+            % If a prefix is provided...
+            if nargin>=4
+                obj.prefix = prefix;
+            end
+            
+            % Assing an ID to the object
             if nargin>=1
                 if ~isempty(id)
-                    obj.Id = id;
+                    obj.id = id;
                 elseif ~isempty(IDProviderObj) % An ID provider object has been declared
-                    obj.Id = IDProviderObj.giveID();
-                    if obj.debug
-                        fprintf('*** Acquired new ID from provider');
-                    end
+                    obj.id = IDProviderObj.giveID(obj);
+                    
+                    if obj.debug fprintf('EQU: Acquired ID %d from provider\n', obj.id); end
+                    
                 end
             end
             
             % If a structural expression is provided, parse it
             if (nargin>=2)
                 % Parse structural expression
-                obj.ExpressionStructural = exprStr;
+                obj.expressionStructural = exprStr;
                 % legend:
                 % {} - normal term
                 % dot - differential term
@@ -82,7 +105,9 @@ classdef Equation < handle
                     if isempty(opIndex)
                         opIndex = -1; % Found a new variable alias
                     end
-                    if obj.debug disp(sprintf('opIndex=%i',opIndex)); end
+                    
+                    if obj.debug disp(sprintf('EQU: opIndex=%i',opIndex)); end
+                    
                     switch opIndex % Test if the word is an operator
                         case 1
                             isDerivative = true;
@@ -100,9 +125,9 @@ classdef Equation < handle
                             isKnown = true;
                         otherwise % Found a variable
                             % Lookup the variable
-                            varIndex = find(strcmp(obj.VariableAliasArray,word));
+                            varIndex = find(strcmp(obj.variableAliasArray,word));
                             if isempty(varIndex) % This variable was not yet met
-                                tempVar = Variable([],word);
+                                tempVar = Variable([],word,obj.prefix);
                                 tempVar.isKnown = isKnown;
                                 tempVar.isMeasured = isMeasured;
                                 tempVar.isInput = isInput;
@@ -111,16 +136,16 @@ classdef Equation < handle
                                 tempVar.isDerivative = isDerivative;
                                 tempVar.isIntegral = isIntegral;
                                 tempVar.isNonSolvable = isNonSolvable;
-                                obj.VariableArray(end+1) = tempVar;
-                                obj.updateVariableAliasArray;
+                                obj.variableArray(end+1) = tempVar;
+                                obj.variableAliasArray{end+1} = word;
                             else % We have already met this variable, add its properties
-                                obj.VariableArray(varIndex).propertyOR('isKnown',isKnown);
-                                obj.VariableArray(varIndex).propertyOR('isMeasured',isMeasured);
-                                obj.VariableArray(varIndex).propertyOR('isInput',isInput);
-                                obj.VariableArray(varIndex).propertyOR('isOutput',isOutput);
-                                obj.VariableArray(varIndex).propertyOR('isDerivative',isDerivative);
-                                obj.VariableArray(varIndex).propertyOR('isIntegral',isIntegral);
-                                obj.VariableArray(varIndex).propertyOR('isNonSolvable',isNonSolvable);
+                                obj.variableArray(varIndex).propertyOR('isKnown',isKnown);
+                                obj.variableArray(varIndex).propertyOR('isMeasured',isMeasured);
+                                obj.variableArray(varIndex).propertyOR('isInput',isInput);
+                                obj.variableArray(varIndex).propertyOR('isOutput',isOutput);
+                                obj.variableArray(varIndex).propertyOR('isDerivative',isDerivative);
+                                obj.variableArray(varIndex).propertyOR('isIntegral',isIntegral);
+                                obj.variableArray(varIndex).propertyOR('isNonSolvable',isNonSolvable);
                             end
                             
                             initProperties = true;
@@ -129,52 +154,63 @@ classdef Equation < handle
                 end
                
             end
-            
-            % If an alias is provided...
-            if nargin>=3
-                obj.Alias = alias;
-            end
+            obj.updateVariableIdArray();
+            obj.constructing = false;
             
         end
         
-        % Update the array holding the variable objects
         function updateVariableAliasArray(obj)
-            obj.VariableAliasArray = cell(size(obj.VariableArray));
-            for i=1:length(obj.VariableAliasArray)
-                obj.VariableAliasArray{i} = obj.VariableArray(i).alias;
+        % Update the array holding the variable objects aliases
+            obj.variableAliasArray = cell(size(obj.variableArray));
+            for i=1:length(obj.variableAliasArray)
+                obj.variableAliasArray{i} = obj.variableArray(i).alias;
+            end
+        end
+        
+        function updateVariableIdArray(obj)
+        % Update the array holding the equation objects IDs
+            obj.variableIdArray = zeros(size(obj.variableArray));
+            for i=1:length(obj.variableIdArray)
+                obj.variableIdArray(i) = obj.variableArray(i).id;
             end
         end
            
-        % Display function override
         function disp(obj)
+        % Display function override
             fprintf('Equation object:\n');
-            fprintf('ID = %d\n',obj.Id);
-            fprintf('name = %s\n',obj.Alias);
-            fprintf('structural expression = %s\n',obj.ExpressionStructural);
+            fprintf('ID = %d\n',obj.id);
+            fprintf('name = %s\n',obj.alias);
+            fprintf('structural expression = %s\n',obj.expressionStructural);
             fprintf('variables = [');
-            fprintf('%s, ',obj.VariableAliasArray{:});
+            fprintf('%s, ',obj.variableAliasArray{:});
             fprintf(']\n');
         end
         
-        % Print each variable contained in this equation
         function dispVars(obj)
-            fprintf('Variables contained in equation %s:\n',obj.Alias);
-            for i=1:length(obj.VariableArray)
+        % Print each variable contained in this equation
+            fprintf('Variables contained in equation %s:\n',obj.alias);
+            for i=1:length(obj.variableArray)
                 fprintf('*Variable %d:\n',i);
-                obj.VariableArray(i).dispDetailed();
+                obj.variableArray(i).dispDetailed();
             end
         end
         
-        % Return the referenced variables
         function vars = getVars(obj)
-            vars = obj.VariableAliasArray;
+        % Return the referenced variables
+            vars = obj.variableAliasArray;
         end
         
-        % Set the VariableArray property and update the ViarableAliaArray
-        % property
-        function set.VariableArray(obj,value)
-            obj.VariableArray = value;
-            obj.updateVariableAliasArray(); % Update the variable aliases array
+        function set.variableArray(obj,value)
+        % Set the VariableArray property and update the ViarableAliaArray property
+            obj.variableArray = value;
+            if ~obj.constructing
+                obj.updateVariableAliasArray(); % Update the variable aliases array
+                obj.updateVariableIdArray(); % Update the varible IDs array
+            end
+        end
+        
+        function prAlias = get.prAlias(obj)
+            prAlias = [obj.prefix obj.alias];
         end
         
     end

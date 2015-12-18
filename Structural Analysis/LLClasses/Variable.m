@@ -3,15 +3,15 @@ classdef Variable < handle
     %   Initialization arguments:
     %       ID:
     %       ALIAS:
-    %       NAME:
     %       PREFIX:
+    %       NAME:
     %       DESCRIPTION: 
     
     properties
         id = 0;
-        alias
+        alias = 'var';
         name
-        prefix
+        prefix = '';
         description
         isKnown
         isMeasured
@@ -24,41 +24,46 @@ classdef Variable < handle
         coordinates
     end
     
-    properties (SetAccess = private)
+    properties (Dependent)
+        prAlias
+    end
+    
+    properties (Hidden = true)
         debug = false;
+%         debug = true;
     end
     
     methods
         
+        function obj = Variable(id,alias,prefix,name,description)
         % Constructor
-        function obj = Variable(id,alias,name,prefix,description)
             global IDProviderObj;
-            
-            % Set Id property
-            if nargin>=1
-                if ~isempty(id)
-                    obj.id = id;
-                elseif ~isempty(IDProviderObj) % An ID provider object has been declared
-                    obj.id = IDProviderObj.giveID();
-                    if obj.debug
-                        fprintf('*** Acquired new ID from provider');
-                    end
-                end
-            end
             
             % Set Alias property
             if nargin>=2
                 obj.alias = alias;
             end
             
-            % Set Name property
+            % Set Prefix property
             if nargin>=3
-                obj.name = name;
+                obj.prefix = prefix;
             end
             
-            % Set Prefix property
+            % Set Id property
+            if nargin>=1
+                if ~isempty(id)
+                    obj.id = id;
+                elseif ~isempty(IDProviderObj) % An ID provider object has been declared
+                    obj.id = IDProviderObj.giveID(obj);
+                    if obj.debug
+                        fprintf('VAR: Acquired ID %d from provider\n', obj.id);
+                    end
+                end
+            end
+
+            % Set Name property
             if nargin>=4
-                obj.prefix = prefix;
+                obj.name = name;
             end
             
             % Set Description property
@@ -67,10 +72,11 @@ classdef Variable < handle
             end
         end
         
-        % Display override for Varible class
         function disp(obj)
+        % Display override for Varible class
             fprintf('Variable object:\n');
             fprintf('id = %d\n',obj.id);
+            fprintf('prefix = %s\n',obj.prefix);
             fprintf('alias = %s\n',obj.alias);
             fprintf('description = %s\n',obj.description);          
         end
@@ -90,19 +96,18 @@ classdef Variable < handle
             fprintf('|-isNonSolvable = %d\n',obj.isNonSolvable);
         end
         
-        % Logical OR for properties
         function propertyOR(obj,property,value)
+        % Logical OR for properties
             if isprop(obj,property)
-                obj.propertyTestEmpty(obj,property);
+                obj.propertyTestEmpty(property);
                 obj.(property) = obj.(property) | value;
             else
                 error('Unknown variable property %s',property);
             end
         end
         
-        % Test if a property is unset (empty) and if yes, assign it to
-        % false
         function propertyTestEmpty(obj,property)
+        % Test if a property is unset (empty) and if yes, assign it to false
             if isprop(obj,property)
                 if isempty(obj.(property))
                     obj.(property) = false;
@@ -110,6 +115,10 @@ classdef Variable < handle
             else
                 error('Unknown variable property %s',property);
             end
+        end
+        
+        function prAlias = get.prAlias(obj)
+            prAlias = [obj.prefix obj.alias];
         end
         
     end
