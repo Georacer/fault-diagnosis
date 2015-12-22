@@ -20,6 +20,7 @@ classdef Equation < matlab.mixin.Copyable
         variableArray = Variable.empty;
         functionArray
         coordinates = [0,0];
+        rank = [];
     end
     
     properties (SetAccess = private)

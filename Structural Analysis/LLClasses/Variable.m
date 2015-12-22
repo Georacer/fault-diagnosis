@@ -22,6 +22,7 @@ classdef Variable < matlab.mixin.Copyable
         isIntegral
         isNonSolvable
         coordinates
+        rank = [];
     end
     
     properties (Dependent)

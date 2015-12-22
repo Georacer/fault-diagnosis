@@ -1,6 +1,6 @@
 GrTheory
     MATRIX FORMAT: Mx2 or Mx3 edge matrix
-    grCycleBasis: % all independent cycles for a connected simple graph without loops and multiple edges
+    grCycleBasis: % all independent cycles for a connected simple graph without loops and multiple edges --Doesn't work for my g001 example
     grDecOrd(E): solve the problem about decomposition of the digraph to the sections with mutually accessed vertexes (strongly connected components).
     grDistances(E): find the distances between any vertexes of graph.
     grEccentricity(E): find the (weighted) eccentricity of all vertexes of graph.
@@ -126,6 +126,9 @@ matlab_bgl
 
 
 matlab_networks_routines
+
+    USED:   num_loops
+
 
     Has a problem with TLS (thread local storage). Do not open the doc window. http://stackoverflow.com/questions/19268293/matlab-error-cannot-open-with-static-tls
 

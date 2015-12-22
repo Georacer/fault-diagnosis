@@ -7,7 +7,9 @@ classdef Adjacency < matlab.mixin.Copyable
         numVars
         numEqs
         eqNames
+        eqIds
         varNames
+        varIds
     end
     
     properties (Dependent)
@@ -18,11 +20,13 @@ classdef Adjacency < matlab.mixin.Copyable
     methods
         
         %%
-        function obj = Adjacency(array,eqNames,varNames)
+        function obj = Adjacency(array,eqNames,eqIds,varNames,varIds)
             obj.BD = array;
             obj.eqNames = eqNames;
+            obj.eqIds = eqIds;
             obj.numEqs = length(eqNames);
-            obj.varNames = varNames; 
+            obj.varNames = varNames;
+            obj.varIds = varIds;
             obj.numVars = length(varNames);
         end
 
