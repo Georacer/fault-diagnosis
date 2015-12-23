@@ -40,6 +40,7 @@ spy(mygraph.adjacency.V2E);
 % Display the graph using external dot compiler
 mygraph.plotDot();
 
+%% Verify Graph
 % Investigate the graph attributes
 cyclic = mygraph.hasCycles();
 if cyclic 
@@ -47,4 +48,13 @@ if cyclic
 else
     disp('The system graph is not cyclic');
 end
-    
+
+%% Perform matching
+mygraph.matchRanking();
+
+%% Investigate residual signatures
+fprintf('Building residual signature array:\n');
+[signatures, generator_id] = mygraph.getResidualSignatures();
+
+%% Display mathcing and calculation order
+mygraph.plotMatching();

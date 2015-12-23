@@ -17,10 +17,11 @@ classdef Equation < matlab.mixin.Copyable
         isDynamic = false;
         isNonLinear = false;
         isMatched = false;
+        isResGenerator = false;
         variableArray = Variable.empty;
         functionArray
         coordinates = [0,0];
-        rank = [];
+        rank = inf;
     end
     
     properties (SetAccess = private)
@@ -134,7 +135,7 @@ classdef Equation < matlab.mixin.Copyable
                                 tempVar.isMeasured = isMeasured;
                                 tempVar.isInput = isInput;
                                 tempVar.isOutput = isOutput;
-                                tempVar.isMatched = [];
+                                tempVar.isMatched = false;
                                 tempVar.isDerivative = isDerivative;
                                 tempVar.isIntegral = isIntegral;
                                 tempVar.isNonSolvable = isNonSolvable;
@@ -220,6 +221,50 @@ classdef Equation < matlab.mixin.Copyable
         %%
         function num = get.numVars(obj)
             num = length(obj.variableArray);
+        end
+        
+        %%
+        function [ id ] = getIdByProperty(this,property,value,operator)
+            %Return an ID array with child objects with requested property
+            if nargin<3
+                value = true;
+            end
+            if nargin<4
+                operator = '==';
+            end
+            id = [];
+            for i = 1:this.numVars
+                if isprop(this.variableArray(i),property)
+                    switch operator
+                        case '=='
+                            if (this.variableArray(i).(property) == value)
+                                id(end+1) = this.variableArray(i).id;
+                            end
+                        case '<'
+                            if (this.variableArray(i).(property) < value)
+                                id(end+1) = this.variableArray(i).id;
+                            end
+                        case '>'
+                            if (this.variableArray(i).(property) > value)
+                                id(end+1) = this.variableArray(i).id;
+                            end
+                        case '<='
+                            if (this.variableArray(i).(property) <= value)
+                                id(end+1) = this.variableArray(i).id;
+                            end
+                        case '>='
+                            if (this.variableArray(i).(property) >= value)
+                                id(end+1) = this.variableArray(i).id;
+                            end
+                        case '~='
+                            if (this.variableArray(i).(property) ~= value)
+                                id(end+1) = this.variableArray(i).id;
+                            end
+                        otherwise
+                            error('Unsupported operator %s\n',operator);
+                    end
+                end                
+            end
         end
         
     end

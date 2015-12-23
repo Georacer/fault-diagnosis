@@ -17,12 +17,12 @@ classdef Variable < matlab.mixin.Copyable
         isMeasured
         isInput
         isOutput
-        isMatched
+        isMatched = false;
         isDerivative
         isIntegral
         isNonSolvable
         coordinates
-        rank = [];
+        rank = inf;
     end
     
     properties (Dependent)
