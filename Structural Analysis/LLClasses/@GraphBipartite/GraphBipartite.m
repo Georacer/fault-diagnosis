@@ -97,6 +97,7 @@ classdef GraphBipartite < matlab.mixin.Copyable
         end
         
         %% External methods declarations
+        
         E = getEdges(obj)        
         resp = hasCycles(obj)                
         updateEquationAliasArray(obj)        
@@ -106,9 +107,21 @@ classdef GraphBipartite < matlab.mixin.Copyable
         createAdjacency(obj)        
         plotG4M(obj)        
         plotDot(obj)
+        plotMatching(obj)
         setKnown(obj,id)
         setRank(obj,id,rank)
         setMatched(obj,id)
+        resp = isVariable(obj,id)
+        resp = isEquation(obj,id)
+        id = getIdByProperty(obj,property,value)
+        id = getEqIdByProperty(obj,property,value)
+        id = getAncestorEqs(obj, id)
+        id = getParentVars(obj, id)
+        index = getEqIndexById(obj,id)
+        index = getVarIndexById(obj,id)
+        value = getPropertyById(obj,id,property)
+        alias = getAliasById(obj,id)
+        [sigs, ids] = getResidualSignatures(obj)
         matchRanking(obj)
         
     end

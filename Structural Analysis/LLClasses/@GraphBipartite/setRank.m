@@ -11,11 +11,16 @@ function setRank( obj, id, rank )
         obj.equationArray(index).rank = rank;
     else % Otherwise look it up in the variables
         found = false;
+        index = find(obj.variableIdArray == id);
+        for i=index
+            found = true;
+            obj.variableArray(i).rank = rank;
+        end
         for i=1:obj.numEqs
             index = find(obj.equationArray(i).variableIdArray == id);
             for j=index
                 found = true;
-                obj.equationArray(i).variableArray(j).rank = true;
+                obj.equationArray(i).variableArray(j).rank = rank;
             end
         end
         if ~found
