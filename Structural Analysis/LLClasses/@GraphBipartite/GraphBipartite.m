@@ -3,22 +3,32 @@ classdef GraphBipartite < matlab.mixin.Copyable
     %   Detailed explanation goes here
     
     properties
-        equationArray = Equation.empty; % Array with equations contained in the graph
-        variableArray = Variable.empty; % Array with viariables contained in the graph
+        equations = Equation.empty; % Array with equations contained in the graph
+        variables = Variable.empty; % Array with viariables contained in the graph
+        edges = Edge.empty; % Array with the edges contained in the graph
         adjacency = Adjacency.empty; % Adjacency object
+        idProvider % ID provider object
         coords = [];
     end
     
     properties (Dependent)
         numVars
         numEqs
+        numEdges
     end
     
     properties (SetAccess = private)
         variableAliasArray = {};
         equationAliasArray = {};
-        equationIdArray = [];
+        
         variableIdArray = [];
+        equationIdArray = [];
+        edgeIdArray = [];
+        
+        equationIdToIndexArray = [];
+        variableIdToIndexArray = [];
+        edgeIdToIndexArray = [];
+        
         adjacencyUndir = []; % Undirected copy of the adjacency matrix
         adjacencyCtrl = []; % The controlability adjacency matrix
         adjacencyObsrv = []; % The observability adjacency matrix
@@ -26,19 +36,18 @@ classdef GraphBipartite < matlab.mixin.Copyable
     end
     
     properties (Hidden = true)
-        debug = false;
-%         debug = true;
-        constructing = false;
+%         debug = false;
+        debug = true;
     end
     
     
     methods
         
         %%
-        function obj = GraphBipartite(model,coords)
+        function this = GraphBipartite(model,coords)
             % Constructor
-            
-            obj.constructing = true; % Begin construction
+            this.idProvider = IDProvider(this);
+
             % Read model file and store related equations and variables
             groupsNum = size(model,1); % Number of equation groups in model
             for groupIndex=1:groupsNum % For each group
@@ -50,79 +59,73 @@ classdef GraphBipartite < matlab.mixin.Copyable
                     grEqAliases{i} = sprintf('eq%d',i);
                 end
                 for i=1:grEqNum
-                    tempEquation = Equation([],group{i,1},grEqAliases{i},grPrefix);
-                    obj.equationArray(end+1) = tempEquation;
+                    this.parseExpression(group{i,1},grEqAliases{i},grPrefix);
                 end
             end
             
-            obj.updateEquationAliasArray();
-            obj.updateEquationIdArray();
-            obj.updateVariableArray();
-            obj.createAdjacency();
+            this.createAdjacency();
             
             % Store external nodes coordinates input
             if nargin>=2
-                obj.coords = coords;
+                this.coords = coords;
             end
             
-            obj.constructing = false; % End construction
+        end
+        
+        
+        %%
+        function res = get.numVars(this)
+            res = length(this.variables);
         end
         
         %%
-        function set.variableArray(obj,value)
-        % Set the VariableArray property and update the VariableAliaArray property
-            obj.variableArray = value;
-            if ~obj.constructing
-                obj.updateVariableAliasArray(); % Update the variable aliases array
-            end
+        function res = get.numEqs(this)
+            res = length(this.equations);
         end
         
         %%
-        function set.equationArray(obj,value)
-        % Set the equationArray property and update the equationAliasArray property
-            obj.equationArray = value;
-            if ~obj.constructing
-                obj.updateEquationAliasArray(); % Update the variable aliases array
-            end
-        end
-        
-        %%
-        function res = get.numVars(obj)
-            res = length(obj.variableArray);
-        end
-        
-        %%
-        function res = get.numEqs(obj)
-            res = length(obj.equationArray);
+        function res = get.numEdges(this)
+            res = length(this.edges);
         end
         
         %% External methods declarations
         
-        E = getEdges(obj)        
-        resp = hasCycles(obj)                
-        updateEquationAliasArray(obj)        
-        updateEquationIdArray(obj)   
-        updateVariableArray(obj)
-        updateVariableAliasArray(obj)     
-        createAdjacency(obj)        
-        plotG4M(obj)        
-        plotDot(obj)
-        plotMatching(obj)
-        setKnown(obj,id)
-        setRank(obj,id,rank)
-        setMatched(obj,id)
-        resp = isVariable(obj,id)
-        resp = isEquation(obj,id)
-        id = getIdByProperty(obj,property,value)
-        id = getEqIdByProperty(obj,property,value)
-        id = getAncestorEqs(obj, id)
-        id = getParentVars(obj, id)
-        index = getEqIndexById(obj,id)
-        index = getVarIndexById(obj,id)
-        value = getPropertyById(obj,id,property)
-        alias = getAliasById(obj,id)
-        [sigs, ids] = getResidualSignatures(obj)
-        matchRanking(obj)
+        E = getEdges(this)
+        [resp, id] = addEquation(this,id, alias, prefix, expStr)
+        [resp, id] = addVariable(this,id,alias,varProps,name,description)
+        [resp, id] = addEdge(this,id,equId,varId,edgeProps)
+        [resp, id] = addResidual(gh, eqId);
+        resp = hasCycles(this)  
+        createAdjacency(this)        
+        plotG4M(this)        
+        plotDot(this)
+        plotSparse(this)
+        plotMatching(this)
+        setKnown(this,id, value)
+        setRank(this,id,rank)
+        setMatched(this,id, value)
+        resp = setPropertyOR(this,id,property,value)
+        resp = isVariable(this,id)
+        resp = isEquation(this,id)
+        resp = isEdge(this,id)
+        resp = isMatched(gh, id)
+        resp = isMatchable(gh, id)
+        id = getEquIdByProperty(this,property,value,operator)
+        id = getVarIdByProperty(this,property,value,operator)
+        id = getEdgeIdByProperty(this,property,value,operator)
+        id = getAncestorEqs(this, id)
+        id = getParentVars(this, id)
+        id = getVarIdByAlias(this,id)
+        id = getVariables(gh, id)
+        id = getEdgeIdByVertices(gh, equId, varId)
+        index = getIndexById(this,id)
+        value = getPropertyById(this,id,property)
+        alias = getAliasById(this,id)
+        [sigs, ids] = getResidualSignatures(this)
+        resp = testPropertyEmpty(gh, id, property)
+        resp = testPropertyExists(gh, id, property)
+        matchRanking(this)
+        parseExpression(this, exprStr, alias, prefix)
         
     end
     

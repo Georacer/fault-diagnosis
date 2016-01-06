@@ -1,17 +1,22 @@
-function [ value ] = getPropertyById( this, id, property )
+function [ value ] = getPropertyById( gh, id, property )
 %GETPROPERTYBYID Get object property value by id
 %   Detailed explanation goes here
 
-% Search in the equation array
-index = this.getEqIndexById(id);
-if ~isempty(index) && isprop(this.equationArray(index),property)
-    value = this.equationArray(index).(property);
-else % Search in the variable array
-    index = this.getVarIndexById(id);
-    if ~isempty(index) && isprop(this.variableArray(index),property)
-        value = this.variableArray(index).(property);
+index = gh.getIndexById(id);
+if index==0
+    error('Unkown id %d',id);
+elseif gh.testPropertyExists(id,property)
+    if gh.isEquation(id)
+        value = gh.equations(index).(property);
+    elseif gh.isVariable(id)
+            value = gh.variables(index).(property);
+    elseif gh.isEdge(id)
+        value = gh.edges(index).(property);
+    else
+        error('Unknown object type with id %d',id);
     end
-end
-
+        
+end        
+    
 end
 

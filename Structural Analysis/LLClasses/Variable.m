@@ -1,4 +1,4 @@
-classdef Variable < matlab.mixin.Copyable
+classdef Variable < Node
     %VARIABLE Variable class definition
     %   Initialization arguments:
     %       ID:
@@ -8,25 +8,11 @@ classdef Variable < matlab.mixin.Copyable
     %       DESCRIPTION: 
     
     properties
-        id = 0;
-        alias = 'var';
-        name
-        prefix = '';
-        description
         isKnown
         isMeasured
         isInput
         isOutput
-        isMatched = false;
-        isDerivative
-        isIntegral
-        isNonSolvable
-        coordinates
-        rank = inf;
-    end
-    
-    properties (Dependent)
-        prAlias
+        isResidual
     end
     
     properties (Hidden = true)
@@ -34,94 +20,62 @@ classdef Variable < matlab.mixin.Copyable
 %         debug = true;
     end
     
+    properties (SetAccess = private)
+        propertyList
+    end
+    
     methods
         
-        function obj = Variable(id,alias,prefix,name,description)
-        % Constructor
-            global IDProviderObj;
-            
+        function this = Variable(id,alias,name,description)
+        % Constructor            
             % Set Alias property
             if nargin>=2
-                obj.alias = alias;
-            end
-            
-            % Set Prefix property
-            if nargin>=3
-                obj.prefix = prefix;
+                this.alias = alias;
             end
             
             % Set Id property
             if nargin>=1
                 if ~isempty(id)
-                    obj.id = id;
-                elseif ~isempty(IDProviderObj) % An ID provider object has been declared
-                    obj.id = IDProviderObj.giveID(obj);
-                    if obj.debug
-                        fprintf('VAR: Acquired ID %d from provider\n', obj.id);
-                    end
+                    this.id = id;
+                    if (this.debug) fprintf('Variable: Acquired ID %d\n',id); end
+                else
+                    error('Variable: Empty id given');
                 end
             end
 
             % Set Name property
-            if nargin>=4
-                obj.name = name;
+            if nargin>=3
+                this.name = name;
             end
             
             % Set Description property
-            if nargin>=5
-                obj.description = description;
+            if nargin>=4
+                this.description = description;
             end
+            
+            this.propertyList = properties(this);
         end
         
-        function disp(obj)
+        function disp(this)
         % Display override for Varible class
             fprintf('Variable object:\n');
-            fprintf('id = %d\n',obj.id);
-            fprintf('prefix = %s\n',obj.prefix);
-            fprintf('alias = %s\n',obj.alias);
-            fprintf('description = %s\n',obj.description);          
+            fprintf('id = %d\n',this.id);
+            fprintf('alias = %s\n',this.alias);
+            fprintf('description = %s\n',this.description);          
         end
         
-        function dispDetailed(obj)
+        function dispDetailed(this)
             fprintf('Variable object:\n');
-            fprintf('|-id = %d\n',obj.id);
-            fprintf('|-alias = %s\n',obj.alias);
-            fprintf('|-description = %s\n',obj.description);             
-            fprintf('|-isKnown = %d\n',obj.isKnown);
-            fprintf('|-isMeasured = %d\n',obj.isMeasured);
-            fprintf('|-isInput = %d\n',obj.isInput);
-            fprintf('|-isOutput = %d\n',obj.isOutput);
-            fprintf('|-isMatched = %d\n',obj.isMatched);
-            fprintf('|-isDerivative = %d\n',obj.isDerivative);
-            fprintf('|-isIntegral = %d\n',obj.isIntegral);
-            fprintf('|-isNonSolvable = %d\n',obj.isNonSolvable);
+            fprintf('|-id = %d\n',this.id);
+            fprintf('|-alias = %s\n',this.alias);
+            fprintf('|-description = %s\n',this.description);             
+            fprintf('|-isKnown = %d\n',this.isKnown);
+            fprintf('|-isMeasured = %d\n',this.isMeasured);
+            fprintf('|-isInput = %d\n',this.isInput);
+            fprintf('|-isOutput = %d\n',this.isOutput);
+            fprintf('|-matchedTo = %d\n',this.matchedTo);
         end
-        
-        function propertyOR(obj,property,value)
-        % Logical OR for properties
-            if isprop(obj,property)
-                obj.propertyTestEmpty(property);
-                obj.(property) = obj.(property) | value;
-            else
-                error('Unknown variable property %s',property);
-            end
-        end
-        
-        function propertyTestEmpty(obj,property)
-        % Test if a property is unset (empty) and if yes, assign it to false
-            if isprop(obj,property)
-                if isempty(obj.(property))
-                    obj.(property) = false;
-                end
-            else
-                error('Unknown variable property %s',property);
-            end
-        end
-        
-        function prAlias = get.prAlias(obj)
-            prAlias = [obj.prefix obj.alias];
-        end
-        
+
     end
     
 end

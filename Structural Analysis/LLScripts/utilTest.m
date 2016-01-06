@@ -3,27 +3,24 @@ close all;
 clear all;
 clc;
 
-%% Create graph
+profile on
 
-global IDProviderObj;
-IDProviderObj = IDProvider();
+%% Create graph
 
 % Select a model file to create the cell structure
 % [model, coords] = modelFile();
-[model, coords] = g001();
+% [model, coords] = g001();
+% [model, coords] = g002();
+% [model, coords] = g003();
+% [model, coords] = g004();
+[model, coords] = g005();
 
 % Create the graph object
 mygraph = GraphBipartite(model,coords);
-disp('Build graph object');
+disp('Built graph object');
 
 % Display the adjacency matrices
-subplot(2,2,[1,3])
-spy(mygraph.adjacency.BD);
-subplot(2,2,2)
-spy(mygraph.adjacency.E2V);
-subplot(2,2,4)
-spy(mygraph.adjacency.V2E);
-
+mygraph.plotSparse()
 
 % % Display the graph using Graphviz4Matlab
 % mygraph.plotG4M();
@@ -58,3 +55,9 @@ fprintf('Building residual signature array:\n');
 
 %% Display mathcing and calculation order
 mygraph.plotMatching();
+
+
+%% Cleanup routines
+
+profile viewer
+profile off

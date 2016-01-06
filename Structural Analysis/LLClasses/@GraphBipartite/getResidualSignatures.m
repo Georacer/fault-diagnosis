@@ -1,32 +1,32 @@
-function [ signatures, generator_id ] = getResidualSignatures( this )
+function [ signatures, generator_id ] = getResidualSignatures( gh )
 %GETRESIDUALSIGNATURES Return the residual signatures array
 %   Detailed explanation goes here
 
 debug = true;
 
 % Lookup the number of residual generators
-generator_id = this.getEqIdByProperty('isResGenerator');
+generator_id = gh.getEquIdByProperty('isResGenerator');
 
 if ~isempty(generator_id)
-    signatures = zeros(length(generator_id),this.numEqs); % Initialize the signature array
+    signatures = zeros(length(generator_id),gh.numEqs); % Initialize the signature array
     
     for i=1:length(generator_id)
         id = generator_id(i);
-        affectingIds = [id this.getAncestorEqs(id)];
+        affectingIds = [id gh.getAncestorEqs(id)];
         if debug
-            fprintf('Equations affecting signature %d: ',i);
+            fprintf('getResidualSignatures: Equations affecting signature %d: ',i);
             for j=1:length(affectingIds)
-            fprintf('%s, ',this.getAliasById(affectingIds(j)));
+            fprintf('%s, ',gh.getAliasById(affectingIds(j)));
             end
             fprintf('\n');
         end
-        eqIndices = this.getEqIndexById(affectingIds);
+        eqIndices = gh.getIndexById(affectingIds);
         signatures(i, eqIndices) = 1;        
     end
     
 else
     signatures = [];
-    fprintf('No residual generators are found in this graph\n');
+    fprintf('getResidualSignatures: No residual generators are found in gh graph\n');
 end
 
 end

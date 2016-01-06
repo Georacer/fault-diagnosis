@@ -1,46 +1,25 @@
-function createAdjacency(obj)
+function createAdjacency(gh)
 % Create the graph adjacency matrix
-numVars = obj.numVars;
-numEqs = obj.numEqs;
+numVars = gh.numVars;
+numEqs = gh.numEqs;
 numEls = numVars + numEqs;
 adjacency = zeros(numEls,numEls);
-for i=1:length(obj.equationArray)
-    for j=1:length(obj.variableArray)
-        varId = obj.variableIdArray(j);
-        index = find(obj.equationArray(i).variableIdArray==varId); % Check if variable is contained in this equation
-        if obj.debug fprintf('GRA: (%d,%d) Found %d instance(s) of %s in %s\n',i,j,length(index), obj.variableArray(j).prAlias,obj.equationArray(i).prAlias); end
-        if ~isempty(index) % If yes, fill the corresponding cells accordingly
-            % General case
-            adjacency(numVars+i,j) = 1; % From equation to variable
-            adjacency(j,numVars+i) = 1; % From variable to equation
-            if obj.equationArray(i).variableArray(index).isKnown % TODO specify mutually exclusive properties
-                % No operation
-            end
-            if obj.equationArray(i).variableArray(index).isMeasured
-                adjacency(numVars+i,j) = 0; % From equation to variable
-            end
-            if obj.equationArray(i).variableArray(index).isInput
-                % No operation
-            end
-            if obj.equationArray(i).variableArray(index).isOutput
-                % No operation
-            end
-            if obj.equationArray(i).variableArray(index).isMatched
-                adjacency(j,numVars+i) = 0; % From variable to equation
-            end
-            if obj.equationArray(i).variableArray(index).isDerivative
-                % No operation, unless causality says otherwise
-            end
-            if obj.equationArray(i).variableArray(index).isIntegral
-                % No operation, unless causality says otherwise
-            end
-            if obj.equationArray(i).variableArray(index).isNonSolvable
-                adjacency(numVars+i,j) = 0; % From equation to variable
-            end
-        end
+E = gh.getEdges();
+
+for i=1:size(E,1)
+    id1 = E(i,1);
+    id2 = E(i,2);
+    if gh.isVariable(id1) % V2E edge
+        varIndex = gh.getIndexById(id1);
+        equIndex = gh.getIndexById(id2);
+        adjacency(varIndex,numVars+equIndex) = 1;
+    else% E2V edge
+        equIndex = gh.getIndexById(id1);
+        varIndex = gh.getIndexById(id2);
+        adjacency(numVars+equIndex,varIndex) = 1;
     end
 end
 
-obj.adjacency(end+1) = Adjacency(adjacency,obj.equationAliasArray,obj.equationIdArray,obj.variableAliasArray,obj.variableIdArray);
+gh.adjacency = Adjacency(adjacency,gh.equationAliasArray,gh.equationIdArray,gh.variableAliasArray,gh.variableIdArray);
 
 end

@@ -1,4 +1,4 @@
-function plotDot(obj)
+function plotDot(gh)
 % Generate .dot code from this graph
 
 fileID = fopen('mygraph.dot','w');
@@ -8,54 +8,51 @@ fprintf(fileID,'rankdir = LR;\n');
 fprintf(fileID,'size ="8.5"\n');
 nodeDef = '';
 edgeDef = '';
-for i=1:obj.numEqs
+
+for i=1:gh.numEqs
     nodeDef = [nodeDef sprintf('node [shape = box, fillcolor = white, style = filled, label="%s\n%d"]; %s;\n'...
-        ,obj.equationAliasArray{i},obj.equationIdArray(i),obj.equationAliasArray{i})];
-    for j=1:obj.equationArray(i).numVars
-        flagE2V = true;
-        flagV2E = true;
-        shape = 'circle';
-        penwidth = 1;
-        color = 'white';
-        if obj.equationArray(i).variableArray(j).isKnown
-            % No operation
-        end
-        if obj.equationArray(i).variableArray(j).isMeasured
-            flagE2V = false;
-            color = 'yellow';
-        end
-        if obj.equationArray(i).variableArray(j).isInput
-            color = 'green';
-            shape = 'doublecircle';
-        end
-        if obj.equationArray(i).variableArray(j).isOutput
-            shape = 'Mcircle';
-        end
-        if obj.equationArray(i).variableArray(j).isMatched
+        ,gh.equationAliasArray{i},gh.equationIdArray(i),gh.equationAliasArray{i})];
+end
+
+for i=1:gh.numVars
+    shape = 'circle';
+    color = 'white';
+    if gh.variables(i).isKnown
+        % No operation
+    end
+    if gh.variables(i).isMeasured
+        color = 'yellow';
+    end
+    if gh.variables(i).isInput
+        color = 'green';
+        shape = 'doublecircle';
+    end
+    if gh.variables(i).isOutput
+        shape = 'Mcircle';
+    end
+    if gh.variables(i).isMatched
+        % No operation
+    end
+    nodeDef = [nodeDef sprintf('node [shape = %s, fillcolor = %s, style = filled, label="%s\n%d"]; %s;\n'...
+        ,shape,color,gh.variableAliasArray{i},gh.variableIdArray(i),gh.variableAliasArray{i})];
+end
+
+E = gh.getEdges();
+for i=1:size(E,1)
+    penwidth = 1;
+    id1 = E(i,1);
+    id2 = E(i,2);
+    if gh.isVariable(id1) % V2E edge        
+        varIndex = gh.getIndexById(id1);
+        equIndex = gh.getIndexById(id2);
+        edgeDef = [edgeDef sprintf('%s -> %s [penwidth = %g];\n',gh.variableAliasArray{varIndex},gh.equations(equIndex).prAlias,penwidth)];
+    else% E2V edge
+        equIndex = gh.getIndexById(id1);
+        varIndex = gh.getIndexById(id2);
+        if gh.isMatched(id2)
             penwidth = 1.5;
-            flagV2E = false; % From variable to equation
         end
-        if obj.equationArray(i).variableArray(j).isDerivative
-            % No operation, unless causality says otherwise
-        end
-        if obj.equationArray(i).variableArray(j).isIntegral
-            % No operation, unless causality says otherwise
-        end
-        if obj.equationArray(i).variableArray(j).isNonSolvable
-            flagE2V = false; % From equation to variable
-        end
-        % Specify variable node
-        %                     nodeDef = [nodeDef sprintf('%s [shape = %s, fillcolor = %s];\n',obj.equationArray(i).variableAliasArray{j},shape,color)];
-        nodeDef = [nodeDef sprintf('node [shape = %s, fillcolor = %s, style = filled, label="%s\n%d"]; %s;\n'...
-            ,shape,color,obj.equationArray(i).variableAliasArray{j},obj.equationArray(i).variableIdArray(j),obj.equationArray(i).variableAliasArray{j})];
-        % Equation to Variable
-        if flagE2V
-            edgeDef = [edgeDef sprintf('%s -> %s [penwidth = %g];\n',obj.equationArray(i).prAlias,obj.equationArray(i).variableAliasArray{j},penwidth)];
-        end
-        % Variable to Equation
-        if flagV2E
-            edgeDef = [edgeDef sprintf('%s -> %s [penwidth = %g];\n',obj.equationArray(i).variableAliasArray{j},obj.equationArray(i).prAlias,penwidth)];
-        end
+        edgeDef = [edgeDef sprintf('%s -> %s [penwidth = %g];\n',gh.equations(equIndex).prAlias,gh.variableAliasArray{varIndex},penwidth)];
     end
 end
 

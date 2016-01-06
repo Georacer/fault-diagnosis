@@ -1,4 +1,4 @@
-function setKnown( this, id, value )
+function setKnown( gh, id, value )
 %SETKNOWN Set a variable property known to true
 %   Detailed explanation goes here
 
@@ -6,25 +6,14 @@ if nargin<3
     value = true;
 end
 
-% Set property in variableArray
-index = this.getVarIndexById(id);
-if ~isempty(id)
-    this.variableArray(index).isKnown = value;
-else
-    error('Variable with id %d not found',id);
-end
-
-% Search for item id in equationArray
-found = false;
-for i=1:this.numEqs
-    index = find(this.equationArray(i).variableIdArray == id);
-    for j=index
-        found = true;
-        this.equationArray(i).variableArray(j).isKnown = value;
+for i=1:length(id)
+    
+    if gh.isVariable(id(i))
+        index = gh.getIndexById(id(i));
+        gh.variables(index).isKnown = value;
+    else
+        error('Node with id %d is not a variable',id);
     end
-end
-if ~found
-    error('Variable with id %d not found',id);
 end
 
 end

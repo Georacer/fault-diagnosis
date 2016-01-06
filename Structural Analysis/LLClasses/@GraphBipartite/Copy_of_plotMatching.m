@@ -7,34 +7,43 @@ fileID = fopen('mygraphmatched.dot','w');
 fprintf(fileID,'digraph G {\n');
 fprintf(fileID,'rankdir = LR;\n');
 fprintf(fileID,'size ="8.5"\n');
-equDef = 'node [shape = box, fillcolor = cyan, style = filled]; ';
-varDef = 'node [shape = circle, fillcolor = cyan, style = filled]; ';
-msrDef = 'node [shape = circle, fillcolor = yellow, style = filled]; ';
-inpDef = 'node [shape = doublecircle, fillcolor = green, style = filled]; ';
-outDef = 'node [shape = Mcircle, fillcolor = cyan, style = filled]; ';
-resDef = 'node [shape = circle, fillcolor = orange, style = filled]; ';
+nodeDef = '';
 edgeDef = '';
 rankDef = '';
 
 for i=1:gh.numEqs
     if gh.equations(i).rank ~= inf
-        equDef = [equDef sprintf('%s; ',gh.equationAliasArray{i})];
+        color = 'white';
+        if gh.equations(i).isMatched
+            color = 'cyan';
+        end
+        nodeDef = [nodeDef sprintf('node [shape = box, fillcolor = %s, style = filled, label="%s\n%d"]; %s;\n'...
+            ,color,gh.equationAliasArray{i},gh.equationIdArray(i),gh.equationAliasArray{i})];
     end
 end
 
 for i=1:gh.numVars
     if gh.variables(i).rank ~= inf
-        if gh.variables(i).isMeasured
-            msrDef = [msrDef sprintf('%s; ',gh.variableAliasArray{i})];
-        elseif gh.variables(i).isInput
-            inpDef = [inpDef sprintf('%s; ',gh.variableAliasArray{i})];
-        elseif gh.variables(i).isOutput
-            outDef = [outDef sprintf('%s; ',gh.variableAliasArray{i})];
-        elseif gh.variables(i).isResidual
-            resDef = [resDef sprintf('%s; ',gh.variableAliasArray{i})];
-        else
-            varDef = [varDef sprintf('%s; ',gh.variableAliasArray{i})];
+        shape = 'circle';
+        color = 'white';
+        if gh.variables(i).isKnown
+            % No operation
         end
+        if gh.variables(i).isMeasured
+            color = 'yellow';
+        end
+        if gh.variables(i).isInput
+            color = 'green';
+            shape = 'doublecircle';
+        end
+        if gh.variables(i).isOutput
+            shape = 'Mcircle';
+        end
+        if gh.variables(i).isMatched
+            color = 'cyan';
+        end
+        nodeDef = [nodeDef sprintf('node [shape = %s, fillcolor = %s, style = filled, label="%s\n%d"]; %s;\n'...
+            ,shape,color,gh.variableAliasArray{i},gh.variableIdArray(i),gh.variableAliasArray{i})];
     end
 end
 
@@ -43,7 +52,7 @@ for i=1:gh.numEdges
     equIndex = gh.getIndexById(gh.edges(i).equId);
     varIndex = gh.getIndexById(gh.edges(i).varId);
     if gh.isMatched(gh.edges(i).id)
-        penwidth = 2;
+        pendwidth = 1.5;
         edgeDef = [edgeDef sprintf('%s -> %s [penwidth = %g];\n',gh.equations(equIndex).prAlias,gh.variableAliasArray{varIndex},penwidth)];
     else
         edgeDef = [edgeDef sprintf('%s -> %s [penwidth = %g];\n',gh.variableAliasArray{varIndex},gh.equations(equIndex).prAlias,penwidth)];
@@ -90,13 +99,7 @@ for i=1:size(varVector,1)
     end
     rankDef = [rankDef sprintf('}\n')];
 end
-
-fprintf(fileID,[equDef '\n']);
-fprintf(fileID,[varDef '\n']);
-fprintf(fileID,[msrDef '\n']);
-fprintf(fileID,[inpDef '\n']);
-fprintf(fileID,[outDef '\n']);
-fprintf(fileID,[resDef '\n']);
+fprintf(fileID,nodeDef);
 fprintf(fileID,edgeDef);
 fprintf(fileID,rankDef);
 

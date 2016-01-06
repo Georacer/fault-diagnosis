@@ -1,4 +1,4 @@
-function [constraints, coords] = modelFile();
+function [constraints, coords] = modelFile()
 
 %% Structural Model Creation
 % Fixed Wing UAV

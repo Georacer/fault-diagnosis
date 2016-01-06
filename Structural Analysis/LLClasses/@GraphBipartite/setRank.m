@@ -1,31 +1,20 @@
-function setRank( obj, id, rank )
+function setRank( gh, id, rank )
 %SETKNOWN Set a variable property known to true
 %   Detailed explanation goes here
 
-    % Search for item id in equations
-    index = find(obj.equationIdArray == id);
-    if length(index)>1
-        error('More than one equation with id %d found',id);
+for i=1:length(id)
+    
+    index = gh.getIndexById(id(i));
+    
+    if gh.isVariable(id(i))
+        gh.variables(index).rank = rank;
+    elseif gh.isEquation(id(i))
+        gh.equations(index).rank = rank;
+    else
+        error('Object with ID %d is neither a variable nor an equation',id(i));
     end
-    if ~isempty(index)
-        obj.equationArray(index).rank = rank;
-    else % Otherwise look it up in the variables
-        found = false;
-        index = find(obj.variableIdArray == id);
-        for i=index
-            found = true;
-            obj.variableArray(i).rank = rank;
-        end
-        for i=1:obj.numEqs
-            index = find(obj.equationArray(i).variableIdArray == id);
-            for j=index
-                found = true;
-                obj.equationArray(i).variableArray(j).rank = rank;
-            end
-        end
-        if ~found
-            error('Variable with id %d not found',id);
-        end
-    end
+    
+end
+
 end
 
