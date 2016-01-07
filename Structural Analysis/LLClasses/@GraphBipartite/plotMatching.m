@@ -42,11 +42,13 @@ for i=1:gh.numEdges
     penwidth = 1;
     equIndex = gh.getIndexById(gh.edges(i).equId);
     varIndex = gh.getIndexById(gh.edges(i).varId);
-    if gh.isMatched(gh.edges(i).id)
-        penwidth = 2;
-        edgeDef = [edgeDef sprintf('%s -> %s [penwidth = %g];\n',gh.equations(equIndex).prAlias,gh.variableAliasArray{varIndex},penwidth)];
-    else
-        edgeDef = [edgeDef sprintf('%s -> %s [penwidth = %g];\n',gh.variableAliasArray{varIndex},gh.equations(equIndex).prAlias,penwidth)];
+    if gh.isMatched(gh.edges(i).equId) || gh.isMatched(gh.edges(i).varId)
+        if gh.isMatched(gh.edges(i).id)
+            penwidth = 2;
+            edgeDef = [edgeDef sprintf('%s -> %s [penwidth = %g];\n',gh.equations(equIndex).prAlias,gh.variableAliasArray{varIndex},penwidth)];
+        else
+            edgeDef = [edgeDef sprintf('%s -> %s [penwidth = %g];\n',gh.variableAliasArray{varIndex},gh.equations(equIndex).prAlias,penwidth)];
+        end
     end
 end
 
