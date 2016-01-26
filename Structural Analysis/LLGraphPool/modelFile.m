@@ -1,7 +1,9 @@
-function [constraints, coords] = modelFile()
+function [constraints, name, coords] = modelFile()
 
 %% Structural Model Creation
 % Fixed Wing UAV
+
+name = 'Fixed-wing UAV model';
 
 %% Equation list
 % legend:

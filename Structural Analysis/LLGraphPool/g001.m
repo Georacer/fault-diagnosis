@@ -1,6 +1,8 @@
-function [ constraints, coords ] = g001( )
+function [ constraints, name, coords ] = g001( )
 %G001 Model of a piston engine and aerodynamic drag
 %   Detailed explanation goes here
+
+name = 'Piston engine and aerodynamic drag';
 
 con = [...
     {'msr dt inp thr'};...

@@ -1,5 +1,5 @@
 function [ constraints, coords ] = g002( )
-%G001 Model of the lateral response of an airplane
+%G002 Model of the lateral response of an airplane
 %   Detailed explanation goes here
 
 con = [...
