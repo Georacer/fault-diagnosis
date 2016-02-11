@@ -102,6 +102,7 @@ classdef GraphBipartite < matlab.mixin.Copyable
         [resp, id] = addResidual(gh, eqId);
         resp = hasCycles(this)  
         createAdjacency(this)
+        list = createCostList(this, zeroWeights)
         liusm = createLiusm(gh)
         resp = deleteEdge(this, ids)
         resp = deleteEquation(this, ids)
@@ -137,6 +138,8 @@ classdef GraphBipartite < matlab.mixin.Copyable
         [sigs, ids] = getResidualSignatures(this)
         dm = getDMParts(gh, X)
         res = PSODecomposition(gh, X)
+        res = readCostList(gh, list)
+        resp = setEdgeWeight(gh, id, weight)
         sortVars(gh)
         resp = testPropertyEmpty(gh, id, property)
         resp = testPropertyExists(gh, id, property)

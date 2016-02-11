@@ -29,6 +29,18 @@ clc;
 mygraph = GraphBipartite(model,name,coords);
 disp('Built graph object');
 
+if ~exist('costList')
+    disp('No cost list found in the workspace');
+    costList = mygraph.createCostList(true);
+    disp('Fill in "costList" variable to add matching costs');
+    disp('Hit return when done');
+    pause();
+end
+
+mygraph.readCostList(costList);
+
+return
+
 %% Select causality
 mygraph.causality = 'Mixed'; % None, Integral, Differential, Mixed, Realistic
 
