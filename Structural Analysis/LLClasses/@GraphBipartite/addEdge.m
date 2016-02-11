@@ -33,8 +33,9 @@ if (l1==l2)
         
         equIndex = gh.getIndexById(equId);
         varIndex = gh.getIndexById(varId);
-        gh.equations(equIndex).edgeIdArray(end+1) = id;
-        gh.variables(varIndex).edgeIdArray(end+1) = id;
+        
+        gh.equations(equIndex).edgeIdArray(end+1) = id; % This should be deleted as no such property exists
+        gh.variables(varIndex).edgeIdArray(end+1) = id; % This should be deleted as no such property exists
         
         respAdded = true;
         if debug fprintf('addEdge: Created new edge from (%d,%d) with ID %d\n',equId,varId,id); end

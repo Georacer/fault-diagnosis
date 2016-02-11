@@ -8,6 +8,7 @@ varProps.isMeasured = false;
 varProps.isInput = false;
 varProps.isOutput = false;
 varProps.isResidual = true;
+varProps.isMatched = true;
 [resp, id] = gh.addVariable([],alias,varProps);
 equIndex = gh.getIndexById(equId);
 gh.setRank(id,gh.equations(equIndex).rank);

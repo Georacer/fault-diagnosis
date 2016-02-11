@@ -17,19 +17,9 @@ for i=1:gh.numEdges
     if gh.variables(varIndex).isOutput
         % No operation
     end
-    if gh.edges(i).isMatched
-        flagV2E = false; % From variable to equation
+    if ~gh.isMatchable(gh.edges(i).id)
+        flagE2V = false; % Equation to Variable
     end
-    if gh.edges(i).isDerivative
-        % No operation, unless causality says otherwise
-    end
-    if gh.edges(i).isIntegral
-        % No operation, unless causality says otherwise
-    end
-    if gh.edges(i).isNonSolvable
-        flagE2V = false; % From equation to variable
-    end
-    % Equation to Variable
     if flagE2V
         E(end+1,:) = [gh.edges(i).equId gh.edges(i).varId];
     end

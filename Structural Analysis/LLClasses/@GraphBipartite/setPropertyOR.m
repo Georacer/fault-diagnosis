@@ -4,6 +4,10 @@ function resp = setPropertyOR( gh, id, property, value )
 
 resp = false;
 
+if nargin<4
+    value = true;
+end
+
 % Logical OR for properties
     if gh.testPropertyEmpty(id, property)
         if isEquation(id)

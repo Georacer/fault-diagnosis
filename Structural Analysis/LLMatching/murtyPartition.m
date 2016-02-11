@@ -79,7 +79,7 @@ for i=1:(k-1)
     
     j = find(newAss==0); % TODO: Investigate if the case where the whole first row is inf is a valid outcome
     if j
-        warning('First row all inf');
+%         warning('First row all inf');
         continue
     end
     

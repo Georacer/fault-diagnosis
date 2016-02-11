@@ -14,6 +14,7 @@ classdef Equation < Node
         isDynamic = false;
         isNonLinear = false;
         isResGenerator = false;
+        isFaultable = false;
         functionArray = {};
     end
     

@@ -25,6 +25,7 @@ if (l1==l2) && (l2==l3)
         tempVar.isInput = varProps.isInput;
         tempVar.isOutput = varProps.isOutput;
         tempVar.isResidual = varProps.isResidual;
+        tempVar.isMatched = varProps.isMatched;
         
         this.variables(end+1) = tempVar;
         this.variableAliasArray{end+1} = alias;
@@ -37,6 +38,7 @@ if (l1==l2) && (l2==l3)
         this.setPropertyOR(varId,'isMeasured',varProps.isMeasured);
         this.setPropertyOR(varId,'isInput',varProps.isInput);
         this.setPropertyOR(varId,'isOutput',varProps.isOutput);
+        this.setPropertyOR(varId,'isMatched',varProps.isMatched);
         id = varId;
     end
 else

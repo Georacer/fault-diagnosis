@@ -8,7 +8,10 @@ classdef GraphBipartite < matlab.mixin.Copyable
         edges = Edge.empty; % Array with the edges contained in the graph
         adjacency = Adjacency.empty; % Adjacency object
         idProvider % ID provider object
+        causality = 'None'; % None, Integral, Differential, Mixed, Realistic
+        name = '';
         coords = [];
+        liusm = DiagnosisModel.empty;
     end
     
     properties (Dependent)
@@ -44,7 +47,7 @@ classdef GraphBipartite < matlab.mixin.Copyable
     methods
         
         %%
-        function this = GraphBipartite(model,coords)
+        function this = GraphBipartite(model,name,coords)
             % Constructor
             this.idProvider = IDProvider(this);
 
@@ -63,10 +66,12 @@ classdef GraphBipartite < matlab.mixin.Copyable
                 end
             end
             
-            this.createAdjacency();
+            if nargin>=2
+                this.name = name;
+            end
             
             % Store external nodes coordinates input
-            if nargin>=2
+            if nargin>=3
                 this.coords = coords;
             end
             
@@ -96,22 +101,30 @@ classdef GraphBipartite < matlab.mixin.Copyable
         [resp, id] = addEdge(this,id,equId,varId,edgeProps)
         [resp, id] = addResidual(gh, eqId);
         resp = hasCycles(this)  
-        createAdjacency(this)        
+        createAdjacency(this)
+        liusm = createLiusm(gh)
+        resp = deleteEdge(this, ids)
+        resp = deleteEquation(this, ids)
+        resp = deleteVariable(this, ids)
         plotG4M(this)        
         plotDot(this)
         plotSparse(this)
+        plotDM(gh)
         plotMatching(this)
         setKnown(this,id, value)
         setRank(this,id,rank)
         setMatched(this,id, value)
         resp = setPropertyOR(this,id,property,value)
+        resp = setProperty(this,id,property,value)
         resp = isVariable(this,id)
         resp = isEquation(this,id)
         resp = isEdge(this,id)
+        resp = isKnown(this,id)
         resp = isMatched(gh, id)
         resp = isMatchable(gh, id)
         id = getEquIdByProperty(this,property,value,operator)
         id = getVarIdByProperty(this,property,value,operator)
+        graph = getOver(this)
         id = getEdgeIdByProperty(this,property,value,operator)
         id = getAncestorEqs(this, id)
         id = getParentVars(this, id)
@@ -122,10 +135,16 @@ classdef GraphBipartite < matlab.mixin.Copyable
         value = getPropertyById(this,id,property)
         alias = getAliasById(this,id)
         [sigs, ids] = getResidualSignatures(this)
+        dm = getDMParts(gh, X)
+        res = PSODecomposition(gh, X)
+        sortVars(gh)
         resp = testPropertyEmpty(gh, id, property)
         resp = testPropertyExists(gh, id, property)
         matchRanking(this)
         parseExpression(this, exprStr, alias, prefix)
+        resp = udpateEdgeIdToIndexArray(this)
+        resp = updateEquationIdToIndexArray(this)
+        resp = updateVariableIdToIndexArray(this)
         
     end
     

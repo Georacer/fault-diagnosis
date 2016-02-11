@@ -1,5 +1,5 @@
 function [respAdded, id] = addEquation( this, id, alias, prefix, expStr )
-%ADDEQUATION Summary of this function goes here
+%ADDEQUATION Add equation to graph
 %   Detailed explanation goes here
 
 respAdded = false;

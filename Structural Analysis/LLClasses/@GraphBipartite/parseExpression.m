@@ -18,7 +18,7 @@ debug = false;
 % inp - input variable
 % out - output variable
 % msr - measured variable
-operators = {'dot','int','ni','inp','out','msr'}; % Available operators
+operators = {'dot','int','ni','inp','out','msr','fault'}; % Available operators
 words = strsplit(exprStr,' '); % Split expression to operands and variables
 linkedVariables = []; % Array with variables linked to this equation
 initProperties = true; % New variable flag for properties initialization
@@ -58,6 +58,8 @@ for i=1:size(words,2)
         case 6
             isMeasured = true;
             isKnown = true;
+        case 7
+            this.setProperty(equId,'isFaultable');
         otherwise % Found a variable
             
             varProps.isKnown = isKnown;
@@ -65,6 +67,7 @@ for i=1:size(words,2)
             varProps.isInput = isInput;
             varProps.isOutput = isOutput;
             varProps.isResidual = isResidual;
+            varProps.isMatched = isMatched;
             [resp, varId] = this.addVariable([],word,varProps);
             
             edgeProps.isMatched = false;
