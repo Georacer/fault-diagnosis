@@ -1,0 +1,13 @@
+Changes between 0.1 and 0.11
+============================
+* Bugfixes
+* Added compiled MSO algorithm and mex compilation instructions.
+* Added precompiled binaries for compiled mex functions for Mac OSX,
+  Linux, and Windows.
+* Added some detection of errors in model specifications in the
+  DiagnosisModel class function.
+* Bugfix for timing issue in SeqResGen
+* Added a number of utility functions
+* Added functionality to generate C code
+  for residual generators, both in iterative and in batch mode
+* Added new class methods
