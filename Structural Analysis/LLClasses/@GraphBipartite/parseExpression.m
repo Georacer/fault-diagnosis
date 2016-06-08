@@ -45,9 +45,11 @@ for i=1:size(words,2)
     
     switch opIndex % Test if the word is an operator
         case 1
-            isDerivative = true;
-        case 2
+%             isDerivative = true;
             isIntegral = true;
+        case 2
+%             isIntegral = true;
+            isDerivative = true;
         case 3
             isNonSolvable = true;
         case 4

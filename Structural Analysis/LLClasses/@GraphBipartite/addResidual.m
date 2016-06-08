@@ -13,6 +13,9 @@ varProps.isMatched = true;
 equIndex = gh.getIndexById(equId);
 gh.setRank(id,gh.equations(equIndex).rank);
 
+gh.equations(equIndex).isMatched = true;
+gh.equations(equIndex).matchedTo = id;
+
 edgeProps.isMatched = true;
 edgeProps.isDerivative = false;
 edgeProps.isIntegral = false;

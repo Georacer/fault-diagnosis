@@ -12,6 +12,7 @@ classdef Node < matlab.mixin.Copyable
         coordinates = [];
         rank = inf;
         edgeIdArray = [];
+        neighbourArray = [];
     end
         
     methods

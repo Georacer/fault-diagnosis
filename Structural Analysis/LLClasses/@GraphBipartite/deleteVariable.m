@@ -19,13 +19,16 @@ ind2Del = this.getIndexById(ids);
 ind2Keep = setdiff(1:this.numVars, ind2Del);
 
 this.variables = this.variables(ind2Keep);
-this.variableAliasArray = this.variableAliasArray(ind2Keep);
 if debug
-    fprintf('variableIdArray pre deletion:\n');
-    this.variableIdArray
-    fprintf('variableIdArray post deletion:\n');
-    this.variableIdArray(ind2Keep)
+    fprintf('*** %d variables left in graph\n',this.numVars);
 end
+this.variableAliasArray = this.variableAliasArray(ind2Keep);
+% if debug
+%     fprintf('variableIdArray pre deletion:\n');
+%     this.variableIdArray
+%     fprintf('variableIdArray post deletion:\n');
+%     this.variableIdArray(ind2Keep)
+% end
 this.variableIdArray = this.variableIdArray(ind2Keep);
 
 this.updateVariableIdToIndexArray();

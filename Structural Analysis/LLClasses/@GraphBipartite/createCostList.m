@@ -15,7 +15,7 @@ for i=1:gh.numEdges
    list{i,3} = gh.getAliasById(gh.edges(i).equId);
    list{i,4} = gh.getAliasById(gh.edges(i).varId);
    if zeroWeight
-       list{i,5} = 0;
+       list{i,5} = 1;
    else
        list{i,5} = gh.edges(i).weight;
    end

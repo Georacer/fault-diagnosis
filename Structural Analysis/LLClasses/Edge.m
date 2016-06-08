@@ -10,7 +10,7 @@ classdef Edge
         isDerivative = false;
         isIntegral = false;
         isNonSolvable = false;
-        weight = [];
+        weight = 1;
     end
     
     properties (SetAccess = private)
