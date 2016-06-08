@@ -9,7 +9,7 @@ clc;
 
 % Select a model file to create the cell structure
 % [model, coords] = randomGraph(8,5);
-% [model, name, coords] = g001();
+[model, name, coords] = g001();
 % [model, coords] = g002();
 % [model, coords] = g003();
 % [model, coords] = g004();
@@ -23,7 +23,7 @@ clc;
 % [model, name, coords] = g011();
 % [model, name, coords] = g012();
 % [model, name, coords] = g013();
-[model, name, coords] = g014(); if exist('g014_costlist.mat') load g014_costlist.mat; end
+% [model, name, coords] = g014(); if exist('g014_costlist.mat') load g014_costlist.mat; end
 
 % Create the graph object
 mygraph = GraphBipartite(model,name,coords);
@@ -36,7 +36,7 @@ end
 
 mygraph.readCostList(costList);
 
-% return
+return
 
 %% Select causality
 mygraph.causality = 'Mixed'; % None, Integral, Differential, Mixed, Realistic

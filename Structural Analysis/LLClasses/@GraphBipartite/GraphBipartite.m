@@ -130,8 +130,8 @@ classdef GraphBipartite < matlab.mixin.Copyable
         id = getVariables(gh, id)
         id = getVariablesUnknown(gh, id)
         id = getVarIdByAlias(this,id)        
-        id = getVarIdByProperty(this,property,value,operator)        
-        
+        id = getVarIdByProperty(this,property,value,operator)
+
         plotG4M(this)        
         plotDot(this)
         plotSparse(this)
