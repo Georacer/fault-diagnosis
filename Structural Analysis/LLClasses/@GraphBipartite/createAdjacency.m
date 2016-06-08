@@ -16,7 +16,7 @@ for i=1:size(E,1)
     else% E2V edge
         equIndex = gh.getIndexById(id1);
         varIndex = gh.getIndexById(id2);
-        adjacency(numVars+equIndex,varIndex) = 1;
+        adjacency(numVars+equIndex,varIndex) = E(i,3);
     end
 end
 

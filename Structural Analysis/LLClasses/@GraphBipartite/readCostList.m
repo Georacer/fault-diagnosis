@@ -14,7 +14,14 @@ else
         varId = list{i,2};
         weight = list{i,5};
         id = gh.getEdgeIdByVertices(equId, varId);
-        gh.setEdgeWeight(id, weight);        
+        edgeIndex = gh.getIndexById(id);
+        if gh.edges(edgeIndex).isDerivative
+            gh.setEdgeWeight(id,200);
+        elseif gh.edges(edgeIndex).isIntegral
+            gh.setEdgeWeight(id,100);
+        else
+            gh.setEdgeWeight(id, weight);
+        end
     end
 end
 
