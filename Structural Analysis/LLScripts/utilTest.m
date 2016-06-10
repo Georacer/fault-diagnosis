@@ -9,8 +9,8 @@ clc;
 
 % Select a model file to create the cell structure
 % [model, coords] = randomGraph(8,5);
-[model, name, coords] = g001();
-% [model, coords] = g002();
+% [model, name, coords] = g001();
+model = g002();
 % [model, coords] = g003();
 % [model, coords] = g004();
 % [model, name, coords] = g005();
@@ -26,7 +26,7 @@ clc;
 % [model, name, coords] = g014(); if exist('g014_costlist.mat') load g014_costlist.mat; end
 
 % Create the graph object
-mygraph = GraphBipartite(model,name,coords);
+mygraph = GraphBipartite(model);
 disp('Built graph object');
 
 if ~exist('costList')
@@ -35,6 +35,11 @@ if ~exist('costList')
 end
 
 mygraph.readCostList(costList);
+
+return
+
+% Create the simulation engine object
+simEngine = SimEngine(mygraph);
 
 return
 

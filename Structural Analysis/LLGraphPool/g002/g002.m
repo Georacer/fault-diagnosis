@@ -2,7 +2,8 @@ classdef g002 < model
     
     methods
         function this = g002()
-            this.name = 'Model of the lateral response of an airplane';
+            this.name = 'g002';
+            this.description = 'Model of the lateral response of an airplane';
             
             con = [...
                 {'msr da_c da'};...

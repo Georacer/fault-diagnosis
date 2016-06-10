@@ -47,16 +47,20 @@ classdef GraphBipartite < matlab.mixin.Copyable
     methods
         
         %%
-        function this = GraphBipartite(model,name,coords)
+        function this = GraphBipartite(model)
             % Constructor
             this.idProvider = IDProvider(this);
-
+            
+            constraints = model.constraints;
+            this.name = model.name;
+            this.coords = model.coordinates;
+            
             % Read model file and store related equations and variables
-            groupsNum = size(model,1); % Number of equation groups in model
+            groupsNum = size(constraints,1); % Number of equation groups in model
             for groupIndex=1:groupsNum % For each group
-                group = model{groupIndex,1};
+                group = constraints{groupIndex,1};
                 grEqNum = size(group,1);
-                grPrefix = model{groupIndex,2};
+                grPrefix = constraints{groupIndex,2};
                 grEqAliases = cell(1,grEqNum); % Create unique equation aliases
                 for i=1:grEqNum
                     grEqAliases{i} = sprintf('eq%d',i);
@@ -65,16 +69,7 @@ classdef GraphBipartite < matlab.mixin.Copyable
                     this.parseExpression(group{i,1},grEqAliases{i},grPrefix);
                 end
             end
-            
-            if nargin>=2
-                this.name = name;
-            end
-            
-            % Store external nodes coordinates input
-            if nargin>=3
-                this.coords = coords;
-            end
-            
+                       
         end
         
         
