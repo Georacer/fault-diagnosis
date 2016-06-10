@@ -15,7 +15,6 @@ classdef Equation < Node
         isNonLinear = false;
         isResGenerator = false;
         isFaultable = false;
-        functionArray = {};
     end
     
     properties (Hidden = true)
