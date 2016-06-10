@@ -30,9 +30,5 @@ for ind=index
     
 end
 
-if length(alias) == 1
-    alias = alias{1};
-end
-
 end
 
