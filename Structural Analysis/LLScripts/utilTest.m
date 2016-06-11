@@ -10,7 +10,7 @@ clc;
 % Select a model file to create the cell structure
 % [model, coords] = randomGraph(8,5);
 % [model, name, coords] = g001();
-model = g002();
+% model = g002();
 % [model, coords] = g003();
 % [model, coords] = g004();
 % [model, name, coords] = g005();
@@ -24,6 +24,7 @@ model = g002();
 % [model, name, coords] = g012();
 % [model, name, coords] = g013();
 % [model, name, coords] = g014(); if exist('g014_costlist.mat') load g014_costlist.mat; end
+model = g015();
 
 % Create the graph object
 mygraph = GraphBipartite(model);
@@ -36,12 +37,10 @@ end
 
 mygraph.readCostList(costList);
 
-return
-
 % Create the simulation engine object
 simEngine = SimEngine(mygraph);
 
-return
+% return
 
 %% Select causality
 mygraph.causality = 'Mixed'; % None, Integral, Differential, Mixed, Realistic
@@ -80,7 +79,7 @@ mygraph.liusm.Lint();
 % mygraph.coords = coords;
 
 % Display the graph using external dot compiler
-% mygraph.plotDot();
+mygraph.plotDot();
 
 % return
 
@@ -137,6 +136,8 @@ fprintf('Building residual signature array:\n');
 
 %% Select causality
 graphOver.causality = 'Realistic'; % None, Integral, Differential, Mixed, Realistic
+
+return
 
 %% Create new, resulting graph
 graphMTES = graphOver.copy();
