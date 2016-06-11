@@ -2,6 +2,9 @@ function E = getEdges(gh, option)
 % Returns an E(m,2) matrix, which lists all of the m edges of the graph
 %OPTIONAL: option - [V2E, E2V] return only V2E/E2V edges
 
+% debug = true;
+debug = false;
+
 noV2E = false;
 noE2V = false;
 
@@ -20,6 +23,7 @@ for i=1:gh.numEdges
     flagE2V = true;
     flagV2E = true;
     varIndex = gh.getIndexById(gh.edges(i).varId);
+    if debug fprintf('linking equtation %d and variable %d\n',gh.edges(i).equId, gh.edges(i).varId); end
     if gh.variables(varIndex).isKnown
         % No operation
     end

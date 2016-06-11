@@ -95,9 +95,6 @@ classdef GraphBipartite < matlab.mixin.Copyable
         
         %% External methods declarations
         
-        E = getEdges(this,option)
-        w = getEdgeWeight(gh,id);
-        [ids] = getEquations(gh, ids)
         [resp, id] = addEquation(this,id, alias, prefix, expStr)
         [resp, id] = addVariable(this,id,alias,varProps,name,description)
         resp = applyMatcing(gh, M);
@@ -110,6 +107,31 @@ classdef GraphBipartite < matlab.mixin.Copyable
         resp = deleteEdge(this, ids)
         resp = deleteEquation(this, ids)
         resp = deleteVariable(this, ids)
+        [val] = evaluateSingle(this, eqId, varId)
+        
+        % Get methods
+        alias = getAliasById(this,id)
+        [tally, matching] = getAncestorEqs(this, id, tally, matching)
+        dm = getDMParts(gh, X)
+        [ids] = getEdgeIdArray(gh,id)
+        id = getEdgeIdByProperty(this,property,value,operator)
+        id = getEdgeIdByVertices(gh, equId, varId)
+        E = getEdges(this,option)
+        w = getEdgeWeight(gh,id);
+        [ids] = getEquations(gh, ids)
+        id = getEquIdByProperty(this,property,value,operator)
+        [index, type] = getIndexById(this,id)
+        KH = getKHComps(gh, A, equIds, varIds)
+        graph = getOver(this)
+        id = getParentVars(this, id)
+        value = getPropertyById(this,id,property)
+        [sigs, ids] = getResidualSignatures(this)
+        [A, varIds, eqInd, varInd] = getSubmodel(gh, eqIds, varIds)
+        id = getVariables(gh, id)
+        id = getVariablesUnknown(gh, id)
+        id = getVarIdByAlias(this,id)        
+        id = getVarIdByProperty(this,property,value,operator)        
+        
         plotG4M(this)        
         plotDot(this)
         plotSparse(this)
@@ -121,6 +143,7 @@ classdef GraphBipartite < matlab.mixin.Copyable
         setMatched(this,id, value)
         resp = setPropertyOR(this,id,property,value)
         resp = setProperty(this,id,property,value)
+        
         resp = isVariable(this,id)
         resp = isEquation(this,id)
         resp = isEdge(this,id)
@@ -130,24 +153,8 @@ classdef GraphBipartite < matlab.mixin.Copyable
         M = matchMurty(gh,eqIds,varIds)
         matchRanking(this)
         M = matchValid(gh, equIds, varIds);
-        M = matchWeightedElimination(gh)
-        id = getEquIdByProperty(this,property,value,operator)
-        id = getVarIdByProperty(this,property,value,operator)
-        graph = getOver(this)
-        id = getEdgeIdByProperty(this,property,value,operator)
-        [tally, matching] = getAncestorEqs(this, id, tally, matching)
-        id = getParentVars(this, id)
-        id = getVarIdByAlias(this,id)
-        id = getVariables(gh, id)
-        id = getVariablesUnknown(gh, id)
-        id = getEdgeIdByVertices(gh, equId, varId)
-        index = getIndexById(this,id)
-        KH = getKHComps(gh, A, equIds, varIds)
-        value = getPropertyById(this,id,property)
-        alias = getAliasById(this,id)
-        [sigs, ids] = getResidualSignatures(this)
-        [A, varIds, eqInd, varInd] = getSubmodel(gh, eqIds, varIds)
-        dm = getDMParts(gh, X)
+        M = matchWeightedElimination(gh)        
+        
         res = PSODecomposition(gh, X)
         res = readCostList(gh, list)
         resp = setEdgeWeight(gh, id, weight)
