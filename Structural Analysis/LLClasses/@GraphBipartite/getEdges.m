@@ -27,7 +27,6 @@ for i=1:gh.numEdges
     varId = gh.edges(i).varId;
     varIndex = gh.getIndexById(gh.edges(i).varId);
     if debug fprintf('linking equtation %d and variable %d\n',gh.edges(i).equId, gh.edges(i).varId); end
-
     if gh.variables(varIndex).isKnown
         % No operation
     end

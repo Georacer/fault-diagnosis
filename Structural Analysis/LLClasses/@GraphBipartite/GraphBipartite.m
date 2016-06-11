@@ -124,7 +124,7 @@ classdef GraphBipartite < matlab.mixin.Copyable
         [A, varIds, eqInd, varInd] = getSubmodel(gh, eqIds, varIds)
         id = getVariables(gh, id)
         id = getVariablesUnknown(gh, id)
-        id = getVarIdByAlias(this,id)        
+        id = getVarIdByAlias(this,id)
         id = getVarIdByProperty(this,property,value,operator)
 
         plotG4M(this)        
