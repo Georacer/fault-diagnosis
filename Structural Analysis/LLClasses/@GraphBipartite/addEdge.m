@@ -40,6 +40,7 @@ if (l1==l2)
         respAdded = true;
         if debug fprintf('addEdge: Created new edge from (%d,%d) with ID %d\n',equId,varId,id); end
     else
+        warning('I should not be here');
         gh.setPropertyOR(edgeId,'isMatched',edgeProps.isMatched);
         gh.setPropertyOR(edgeId,'isDerivative',edgeProps.isDerivative);
         gh.setPropertyOR(edgeId,'isIntegral',edgeProps.isIntegral);

@@ -1,6 +1,8 @@
 function plotDot(gh)
 % Generate .dot code from this graph
 
+debug = true;
+
 fileID = fopen('mygraph.dot','w');
 % Write header
 fprintf(fileID,'digraph G {\n');

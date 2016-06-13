@@ -16,7 +16,8 @@ if ~isempty(generator_id)
         if debug
             fprintf('getResidualSignatures: Equations affecting signature %d: ',i);
             for j=1:length(affectingIds)
-            fprintf('%s, ',gh.getAliasById(affectingIds(j)));
+                alias = gh.getAliasById(affectingIds(j));
+            fprintf('%s, ', alias{:});
             end
             fprintf('\n');
         end

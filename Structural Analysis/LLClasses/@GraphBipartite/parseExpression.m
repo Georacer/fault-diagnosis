@@ -1,6 +1,7 @@
 function parseExpression( this, exprStr, alias, prefix )
-%PARSEEXPRESSION Summary of this function goes here
-%   Detailed explanation goes here
+%PARSEEXPRESSION Parse a structural expression
+%   Parse a structural expression and create equation, variable and edge
+%   objects in the calling graph object
 
 % debug = true;
 debug = false;
