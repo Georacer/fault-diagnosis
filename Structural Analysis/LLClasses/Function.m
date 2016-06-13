@@ -17,6 +17,11 @@ classdef Function < handle
                 result = feval(this.fh, inputCell{:});
             end
         end
+        
+        function reset(this)
+            this.state = 0;
+        end
+        
     end
     
 end

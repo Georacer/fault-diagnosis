@@ -12,7 +12,7 @@ clc;
 % [model, name, coords] = g001();
 % model = g002();
 % [model, coords] = g003();
-% [model, coords] = g004();
+model = g004();
 % [model, name, coords] = g005();
 % [model, coords] = g006();
 % [model, name, coords] = g007();
@@ -24,7 +24,7 @@ clc;
 % [model, name, coords] = g012();
 % [model, name, coords] = g013();
 % [model, name, coords] = g014(); if exist('g014_costlist.mat') load g014_costlist.mat; end
-model = g015();
+% model = g015();
 
 % Create the graph object
 mygraph = GraphBipartite(model);
@@ -37,8 +37,10 @@ end
 
 mygraph.readCostList(costList);
 
-% Create the simulation engine object
+% Create the simulation engine object to build the functions list
 simEngine = SimEngine(mygraph);
+% You can now discrad the SimEngine object and create another one based on
+% the matched GraphBipartite
 
 % return
 

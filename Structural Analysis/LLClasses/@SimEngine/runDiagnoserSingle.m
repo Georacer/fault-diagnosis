@@ -2,6 +2,7 @@ function [ residuals ] = runDiagnoserSingle( eh )
 %RUNDIAGNOSERSINGLE Generate residuals for single evaluations
 %   Detailed explanation goes here
 
+% debug = true;
 debug = false;
 
 % Make sure the readings array exists
@@ -25,7 +26,9 @@ if ~ismember('dt',ws_vars)
 end
 
 global dt
+if debug fprintf('runDiagnoserSingle: Setting dt to %f\n',dt); end
 eh.dt = dt;
+eh.setDt(dt);
 
 % Create the output array
 evalin('base','global evaluations');

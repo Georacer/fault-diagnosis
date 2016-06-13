@@ -1,15 +1,22 @@
 % Generate a new function entry for one function evaluation
-function generateEntry(this, fileID, equId, varId)
+function generateEntry(eh, fileID, equId, varId)
 % Write first row
-varAlias = this.gh.getAliasById(varId);
+varAlias = eh.gh.getAliasById(varId);
+
+
+edgeId = eh.gh.getEdgeIdByVertices(equId, varId);
+if (eh.gh.getPropertyById(edgeId,'isIntegral') || eh.gh.getPropertyById(edgeId,'isDerivative')) % This is an integrator or differentiator
+    return
+end
+
 s = sprintf('\nfunction %s = f_%d_%d(',varAlias{:},equId,varId);
-edgeId = this.gh.getEdgeIdByVertices(equId,varId);
-equIndex = this.gh.getIndexById(equId);
-equAlias = this.gh.getAliasById(equId);
-varIds = this.gh.getVariables(equId);
+edgeId = eh.gh.getEdgeIdByVertices(equId,varId);
+equIndex = eh.gh.getIndexById(equId);
+equAlias = eh.gh.getAliasById(equId);
+varIds = eh.gh.getVariables(equId);
 numVars = length(varIds);
 otherVars = setdiff(varIds,varId);
-varNames = this.gh.getAliasById(otherVars);
+varNames = eh.gh.getAliasById(otherVars);
 
 if length(varNames)>1
     s = [s sprintf('%s,',varNames{1:end-1})];
@@ -21,11 +28,11 @@ fprintf(fileID,s);
 % Write comments
 %             s = [s sprintf('%% Evaluation definition for equation %s with id %d\n',equAlias{:}, equId)];
 fprintf(fileID,'%% Evaluation definition for equation %s with id %d\n',equAlias{:}, equId);
-fprintf(fileID,'%% Equation structural description: %s\n',this.gh.equations(equIndex).expressionStructural);
+fprintf(fileID,'%% Equation structural description: %s\n',eh.gh.equations(equIndex).expressionStructural);
 fprintf(fileID,'%% Evaluate for variable: %s\n\n', varAlias{:});
 
 s = '';
-if this.gh.isMatchable(edgeId)
+if eh.gh.isMatchable(edgeId)
     % Write placeholder text
     fprintf(fileID,'%% Write calculation here\n');
 else
