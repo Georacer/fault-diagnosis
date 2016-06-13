@@ -7,8 +7,14 @@ classdef SimEngine < matlab.mixin.Copyable
         functionArray = Function.empty;
         dt = 0.01;
         
-        evaluations
-        
+        inpIds % Holds the input ids
+        msrIds % Holds the measurements ids
+        readingsIdArray % Holds the readings ids
+        readingsValues
+        residualIds % Holds the residual ids
+        residualValues
+        evalIds % Holds the simulated variable ids        
+        evalValues
     end
     
     methods
@@ -16,10 +22,19 @@ classdef SimEngine < matlab.mixin.Copyable
         function eh = SimEngine(GH)
             eh.gh = GH;
             
-            % Initialize the variable values array
-            evaluations = nan*ones(1,eh.gh.numVars);   
+            % Get the inputs and readings of the model
+            eh.inpIds = GH.getVarIdByProperty('isInput');
+            eh.msrIds = GH.getVarIdByProperty('isMeasured');
+            eh.readingsIdArray = [eh.inpIds eh.msrIds];
+            eh.readingsValues = nan*ones(1,length(eh.readingsIdArray));
+            eh.residualIds = GH.getVarIdByProperty('isResidual');
+            eh.residualValues = nan*ones(1,length(eh.residualIds));
             
-            s = sprintf('functions_%s',eh.gh.name);
+            % Initialize the variable values array
+            eh.evalIds = setdiff(GH.variableIdArray, [eh.readingsIdArray eh.residualIds]);
+            eh.evalValues = nan*ones(1,length(eh.evalIds));
+                
+            s = sprintf('functions_%s',eh.gh.name);            
             if (~exist([s '.m'],'file')) % Functions file does not exist. Create it
                 fileID = fopen([s '.m'],'wt');
                 % Write header
@@ -44,18 +59,24 @@ classdef SimEngine < matlab.mixin.Copyable
                 return
             else
                 eh.functionArray = feval(sprintf('functions_%s',eh.gh.name));
+
                 
             end            
         end
                 
         %% External methods declarations
         
-        [val] = evaluateSingle(eh, eqId, varId)
-        generateEntry(eh, fileID, equId, varId)
         assignHandle(eh, fileID, equId, varId)
         val = evaluate(eh, equId, varId, args)
-        storeReadings( eh, readingsArray)
+        evaluateSingle(eh, eqId, varId)
+        exportResults(eh, i, evals, residuals)
+        generateEntry(eh, fileID, equId, varId)
+        val = getValue(eh, varId)
+        resp = isAvailable(eh,varId)
+        [residuals] = runDiagnoserSingle(eh)
+        setValue(eh, varId, value)
         specification(eh)
+        storeReadings( eh, readingsArray)
         
     end
     
