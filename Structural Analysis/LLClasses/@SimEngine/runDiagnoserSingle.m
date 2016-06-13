@@ -2,7 +2,7 @@ function [ residuals ] = runDiagnoserSingle( eh )
 %RUNDIAGNOSERSINGLE Generate residuals for single evaluations
 %   Detailed explanation goes here
 
-debug = true;
+debug = false;
 
 % Make sure the readings array exists
 ws_vars = evalin('base','who');

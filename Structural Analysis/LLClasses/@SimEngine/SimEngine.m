@@ -59,8 +59,7 @@ classdef SimEngine < matlab.mixin.Copyable
                 return
             else
                 eh.functionArray = feval(sprintf('functions_%s',eh.gh.name));
-
-                
+                eh.setDt(0.01);
             end            
         end
                 
@@ -74,6 +73,7 @@ classdef SimEngine < matlab.mixin.Copyable
         val = getValue(eh, varId)
         resp = isAvailable(eh,varId)
         [residuals] = runDiagnoserSingle(eh)
+        setDt(eh,dt)
         setValue(eh, varId, value)
         specification(eh)
         storeReadings( eh, readingsArray)

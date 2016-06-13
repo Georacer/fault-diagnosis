@@ -10,5 +10,5 @@ varIndex = find(varIds==varId);
 
 if debug warning(sprintf('Calling function functionArray{%d}{%d}\n',equIndex,varIndex)); end
 
-val = feval(this.functionArray{equIndex}{varIndex},args{:});
+val = this.functionArray{equIndex}{varIndex}.evaluate(args);
 end

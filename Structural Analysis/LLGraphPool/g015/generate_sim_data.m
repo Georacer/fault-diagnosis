@@ -30,6 +30,10 @@ F = -k.*h;
 
 F_m = F;
 
+%% Add measurement noise
+
+F_m = F_m + 1*randn(size(F_m));
+
 %% Fill the I/O structure
 
 readings(:,1) = theta_c';

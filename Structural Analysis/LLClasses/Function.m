@@ -1,10 +1,10 @@
-classdef Function
+classdef Function < handle
     %FUNCTION Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
         fh = function_handle.empty;
-        state = [];
+        state = 0;
         dt = [];
     end
     
@@ -14,8 +14,7 @@ classdef Function
             if isempty(this.fh)
                 error('No function handle defined');
             else
-                [result, state] = feval(this.fh, inputCell{:}, this.state, this.dt);
-                this.state = state;
+                result = feval(this.fh, inputCell{:});
             end
         end
     end
