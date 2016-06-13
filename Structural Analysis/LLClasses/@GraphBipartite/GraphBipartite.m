@@ -102,7 +102,6 @@ classdef GraphBipartite < matlab.mixin.Copyable
         resp = deleteEdge(this, ids)
         resp = deleteEquation(this, ids)
         resp = deleteVariable(this, ids)
-        [val] = evaluateSingle(this, eqId, varId)
         
         % Get methods
         alias = getAliasById(this,id)
