@@ -1,16 +1,19 @@
 % Generate a new function entry for one function evaluation
 function generateEntry(eh, fileID, equId, varId)
+
+% debug = true;
+debug = false;
+
 % Write first row
 varAlias = eh.gh.getAliasById(varId);
-
-
 edgeId = eh.gh.getEdgeIdByVertices(equId, varId);
+if debug fprintf('generateEntry: Examining edge with ID %d\n',edgeId); end
+
 if (eh.gh.getPropertyById(edgeId,'isIntegral') || eh.gh.getPropertyById(edgeId,'isDerivative')) % This is an integrator or differentiator
     return
 end
 
 s = sprintf('\nfunction %s = f_%d_%d(',varAlias{:},equId,varId);
-edgeId = eh.gh.getEdgeIdByVertices(equId,varId);
 equIndex = eh.gh.getIndexById(equId);
 equAlias = eh.gh.getAliasById(equId);
 varIds = eh.gh.getVariables(equId);
@@ -34,9 +37,11 @@ fprintf(fileID,'%% Evaluate for variable: %s\n\n', varAlias{:});
 s = '';
 if eh.gh.isMatchable(edgeId)
     % Write placeholder text
+    if debug fprintf('generateEntry: This edge is matchable\n'); end
     fprintf(fileID,'%% Write calculation here\n');
 else
     % Write error message
+    if debug fprintf('generateEntry: This edge is not matchable\n'); end
     fprintf(fileID,'error(''This evaluation is not possible'');\n');
 end
 
