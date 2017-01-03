@@ -188,7 +188,11 @@ function [p,q,P]=PlotDM( model, varargin )
           end
           faultLabel = sprintf('%s%s', faultLabel, model.f{faultLabelsIdx(ll)});
         end        
-        text( nVars+1.5, fPlotRowIdx(kk), faultLabel, 'Color', 'red', 'interpreter', 'none' );
+        if verLessThan('matlab', '8.4')
+          text( nVars+1.5, fPlotRowIdx(kk), faultLabel, 'Color', 'red');
+        else
+          text( nVars+1.5, fPlotRowIdx(kk), faultLabel, 'Color', 'red', 'interpreter', 'none' );
+        end
       end
     end    
   end
@@ -204,8 +208,13 @@ function [p,q,P]=PlotDM( model, varargin )
   
   set( gca, 'YTick', 1:length(dm.rowp));
   set( gca, 'XTick', 1:length(dm.colp));
-  set( gca, 'YTickLabel', model.e(opts.submodel(dm.rowp)), 'TickLabelInterpreter', 'none');
-  set( gca, 'XTickLabel', model.x(dm.colp), 'TickLabelInterpreter', 'none');
+  if verLessThan('matlab', '8.4')
+    set( gca, 'YTickLabel', model.e(opts.submodel(dm.rowp)));
+    set( gca, 'XTickLabel', model.x(dm.colp));
+  else
+    set( gca, 'YTickLabel', model.e(opts.submodel(dm.rowp)), 'TickLabelInterpreter', 'none');
+    set( gca, 'XTickLabel', model.x(dm.colp), 'TickLabelInterpreter', 'none');
+  end
 
   if nargout > 0
     p = dm.rowp;

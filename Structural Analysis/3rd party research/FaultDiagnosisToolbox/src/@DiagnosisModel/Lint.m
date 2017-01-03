@@ -38,7 +38,7 @@ function Lint( model )
   fprintf('    %d fault variables\n', model.nf);
   fprintf('    %d equations, including %d differential constraints\n', model.ne, nd);
   fprintf('\n  Degree of redundancy: %d\n', model.Redundancy());
-  if model.Redundancy() > 0
+  if model.Redundancy() > 0 && numel(model.f) > 0    
     fprintf('  Degree of redundancy of MTES set: %d\n', model.MTESRedundancy());
   end
   fprintf('\n');

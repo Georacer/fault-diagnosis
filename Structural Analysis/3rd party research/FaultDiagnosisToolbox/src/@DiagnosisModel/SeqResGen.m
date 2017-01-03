@@ -4,7 +4,8 @@ function resGen = SeqResGen( model, Gamma, resEq, name, varargin )
 %    model.SeqResGen( Gamma, resEq, name, options )  
 %
 %  Given a matching and a residual equation, generate code implementing the
-%  residual generator in Matlab.
+%  residual generator in Matlab. Generates Matlab/C++ file. How to call the
+%  generated file is described in the generated file (or the user manual).
 %
 %  Options are key/value pairs
 %
@@ -19,9 +20,11 @@ function resGen = SeqResGen( model, Gamma, resEq, name, varargin )
 %  Key                Value
 %    implementation   Can be 'discrete' or 'continuous' (currently only
 %                     discrete is supported)
-%    diffres          Can be 'Int' or 'Der' (default 'Int'). Determines how
+%
+%    diffres          Can be 'int' or 'der' (default 'int'). Determines how
 %                     to treat differential constraints when used as a
 %                     residual equation.
+%
 %    language         Defaults to Matlab but also C code can be generated
 %
 %    batch            Generate a batch mode residual generator, only
@@ -30,6 +33,25 @@ function resGen = SeqResGen( model, Gamma, resEq, name, varargin )
 %                     batch mode runs the residual generator for a whole
 %                     data set. This can significantly decrease
 %                     computational time.
+%
+%    external         Name of external header-file to include in generated
+%                     source. In case of several header files, submit a
+%                     cell-array with header file names.
+%
+%    parameters       Structure with parameter values. 
+%                     Hard codes the parameter values in the generated C
+%                     file. Note that this option only has effect if 
+%                     language is set to C.
+%
+%                     If generating C code in non-batch mode and providing
+%                     the parameter values which can result in significant
+%                     performance increase if there are many parameters.
+%                     In batch mode, no performance increase is expected,
+%                     however it might still be of use to hard code the
+%                     parameter values into the generated code.
+%
+%    quiet            Set to true to supress warnings from symbolic solver,
+%                     use with care! (default: false)
 
 % Copyright Erik Frisk, 2015
 % Distributed under the MIT License.
@@ -42,19 +64,21 @@ function resGen = SeqResGen( model, Gamma, resEq, name, varargin )
   
   p = inputParser;
   p.addOptional('implementation', 'discrete');
-  p.addOptional('diffres', 'Int');
+  p.addOptional('diffres', 'int');
   p.addOptional('experimental', false);
   p.addOptional('language', 'Matlab');
   p.addOptional('external', false);
   p.addOptional('batch', false );
+  p.addOptional('parameters', false );
+  p.addOptional('quiet', false );
   p.parse(varargin{:});
   opts = p.Results;
   
-  if ~strcmp(opts.implementation,'discrete') && (strcmp(Gamma.type,'Der') || strcmp(Gamma.type,'Mixed'))
+  if ~strcmp(opts.implementation,'discrete') && (strcmp(Gamma.type,'der') || strcmp(Gamma.type,'mixed'))
     error('Continuous time implementation not available for derivative or mixed causality residual generators');
   end
   
-  if ~strcmp(opts.implementation,'discrete') && strcmp(Gamma.type,'Int')
+  if ~strcmp(opts.implementation,'discrete') && strcmp(Gamma.type,'int')
     error('Sorry, continiuous time implementation is not yet supported');
   end
   
@@ -68,12 +92,15 @@ function resGen = SeqResGen( model, Gamma, resEq, name, varargin )
 
   % TODO: Make feasibility test
 
-  fprintf('Generating residual generator %s', name);
+  fprintf('Generating residual generator %s\n', name);
 
   % Generate code for exactly determined part of residual generator
-  [resGenM0,iState, dState, integ] = GenerateExactlyDetermined( model, Gamma, opts.language );
+  fprintf('  Generating code for exactly determined part: ');
+  [resGenM0,iState, dState, integ] = GenerateExactlyDetermined( model, Gamma, opts.language, opts.quiet );
+  fprintf('\n');
   
   % Generate code for residual equations
+  fprintf('  Generating code for residual equations\n');
   [resGenRes,iStater, dStater, integr] = GenerateResidualEquations( model, resEq, opts.diffres, opts.language );
   iState = [iState{:} iStater];
   dState = [dState{:} dStater];
@@ -90,26 +117,26 @@ function resGen = SeqResGen( model, Gamma, resEq, name, varargin )
   
   matchType = SeqResGenCausality( Gamma, model.syme{resEq}, opts.diffres );  
   
-  fprintf('Finished!\n');
+  fprintf('  Writing residual generator file\n');
   if ~isempty(name)
     if strcmp(opts.language, 'Matlab')
       state = [iState dState];
       WriteMatlabResGenFunction( model, resGen, state, integ, name, matchType, eqr );
-      fprintf('File %s.m generated.\n', name);
+      fprintf('  File %s.m generated.\n', name);
     elseif strcmp(opts.language, 'C')
       if ~opts.batch
-        WriteCResGenFunction( model, resGen, iState, dState, integ, name, matchType, eqr, opts.external );
+        WriteCResGenFunction( model, resGen, iState, dState, integ, name, matchType, eqr, opts.external, opts.parameters );
       else
-        WriteCResGenFunctionBatch( model, resGen, iState, dState, integ, name, matchType, eqr, opts.external );
+        WriteCResGenFunctionBatch( model, resGen, iState, dState, integ, name, matchType, eqr, opts.external, opts.parameters );
       end
-      fprintf('File %s.cc generated.\n', name);
+      fprintf('  File %s.cc generated.\n', name);
     else
       error('Unsupported language %s', opts.language);
     end
   end
 end
 
-function WriteCResGenFunctionBatch( model, resGen, iState, dState, integ, name, matchType, eqr, ext )
+function WriteCResGenFunctionBatch( model, resGen, iState, dState, integ, name, matchType, eqr, ext, parameters )
   mfileName = sprintf('%s.cc',name); 
   fid = fopen(mfileName,'w');
   
@@ -153,11 +180,19 @@ function WriteCResGenFunctionBatch( model, resGen, iState, dState, integ, name, 
     fprintf( fid, '//   Let z be the observations and N the number of samples, then\n');
     fprintf( fid, '//   the residual generator can be simulated by:\n');
     fprintf( fid, '//\n');
-    fprintf( fid, '//   r = %s( z, state, params, 1/fs );\n',name);
+    if ~isa(parameters, 'logical')
+      fprintf( fid, '//   r = %s( z, state, 1/fs );\n',name);
+    else
+      fprintf( fid, '//   r = %s( z, state, params, 1/fs );\n',name);
+    end
     fprintf( fid, '//\n');
     fprintf( fid, '//   The observations z must be a MxN matrix where M is the number\n');
     fprintf( fid, '//   of known signals and N the number of samples.\n');
     fprintf( fid, '//\n');
+    if ~isa(parameters, 'logical')
+      fprintf( fid, '//   Note that this function is generated with hard coded parameter values for performance reasons.\n');
+      fprintf( fid, '//   Regenerate without parameters option for configurable parameter values.\n\n');
+    end
 
     if ~isempty(state)
       fprintf( fid, '//   State is a structure with the state of the residual generator.\n');
@@ -171,14 +206,14 @@ function WriteCResGenFunctionBatch( model, resGen, iState, dState, integ, name, 
     fprintf( fid, '\n// File generated %s\n\n', datestr(now));
 
     % Define state structure data type
-%    if ~isempty(state)
+    if ~isempty(state)
       fprintf( fid, 'typedef struct {\n');
       for k=1:length(state)
         fprintf( fid, '  double %s;\n', state{k});
       end
       fprintf( fid, '} ResState;\n\n');      
-%    end
- 
+    end
+    
     % Define parameters structure data type
     % Determine parameters used
     pIdx = [];
@@ -195,49 +230,69 @@ function WriteCResGenFunctionBatch( model, resGen, iState, dState, integ, name, 
     end
     pIdx = unique(pIdx);
 
-    if ~isempty(model.parameters)  
+    if ~isempty(model.parameters) && numel(pIdx)>0
       fprintf( fid, 'typedef struct {\n');
       for k=pIdx
         fprintf( fid, '  double %s;\n', model.parameters{k});
       end
       fprintf( fid, '} Parameters;\n\n');      
     end
-    
+      
     % Write approximate diff/int function headers
-    if strcmp(matchType,'Int')||strcmp(matchType,'Mixed')
+    if strcmp(matchType,'int')||strcmp(matchType,'mixed')
       WriteIntCHeader( fid );
       fprintf( fid, '\n');
     end
-    if strcmp(matchType,'Der')||strcmp(matchType,'Mixed')
+    if strcmp(matchType,'der')||strcmp(matchType,'mixed')
       WriteDiffCHeader( fid );
       fprintf( fid, '\n');
     end
     
     % Write residual body function header
-    fprintf( fid, 'void %s( double* r, const double *z, ResState &state, const Parameters &params, double Ts );\n',...
-      name);
+    fprintf( fid, 'void %s( double* r, const double *z', name);
+    if ~isempty(state)
+      fprintf( fid, ', ResState &state');
+    end
+    if numel(pIdx)>0
+    fprintf( fid, ', const Parameters &params');
+    end
+    fprintf( fid, ', double Ts );\n');
     
     % Write parameter-filling function header
-    fprintf( fid, 'void GetParameters( const mxArray *mxParams, Parameters* params );\n');
-
+    if numel(pIdx)>0
+      if isa(parameters, 'logical')
+        fprintf( fid, 'void GetParameters( const mxArray *mxParams, Parameters* params );\n');
+      else
+        fprintf( fid, 'void SetParameters( Parameters* params );\n');
+      end
+    end
+    
     % Write state-filling function header
-    fprintf( fid, 'void GetState( const mxArray *mxStates, ResState* state );\n');
-
+    if ~isempty(state)
+      fprintf( fid, 'void GetState( const mxArray *mxStates, ResState* state );\n');
+    end
+    
     % Mex main function 
     fprintf( fid, '\n');
     fprintf( fid, 'void\n');
     fprintf( fid, 'mexFunction( int nlhs, mxArray *plhs[], \n');
     fprintf( fid, '	     int nrhs, const mxArray*prhs[] )\n');
     fprintf( fid, '{\n');
-    fprintf( fid, '  if( nrhs != 4 ) {\n');
+    if isa(parameters, 'logical')
+      fprintf( fid, '  if( nrhs != 4 ) {\n');
+    else
+      fprintf( fid, '  if( nrhs != 3 ) {\n');
+    end
     fprintf( fid, '    mexErrMsgIdAndTxt( "MATLAB:WrongNumberofInputArguments", \n');
     fprintf( fid, '    "Incorrect number of input arguments");\n');
     fprintf( fid, '  }\n');
 
-    fprintf( fid, '\n  if( !mxIsStruct(prhs[2]) ) {\n');
-    fprintf( fid, '    mexErrMsgIdAndTxt( "MATLAB:Parameters",\n');
-    fprintf( fid, '      "Parameters must be given by a struct");\n');
-    fprintf( fid, '  }\n');    
+    if isa(parameters, 'logical')
+      fprintf( fid, '\n  if( !mxIsStruct(prhs[2]) ) {\n');
+      fprintf( fid, '    mexErrMsgIdAndTxt( "MATLAB:Parameters",\n');
+      fprintf( fid, '      "Parameters must be given by a struct");\n');
+      fprintf( fid, '  }\n');    
+    end
 
     nRes = 1;
     
@@ -255,11 +310,15 @@ function WriteCResGenFunctionBatch( model, resGen, iState, dState, integ, name, 
     fprintf( fid, '  double *r = mxGetPr( plhs[0] ); // Pointer to output array\n');
 
     % Extract parameter values
-    if ~isempty(model.parameters)
+    if ~isempty(model.parameters) && numel(pIdx)>0
       fprintf( fid, '  \n');
       fprintf( fid, '  // Parameters\n');
       fprintf( fid, '  Parameters params;\n');
-      fprintf( fid, '  GetParameters( prhs[2], &params );\n');
+      if isa(parameters, 'logical')
+        fprintf( fid, '  GetParameters( prhs[2], &params );\n');
+      else
+        fprintf( fid, '  SetParameters( &params );\n');
+      end
     end
 
     fprintf( fid, '\n');
@@ -267,18 +326,32 @@ function WriteCResGenFunctionBatch( model, resGen, iState, dState, integ, name, 
     fprintf( fid, '  double *z = (double *)mxGetData( prhs[0] );\n');
 
     fprintf( fid, '\n');
-    fprintf( fid, '  // Initialize state variables\n');
-    fprintf( fid, '  ResState state;\n');
-    fprintf( fid, '  GetState( prhs[1], &state );\n\n');
-
+    if ~isempty(state)
+      fprintf( fid, '  // Initialize state variables\n');
+      fprintf( fid, '  ResState state;\n');
+      fprintf( fid, '  GetState( prhs[1], &state );\n\n');
+    end
+    
     fprintf( fid, '  // Sampling time\n');
-    fprintf( fid, '  double Ts = mxGetScalar(prhs[3]);\n');
+    if isa(parameters, 'logical')
+      fprintf( fid, '  double Ts = mxGetScalar(prhs[3]);\n');
+    else
+      fprintf( fid, '  double Ts = mxGetScalar(prhs[2]);\n');
+    end
     fprintf( fid, '\n');
     
     % Main computational loop
     fprintf( fid, '  // Main residual computation loop\n');
     fprintf( fid, '  for( int k=0; k < N; k++ ) {\n');
-    fprintf( fid, '    %s(r+k, z+M*k, state, params, Ts );\n',name);
+    fprintf( fid, '    %s(r+k, z+M*k',name);
+    if ~isempty(state)
+      fprintf( fid, ', state');
+    end
+    if numel(pIdx)>0
+      fprintf( fid, ', params');
+    end
+    fprintf( fid, ', Ts );\n');
+    
     fprintf( fid, '  }\n');
 
     % End of main function
@@ -287,14 +360,21 @@ function WriteCResGenFunctionBatch( model, resGen, iState, dState, integ, name, 
     % Write residual generator body function    
     fprintf( fid, '\n');
     fprintf( fid, 'void\n');
-    fprintf( fid, '%s( double* r, const double *z, ResState &state, const Parameters &params, double Ts )\n',...
-      name);
+    fprintf( fid, '%s( double* r, const double *z', name);    
+    if ~isempty(state)
+      fprintf( fid, ', ResState &state');
+    end
+    if numel(pIdx)>0
+      fprintf( fid, ', const Parameters &params');
+    end
+    fprintf( fid, ', double Ts )\n');
+        
     fprintf( fid, '{\n');
     fprintf( fid, '  mxArray *matVar;\n');
     fprintf( fid, '  double  *matVarPr;\n\n');
 
     % Extract parameter values
-    if ~isempty(model.parameters)
+    if ~isempty(model.parameters) && numel(pIdx)>0
       fprintf( fid, '  // Parameters\n');
 
       for k=pIdx
@@ -369,50 +449,62 @@ function WriteCResGenFunctionBatch( model, resGen, iState, dState, integ, name, 
     fprintf( fid, '}\n');
     
     % Write integrator and differentiator functions
-    if strcmp(matchType,'Der')||strcmp(matchType,'Mixed')
+    if strcmp(matchType,'der')||strcmp(matchType,'mixed')
       WriteDiffFunction( fid, 'C' );
     end
-    if strcmp(matchType,'Int')||strcmp(matchType,'Mixed')
+    if strcmp(matchType,'int')||strcmp(matchType,'mixed')
       WriteIntFunction( fid, 'C' );
     end
 
     % Write parameter getting function
     fprintf( fid, '\n');
-    fprintf( fid, 'void GetParameters( const mxArray *mxParams, Parameters* params )\n');
-    fprintf( fid, '{\n');
-    fprintf( fid, '  mxArray *matVar;\n');
-    fprintf( fid, '  double  *matVarPr;\n');
-    fprintf( fid, '\n');
-    for k=pIdx
-      fprintf( fid, '  matVar = mxGetField( mxParams, 0, "%s"); ', model.parameters{k});
-      fprintf( fid, 'matVarPr = mxGetPr( matVar );\n');
-      fprintf( fid, '  params->%s = *matVarPr;\n', model.parameters{k});
-    end
-    fprintf( fid, '}\n');
-
-    % Write state getting function    
-    fprintf( fid, '\n');
-    fprintf( fid, 'void GetState( const mxArray *mxState, ResState* state )\n');
-    fprintf( fid, '{\n');
-    fprintf( fid, '  mxArray *matVar;\n');
-    fprintf( fid, '  double  *matVarPr;\n');
-    fprintf( fid, '\n');
-    if ~isempty(state)
-      for k=1:length(state)
-        fprintf( fid, '  matVar = mxGetField( mxState, 0, "%s"); ', state{k});
-        fprintf( fid, 'matVarPr = mxGetPr( matVar );\n');
-        fprintf( fid, '  state->%s = *matVarPr;\n', state{k});
+    if numel(pIdx)>0
+      if isa(parameters, 'logical')
+        fprintf( fid, 'void\nGetParameters( const mxArray *mxParams, Parameters* params )\n');
+        fprintf( fid, '{\n');
+        fprintf( fid, '  mxArray *matVar;\n');
+        fprintf( fid, '  double  *matVarPr;\n');
+        fprintf( fid, '\n');
+        for k=pIdx
+          fprintf( fid, '  matVar = mxGetField( mxParams, 0, "%s"); ', model.parameters{k});
+          fprintf( fid, 'matVarPr = mxGetPr( matVar );\n');
+          fprintf( fid, '  params->%s = *matVarPr;\n', model.parameters{k});
+        end
+        fprintf( fid, '}\n');
+      else
+        fprintf( fid, 'void\nSetParameters( Parameters* params )\n');
+        fprintf( fid, '{\n');
+        for k=pIdx
+          fprintf( fid, '  params->%s = %g;\n', model.parameters{k},parameters.(model.parameters{k}));
+        end
+        fprintf( fid, '}\n');
       end
-      fprintf( fid, '\n');
     end
-    fprintf( fid, '}\n');
+    % Write state getting function    
+    if ~isempty(state)
+      fprintf( fid, '\n');
+      fprintf( fid, 'void\nGetState( const mxArray *mxState, ResState* state )\n');
+      fprintf( fid, '{\n');
+      fprintf( fid, '  mxArray *matVar;\n');
+      fprintf( fid, '  double  *matVarPr;\n');
+      fprintf( fid, '\n');
+      if ~isempty(state)
+        for k=1:length(state)
+          fprintf( fid, '  matVar = mxGetField( mxState, 0, "%s"); ', state{k});
+          fprintf( fid, 'matVarPr = mxGetPr( matVar );\n');
+          fprintf( fid, '  state->%s = *matVarPr;\n', state{k});
+        end
+        fprintf( fid, '\n');
+      end
+      fprintf( fid, '}\n');
+    end
     fclose( fid );
   else
    warning('Error creating file %s', mfileName);
   end 
 end
 
-function WriteCResGenFunction( model, resGen, iState, dState, integ, name, matchType, eqr, ext )
+function WriteCResGenFunction( model, resGen, iState, dState, integ, name, matchType, eqr, ext, parameters )
   mfileName = sprintf('%s.cc',name); 
   fid = fopen(mfileName,'w');
   
@@ -456,8 +548,16 @@ function WriteCResGenFunction( model, resGen, iState, dState, integ, name, match
     fprintf( fid, '//   Let z be the observations and N the number of samples, then\n');
     fprintf( fid, '//   the residual generator can be simulated by:\n');
     fprintf( fid, '//\n');
+    if ~isa(parameters, 'logical')
+      fprintf( fid, '//   Note that this function is generated with hard coded parameter values for performance reasons.\n');
+      fprintf( fid, '//   Regenerate without parameters option for configurable parameter values.\n\n');
+    end
     fprintf( fid, '//   for k=1:N\n');
-    fprintf( fid, '//     [r(k), state] = %s( z(k,:), state, params, 1/fs );\n',name);
+    if isa(parameters, 'logical')
+      fprintf( fid, '//     [r(k), state] = %s( z(k,:), state, params, 1/fs );\n',name);
+    else
+      fprintf( fid, '//     [r(k), state] = %s( z(k,:), state, 1/fs );\n',name);
+    end
     fprintf( fid, '//   end\n');
 
     if ~isempty(state)
@@ -472,13 +572,13 @@ function WriteCResGenFunction( model, resGen, iState, dState, integ, name, match
     fprintf( fid, '\n// File generated %s\n\n', datestr(now));
 
     % Define state structure data type
-%    if ~isempty(state)
+    if ~isempty(state)
       fprintf( fid, 'typedef struct {\n');
       for k=1:length(state)
         fprintf( fid, '  double %s;\n', state{k});
       end
       fprintf( fid, '} ResState;\n\n');      
-%    end
+    end
     
     % Define parameters structure data type
     % Determine parameters used
@@ -495,33 +595,42 @@ function WriteCResGenFunction( model, resGen, iState, dState, integ, name, match
       end
     end
     pIdx = unique(pIdx);
-%    if ~isempty(model.parameters)  
+    if isa(parameters, 'logical') && numel(pIdx)>0
       fprintf( fid, 'typedef struct {\n');
       for k=pIdx
         fprintf( fid, '  double %s;\n', model.parameters{k});
       end
-      fprintf( fid, '} Parameters;\n\n');      
-%    end
+      fprintf( fid, '} Parameters;\n\n');
+   end
 
   % Write approximate diff/int function headers
-    if strcmp(matchType,'Int')||strcmp(matchType,'Mixed')
+    if strcmp(matchType,'int')||strcmp(matchType,'mixed')
       WriteIntCHeader( fid );
       fprintf( fid, '\n');
     end
-    if strcmp(matchType,'Der')||strcmp(matchType,'Mixed')
+    if strcmp(matchType,'der')||strcmp(matchType,'mixed')
       WriteDiffCHeader( fid );
       fprintf( fid, '\n');
     end
     
     % Write residual body function header
-    fprintf( fid, 'void %s( double* r, const double *z, ResState &state, const Parameters &params, double Ts );\n',...
-      name);
-
-    % Write parameter-filling function header
-    fprintf( fid, 'void GetParameters( const mxArray *mxParams, Parameters* params );\n');
-
+    fprintf( fid, 'void %s( double* r, const double *z', name);
+    if ~isempty(state)
+      fprintf( fid, ', ResState &state');
+    end
+    if numel(pIdx)>0
+      fprintf( fid, ', const Parameters &params');
+    end
+    fprintf( fid, ', double Ts );\n');
+    
+    if isa(parameters, 'logical') && numel(pIdx)>0
+      % Write parameter-filling function header
+      fprintf( fid, 'void GetParameters( const mxArray *mxParams, Parameters* params );\n');
+    end
     % Write state-filling function header
-    fprintf( fid, 'void GetState( const mxArray *mxStates, ResState* state );\n');
+    if ~isempty(state)
+      fprintf( fid, 'void GetState( const mxArray *mxStates, ResState* state );\n');
+    end  
 
     % Write mex function
     fprintf( fid, '\n');
@@ -529,16 +638,22 @@ function WriteCResGenFunction( model, resGen, iState, dState, integ, name, match
     fprintf( fid, 'mexFunction( int nlhs, mxArray *plhs[], \n');
     fprintf( fid, '	     int nrhs, const mxArray*prhs[] )\n');
     fprintf( fid, '{\n');
-    fprintf( fid, '  if( nrhs != 4 ) {\n');
+    if isa(parameters, 'logical')
+      fprintf( fid, '  if( nrhs != 4 ) {\n');
+    else
+      fprintf( fid, '  if( nrhs != 3 ) {\n');
+    end
     fprintf( fid, '    mexErrMsgIdAndTxt( "MATLAB:WrongNumberofInputArguments", \n');
     fprintf( fid, '    "Incorrect number of input arguments");\n');
     fprintf( fid, '  }\n');
 
-    fprintf( fid, '\n  if( !mxIsStruct(prhs[2]) ) {\n');
-    fprintf( fid, '    mexErrMsgIdAndTxt( "MATLAB:Parameters",\n');
-    fprintf( fid, '      "Parameters must be given by a struct");\n');
-    fprintf( fid, '  }\n');    
-
+    if isa(parameters, 'logical')
+      fprintf( fid, '\n  if( !mxIsStruct(prhs[2]) ) {\n');
+      fprintf( fid, '    mexErrMsgIdAndTxt( "MATLAB:Parameters",\n');
+      fprintf( fid, '      "Parameters must be given by a struct");\n');
+      fprintf( fid, '  }\n');    
+    end
+    
     nRes = 1;
     fprintf( fid, '\n  // Allocate output variables\n');
     fprintf( fid, '  plhs[0] = mxCreateDoubleMatrix(1, %d, mxREAL); // Residual\n', nRes);
@@ -565,27 +680,42 @@ function WriteCResGenFunction( model, resGen, iState, dState, integ, name, match
     fprintf( fid, '  double *z = (double *)mxGetData( prhs[0] );\n');
 
     % Extract parameter values
-    if ~isempty(model.parameters)
-      fprintf( fid, '  \n');
-      fprintf( fid, '  // Parameters\n');
-      fprintf( fid, '  Parameters params;\n');
-      fprintf( fid, '  GetParameters( prhs[2], &params );\n');
+    if isa(parameters, 'logical') && numel(pIdx)>0
+      if ~isempty(model.parameters)
+        fprintf( fid, '  \n');
+        fprintf( fid, '  // Parameters\n');
+        fprintf( fid, '  Parameters params;\n');
+        fprintf( fid, '  GetParameters( prhs[2], &params );\n');
+      end
     end
+    fprintf( fid, '\n');
     
     % Initialize state variables
-    fprintf( fid, '\n');
-    fprintf( fid, '  // Initialize state variables\n');
-    fprintf( fid, '  ResState state;\n');
-    fprintf( fid, '  GetState( prhs[1], &state );\n\n');
-
+    if ~isempty(state)
+      fprintf( fid, '  // Initialize state variables\n');
+      fprintf( fid, '  ResState state;\n');
+      fprintf( fid, '  GetState( prhs[1], &state );\n\n');
+    end
+    
     fprintf( fid, '  // Sampling time\n');
-    fprintf( fid, '  double Ts = mxGetScalar(prhs[3]);\n');
+    if isa(parameters, 'logical')
+      fprintf( fid, '  double Ts = mxGetScalar(prhs[3]);\n');
+    else
+      fprintf( fid, '  double Ts = mxGetScalar(prhs[2]);\n');
+    end
     fprintf( fid, '\n');
     
     % Call residual generator
     fprintf( fid, '  // Call residual generator body function\n');
-    fprintf( fid, '  %s(r, z, state, params, Ts );\n',name);
-
+    fprintf( fid, '  %s(r, z',name);
+    if ~isempty(state)
+      fprintf( fid, ', state');
+    end
+    if numel(pIdx)>0 && isa(parameters, 'logical')
+      fprintf( fid, ', params');
+    end
+    fprintf( fid, ', Ts );\n');
+    
     % Update state variables
     if ~isempty(state)
      fprintf( fid, '\n');
@@ -600,17 +730,28 @@ function WriteCResGenFunction( model, resGen, iState, dState, integ, name, match
 
     % Write residual generator body function    
     fprintf( fid, 'void\n');
-    fprintf( fid, '%s( double* r, const double *z, ResState &state, const Parameters &params, double Ts )\n',...
-      name);
+    fprintf( fid, '%s( double* r, const double *z',name);
+    if ~isempty(state)
+      fprintf( fid, ', ResState &state');
+    end
+    if isa(parameters, 'logical') && numel(pIdx)>0
+      fprintf( fid, ', const Parameters &params');
+    end
+    fprintf( fid, ', double Ts )\n');
+
     fprintf( fid, '{\n');
 
     % Extract parameter values
-    if ~isempty(model.parameters)
+    if ~isempty(model.parameters) && numel(pIdx)>0
       fprintf( fid, '  // Parameters\n');
 
       % Extract parameters used
       for k=pIdx
-        fprintf( fid, '  double %s = params.%s;\n', model.parameters{k},model.parameters{k});
+        if isa(parameters, 'logical')
+          fprintf( fid, '  double %s = params.%s;\n', model.parameters{k},model.parameters{k});
+        else
+          fprintf( fid, '  double %s = %g;\n', model.parameters{k},parameters.(model.parameters{k}));
+        end
       end
       fprintf( fid, '\n');  
     end
@@ -681,44 +822,47 @@ function WriteCResGenFunction( model, resGen, iState, dState, integ, name, match
     fprintf( fid, '}\n');
     
     % Write integrator and differentiator functions
-    if strcmp(matchType,'Der')||strcmp(matchType,'Mixed')
+    if strcmp(matchType,'der')||strcmp(matchType,'mixed')
       WriteDiffFunction( fid, 'C' );
     end
-    if strcmp(matchType,'Int')||strcmp(matchType,'Mixed')
+    if strcmp(matchType,'int')||strcmp(matchType,'mixed')
       WriteIntFunction( fid, 'C' );
     end
 
     % Write parameter getting function
-    fprintf( fid, '\n');
-    fprintf( fid, 'void GetParameters( const mxArray *mxParams, Parameters* params )\n');
-    fprintf( fid, '{\n');
-    fprintf( fid, '  mxArray *matVar;\n');
-    fprintf( fid, '  double  *matVarPr;\n');
-    fprintf( fid, '\n');
-    for k=pIdx
-      fprintf( fid, '  matVar = mxGetField( mxParams, 0, "%s"); ', model.parameters{k});
-      fprintf( fid, 'matVarPr = mxGetPr( matVar );\n');
-      fprintf( fid, '  params->%s = *matVarPr;\n', model.parameters{k});
+    if isa(parameters, 'logical') && numel(pIdx)>0
+      fprintf( fid, '\n');
+      fprintf( fid, 'void\nGetParameters( const mxArray *mxParams, Parameters* params )\n');
+      fprintf( fid, '{\n');
+      fprintf( fid, '  mxArray *matVar;\n');
+      fprintf( fid, '  double  *matVarPr;\n');
+      fprintf( fid, '\n');
+      for k=pIdx
+        fprintf( fid, '  matVar = mxGetField( mxParams, 0, "%s"); ', model.parameters{k});
+        fprintf( fid, 'matVarPr = mxGetPr( matVar );\n');
+        fprintf( fid, '  params->%s = *matVarPr;\n', model.parameters{k});
+      end
+      fprintf( fid, '}\n');
     end
-    fprintf( fid, '}\n');
     
     % Write state getting function    
-    fprintf( fid, '\n');
-    fprintf( fid, 'void GetState( const mxArray *mxState, ResState* state )\n');
-    fprintf( fid, '{\n');
-    fprintf( fid, '  mxArray *matVar;\n');
-    fprintf( fid, '  double  *matVarPr;\n');
-    fprintf( fid, '\n');
     if ~isempty(state)
-      for k=1:length(state)
-        fprintf( fid, '  matVar = mxGetField( mxState, 0, "%s"); ', state{k});
-        fprintf( fid, 'matVarPr = mxGetPr( matVar );\n');
-        fprintf( fid, '  state->%s = *matVarPr;\n', state{k});
-      end
       fprintf( fid, '\n');
+      fprintf( fid, 'void\nGetState( const mxArray *mxState, ResState* state )\n');
+      fprintf( fid, '{\n');
+      fprintf( fid, '  mxArray *matVar;\n');
+      fprintf( fid, '  double  *matVarPr;\n');
+      fprintf( fid, '\n');
+      if ~isempty(state)
+        for k=1:length(state)
+          fprintf( fid, '  matVar = mxGetField( mxState, 0, "%s"); ', state{k});
+          fprintf( fid, 'matVarPr = mxGetPr( matVar );\n');
+          fprintf( fid, '  state->%s = *matVarPr;\n', state{k});
+        end
+        fprintf( fid, '\n');
+      end
+      fprintf( fid, '}\n');
     end
-    fprintf( fid, '}\n');
-    
     fclose( fid );
   else
    warning('Error creating file %s', mfileName);
@@ -855,10 +999,10 @@ function WriteMatlabResGenFunction( model, resGen, state, integ, name, matchType
     end
     fprintf( fid, 'end\n');
 
-    if strcmp(matchType,'Der')||strcmp(matchType,'Mixed')
+    if strcmp(matchType,'der')||strcmp(matchType,'mixed')
      WriteDiffFunction( fid );
     end
-    if strcmp(matchType,'Int')||strcmp(matchType,'Mixed')
+    if strcmp(matchType,'int')||strcmp(matchType,'mixed')
      WriteIntFunction( fid );     
     end
 
@@ -913,7 +1057,7 @@ function [resGenRes,iState, dState, integ] = GenerateResidualEquations( model, r
     matForm{4} = sprintf('  %s;', ExprToCode( model, resExpression,0,false,language)); 
     %end    
     matForm{5} = 'end';
-  elseif strcmp(diffres,'Der')
+  elseif strcmp(diffres,'der')
     e = model.syme{resEq};
     matForm = {sprintf('%s = %s-ApproxDiff(%s, state.%s,Ts); %s %s',rStr,e{1},e{2},e{2},CommentSymbol(language), model.e{resEq})};
     dState = e(2);
@@ -933,7 +1077,7 @@ function [resGenRes,iState, dState, integ] = GenerateResidualEquations( model, r
   resGenRes = matForm;
 end
 
-function [resGen, iState, dState, integ] = GenerateExactlyDetermined( model, Gamma,language )
+function [resGen, iState, dState, integ] = GenerateExactlyDetermined( model, Gamma,language, quiet )
   resGen = {};
   iState = {};
   dState = {};
@@ -948,18 +1092,17 @@ function [resGen, iState, dState, integ] = GenerateExactlyDetermined( model, Gam
     error('Language %s not supported', language );
   end
 
-  
   % Generate exactly determined part
   for k=1:length(Gamma.matching)
     fprintf('.');
-    if strcmp(Gamma.matching{k}.type,'Algebraic')
-      resGen = [resGen{:} AlgebraicHallComponent(model, Gamma.matching{k}, language)];
-    elseif strcmp(Gamma.matching{k}.type,'Int') && length(Gamma.matching{k}.row)>1
-      [aRes, aState,aInt] = IntegralHallComponent(model, Gamma.matching{k},language);
+    if strcmp(Gamma.matching{k}.type,'algebraic')
+      resGen = [resGen{:} AlgebraicHallComponent(model, Gamma.matching{k}, language, quiet)];
+    elseif strcmp(Gamma.matching{k}.type,'int') && length(Gamma.matching{k}.row)>1
+      [aRes, aState,aInt] = IntegralHallComponent(model, Gamma.matching{k},language, quiet);
       resGen = [resGen{:} aRes];
       iState = [iState aState];
       integ = [integ{:} aInt];
-    elseif strcmp(Gamma.matching{k}.type,'Int') && length(Gamma.matching{k}.row)==1
+    elseif strcmp(Gamma.matching{k}.type,'int') && length(Gamma.matching{k}.row)==1
       diffConstraint = model.syme{Gamma.matching{k}.row};
       matForm = sprintf('%s = ApproxInt(%s,state.%s,Ts); %s %s', ...
         diffConstraint{2},diffConstraint{1}, diffConstraint{2}, ...
@@ -967,15 +1110,15 @@ function [resGen, iState, dState, integ] = GenerateExactlyDetermined( model, Gam
         model.e{Gamma.matching{k}.row});
       integ{end+1} = matForm;
       iState = [iState diffConstraint{2}];
-    elseif strcmp(Gamma.matching{k}.type,'Der')
+    elseif strcmp(Gamma.matching{k}.type,'der')
       diffConstraint = model.syme{Gamma.matching{k}.row};
       resGen{end+1} = sprintf('%s%s = ApproxDiff(%s,state.%s,Ts);  %s %s', ...
         langDeclaration,...
         diffConstraint{1},diffConstraint{2},diffConstraint{2},...
         CommentSymbol(language),model.e{Gamma.matching{k}.row});
       dState = [dState diffConstraint{2}];
-    elseif strcmp(Gamma.matching{k}.type,'Mixed')
-      [aRes, aiState,adState,aInt] = MixedHallComponent(model, Gamma.matching{k}, language);
+    elseif strcmp(Gamma.matching{k}.type,'mixed')
+      [aRes, aiState,adState,aInt] = MixedHallComponent(model, Gamma.matching{k}, language, quiet);
       resGen = [resGen{:} aRes];
       iState = [iState aiState];
       dState = [dState adState];
@@ -986,7 +1129,7 @@ function [resGen, iState, dState, integ] = GenerateExactlyDetermined( model, Gam
   end
 end
 
-function [resGen, iState, dState, integ] = MixedHallComponent(model, Gamma, language)
+function [resGen, iState, dState, integ] = MixedHallComponent(model, Gamma, language, quiet)
   symF = cellfun( @(x) sym(x), model.f,'UniformOutput', false);
   nf = length(model.f);
   
@@ -1016,16 +1159,21 @@ function [resGen, iState, dState, integ] = MixedHallComponent(model, Gamma, lang
   
   symV = cellfun( @(x) sym(x),model.x(Gamma.col),'UniformOutput', false);  
   for k=1:length(Gamma.row)  
-     if isa(symE{k},'sym')
-       % Solve according to matching
-      sol = solve(symE{k}, symV{k}, 'Real', true);
+    if isa(symE{k},'sym')
+      % Solve according to matching
+      if quiet
+        [sol,~,~] = solve(symE{k}, symV{k}, 'Real', true, 'ReturnConditions', true);
+      else
+        sol = solve(symE{k}, symV{k}, 'Real', true);
+      end
+      
       if length(sol)>1
         warning('Multiple solutions, using first one');
         sol = sol(1);
       end
       % Ensure consistent output format
       sol = struct(model.x{Gamma.col(k)},sol);
-       
+
       matForm = sprintf('%s%s; %s %s', ...
         langDeclaration,...
         ExprToCode( model, symV{k}==sol.(char(symV{k})), 0,false, language ), ...
@@ -1061,7 +1209,7 @@ function [resGen, iState, dState, integ] = MixedHallComponent(model, Gamma, lang
   end
 end
 
-function [resGen, state, integ] = IntegralHallComponent(model, Gamma, language)
+function [resGen, state, integ] = IntegralHallComponent(model, Gamma, language, quiet)
   symF = cellfun( @(x) sym(x), model.f,'UniformOutput', false);
   nf = length(model.f);
 
@@ -1090,40 +1238,44 @@ function [resGen, state, integ] = IntegralHallComponent(model, Gamma, language)
   
   symV = cellfun( @(x) sym(x),model.x(Gamma.col),'UniformOutput', false);
   for k=1:length(Gamma.row)  
-     if isa(symE{k},'sym')
-       % Solve according to matching
-       sol = solve(symE{k}, symV{k}, 'Real', true);
+    if isa(symE{k},'sym')
+      % Solve according to matching
+      if quiet
+        [sol,~,~] = solve(symE{k}, symV{k}, 'Real', true, 'ReturnConditions', true);
+      else
+        sol = solve(symE{k}, symV{k}, 'Real', true);
+      end
 
-       if length(sol)>1
-         warning('Multiple solutions, using first one');
-         sol = sol(1);
-       end
-       % Ensure consistent output format
-       sol = struct(model.x{Gamma.col(k)},sol);
+      if length(sol)>1
+        warning('Multiple solutions, using first one');
+        sol = sol(1);
+      end
+      % Ensure consistent output format
+      sol = struct(model.x{Gamma.col(k)},sol);
        
-       matForm = sprintf('%s%s; %s %s', ...
+      matForm = sprintf('%s%s; %s %s', ...
          langDeclaration,...
          ExprToCode( model, symV{k}==sol.(char(symV{k})), 0,false, language ), ...
          CommentSymbol( language ), ...
          model.e{Gamma.row(k)});
        resGen{end+1} = matForm;
-     elseif IsDifferentialConstraint(symE{k})
-       % Integrate according to matching
+    elseif IsDifferentialConstraint(symE{k})
+      % Integrate according to matching
 
-       diffConstraint = symE{k};
-       matForm = sprintf('%s = ApproxInt(%s,state.%s,Ts); %s %s', ...
+      diffConstraint = symE{k};
+      matForm = sprintf('%s = ApproxInt(%s,state.%s,Ts); %s %s', ...
          diffConstraint{2},diffConstraint{1}, diffConstraint{2}, ...
          CommentSymbol(language),...
          model.e{Gamma.row(k)});
-       integ{end+1} = matForm;
-       state = [state diffConstraint{2}];
-     else
-       error('Unknown type of constraint');
-     end    
+      integ{end+1} = matForm;
+      state = [state diffConstraint{2}];
+    else
+      error('Unknown type of constraint');
+    end    
   end
 end
 
-function resGen = AlgebraicHallComponent(model, Gamma, language)
+function resGen = AlgebraicHallComponent(model, Gamma, language, quiet)
   symF = cellfun( @(x) sym(x), model.f,'UniformOutput', false);
   nf = length(model.f);
   
@@ -1135,12 +1287,18 @@ function resGen = AlgebraicHallComponent(model, Gamma, language)
     'UniformOutput', false);
   
   % Solve algebraic loop
-  sol = solve(symE{:}, symV{:}, 'Real', true);
+  if quiet
+%    [sol,~,~] = solve(symE{:}, symV{:}, 'Real', true, 'ReturnConditions', true);
+    sol= solve(symE{:}, symV{:}, 'Real', true, 'ReturnConditions', true);
+  else
+    sol = solve(symE{:}, symV{:}, 'Real', true);
+  end
   if length(sol)>1
     warning('Multiple solutions, using first one');
     sol = sol(1);
   end
-  if length(Gamma.col)==1 % Ensure output format is consistent
+%  if length(Gamma.col)==1 || ~isstruct(sol) % Ensure output format is consistent
+  if ~isstruct(sol) % Ensure output format is consistent
     sol = struct(model.x{Gamma.col},sol);
   end
   
@@ -1187,7 +1345,7 @@ function WriteDiffFunction( fid, language )
     fprintf( fid, 'end\n');
   elseif IsC( language )
     fprintf( fid, '\n');
-    fprintf( fid, 'double ApproxDiff(double x, double xold, double Ts)\n');
+    fprintf( fid, 'double\nApproxDiff(double x, double xold, double Ts)\n');
     fprintf( fid, '{\n');
     fprintf( fid, '  return (x-xold)/Ts;\n');
     fprintf( fid, '}\n');
@@ -1212,7 +1370,7 @@ function WriteIntFunction( fid, language )
     fprintf( fid, 'end\n');
   elseif IsC( language )
     fprintf( fid, '\n');
-    fprintf( fid, 'double ApproxInt(double dx, double x0, double Ts)\n');
+    fprintf( fid, 'double\nApproxInt(double dx, double x0, double Ts)\n');
     fprintf( fid, '{\n');
     fprintf( fid, '  return x0 + Ts*dx;\n');
     fprintf( fid, '}\n');
@@ -1291,26 +1449,26 @@ end
 function s = SeqResGenCausality( Gamma, e, diffres )
   if ~IsDifferentialConstraint(e)
     s = Gamma.type;
-  elseif strcmp(diffres,'Int')
+  elseif strcmp(diffres,'int')
     % Treat differential residual constraint in integral causality
     switch Gamma.type
-      case 'Der'
-        s = 'Mixed';
-      case {'Int','Mixed'}
+      case 'der'
+        s = 'mixed';
+      case {'int','mixed'}
         s = Gamma.type;
-      case 'Algebraic'
-        s = 'Int';
+      case 'algebraic'
+        s = 'int';
       otherwise
         error('Unknown type of matching');
     end
   else % Treat differential residual constraint in derivative causality
     switch Gamma.type
-      case 'Int'
-        s = 'Mixed';
-      case {'Der','Mixed'}
+      case 'int'
+        s = 'mixed';
+      case {'der','mixed'}
         s = Gamma.type;
-      case 'Algebraic'
-        s = 'Der';
+      case 'algebraic'
+        s = 'der';
       otherwise
         error('Unknown type of matching');
     end
@@ -1319,7 +1477,7 @@ end
 
 function s = CommentSymbol( language )
   if strcmp(language,'Matlab')
-    s = '%%';
+    s = '%';
   elseif strcmp(language,'C')
     s = '//';
   else

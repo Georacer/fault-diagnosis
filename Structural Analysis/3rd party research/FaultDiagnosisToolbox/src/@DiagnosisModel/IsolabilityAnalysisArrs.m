@@ -1,5 +1,5 @@
 function [im,df,ndf] = IsolabilityAnalysisArrs( model, arrs, varargin )
-% IsolabilityAnalysisArrs  Perform structural isolability analysis of a set of ARRs
+% IsolabilityAnalysisArrs  Perform structural single fault isolability analysis of a set of ARRs
 %
 %    [im,df,ndf] = model.IsolabilityAnalysisArrs( arrs, options )  
 %
@@ -54,8 +54,13 @@ function [im,df,ndf] = IsolabilityAnalysisArrs( model, arrs, varargin )
     spy(im(p,q), 40)
     set(gca,'XTick', 1:nf);
     set(gca,'YTick', 1:nf);
-    set(gca,'XTickLabel',model.f(p));
-    set(gca,'YTickLabel',model.f(p));
+    if verLessThan('matlab', '8.4')
+      set(gca,'XTickLabel',model.f(p));
+      set(gca,'YTickLabel',model.f(p));
+    else
+      set(gca,'XTickLabel',model.f(p), 'TickLabelInterpreter','none');
+      set(gca,'YTickLabel',model.f(p), 'TickLabelInterpreter','none');
+    end
     xlabel('')
     if ~isempty(model.name)
       title(sprintf('Isolability matrix for set of ARRs in ''%s''', model.name ))

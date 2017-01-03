@@ -9,10 +9,10 @@ function G = computeMixed(X)
 %  Output:
 %   G         - A structure representing M+_mixed
 
-% Author(s): Erik Frisk, Mattias Krysander, Jan Åslund
+% Author(s): Erik Frisk, Mattias Krysander, Jan ?slund
 % Revision: 0.1, Date: 2010/09/12
 
-% Copyright (C) 2010 Erik Frisk, Mattias Krysander, and Jan Åslund
+% Copyright (C) 2010 Erik Frisk, Mattias Krysander, and Jan ?slund
 %
 % This file is part of CausalIsolability.
 % 
@@ -32,13 +32,14 @@ function G = computeMixed(X)
 
 
 %init
-G.X = X;
-n = size(X);
-G.row = 1:n(1);
-G.col = 1:n(2);
+  G.X = X;
+  n = size(X);
+  G.row = 1:n(1);
+  G.col = 1:n(2);
 
-% G = G^+
-dm = GetDMParts(G.X);
-G.row = G.row(dm.Mp.row);
-G.col = G.col(dm.Mp.col);
-G.X = G.X(dm.Mp.row,dm.Mp.col);
+  % G = G^+
+  dm = GetDMParts(G.X);
+  G.row = G.row(dm.Mp.row);
+  G.col = G.col(dm.Mp.col);
+  G.X = G.X(dm.Mp.row,dm.Mp.col);
+end

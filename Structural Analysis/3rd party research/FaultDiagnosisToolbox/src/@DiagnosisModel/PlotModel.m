@@ -1,5 +1,8 @@
 function PlotModel( model, varargin )
-% PlotModel  Plots a model object
+% PLOTMODEL  Plots the model structure
+%
+%  model.PlotModel()
+%
 
 % Copyright Erik Frisk, 2015
 % Distributed under the MIT License.
@@ -9,6 +12,7 @@ function PlotModel( model, varargin )
   p = inputParser;
   p.addOptional('Export_LaTeX',false);
   p.addOptional('Export_fid',-1);
+  p.addOptional('axislabels', true);
   p.parse(varargin{:});
   opts = p.Results;
 
@@ -171,9 +175,13 @@ function PlotStructuralModel( model )
   vars = {model.x{:},model.f{:},model.z{:}};
   t = text(Xt-0.3,Yl(2)*ones(1,length(Xt))+0.5,vars);
 
-  set(t,'HorizontalAlignment','right','VerticalAlignment','top','Rotation',90, ...
-    'interpreter', 'none');
-
+  if verLessThan('matlab', '8.4')
+    set(t,'HorizontalAlignment','right','VerticalAlignment','top','Rotation',90);
+  else
+    set(t,'HorizontalAlignment','right','VerticalAlignment','top','Rotation',90, ...
+        'interpreter', 'none');
+  end
+  
   set(gca,'XTickLabel','')
   set(gca,'Xlabel',xlabel(''))
   hold on

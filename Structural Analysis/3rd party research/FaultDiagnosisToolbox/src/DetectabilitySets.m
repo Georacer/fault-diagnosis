@@ -11,7 +11,6 @@ end
 function res=SensPlaceM0(X,F)
   dm0 = GetDMParts( X );
   bfOrder = BlockAndFaultOrder( X, F, dm0 );
-
   res = {};
   for jj=1:numel(bfOrder.bFm)
     d = D(bfOrder.blockOrder, bfOrder.bFm(jj), dm0);

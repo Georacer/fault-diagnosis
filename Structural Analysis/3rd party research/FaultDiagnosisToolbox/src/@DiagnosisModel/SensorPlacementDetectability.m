@@ -3,7 +3,7 @@ function [res,idx] = SensorPlacementDetectability( model, fdet )
 %
 %    [res,idx] = model.SensorPlacementDetectability( [fdet] )
 %
-%  Computes all minimal sensor sets that achieves detectability of teh
+%  Computes all minimal sensor sets that achieves detectability of the
 %  faults in the model. It is possible, with the fdet argument, aim for a
 %  subset of the faults.
 %

@@ -3,12 +3,14 @@ function [sidx,nu]=Pantelides(model, eq)
 %
 %    [sidx,nu] = model.Pantelides( eq )  
 %  
-%  Outputs:
+%  Inputs:
 %    eq  - Set of exactly determined equations (indices), defaults to complete model.
 %
 %  Outputs:
 %    sidx          - Structural index
-%    nu            - Differentiation vector
+%    nu            - Differentiation vector, if eq is supplied, the
+%                    differentiation vectors is with respect to the 
+%                    subset of equations
 %
 % Example: 
 %   modeldef.type = 'VarStruc';
@@ -38,25 +40,29 @@ function [sidx,nu]=Pantelides(model, eq)
   
   if nargin < 2
     eq = 1:model.ne;
+    sm = model;
+  else
+    sm = model.SubModel( eq, 1:model.nx, 'clear', true );
+    eq = 1:sm.ne;
   end
   
-  X = model.X(eq,:);
+  X = sm.X(eq,:);
 
   if sprank(X)~=size(X,1)||size(X,1)~=size(X,2)
     error('Pantelides algortihm can only be run on square, just-determined systems\n');
   end
   
   varIdx = find(any(X~=0,1));
-  p.x = arrayfun(@(v) {model.x{v},0},varIdx,'UniformOutput',false);
+  p.x = arrayfun(@(v) {sm.x{v},0},varIdx,'UniformOutput',false);
   diffC = find(any(X==3,2));
   algC = find(all(X~=3,2));
 
-  Xdiff = (zeros(length(diffC),model.nx+length(diffC)));
+  Xdiff = (zeros(length(diffC),sm.nx+length(diffC)));
   for k=1:length(diffC)
     iVar = X(diffC(k),:)==2;
     dVar = find(X(diffC(k),:)==3);
-    Xdiff(k,[dVar model.nx+k])=1;
-    p.x{end+1} = {model.x{iVar},1};
+    Xdiff(k,[dVar sm.nx+k])=1;
+    p.x{end+1} = {sm.x{iVar},1};
   end
   p.X = [X(algC,:) zeros(length(algC),length(diffC));Xdiff];
 

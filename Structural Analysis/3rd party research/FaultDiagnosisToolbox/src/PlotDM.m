@@ -156,8 +156,14 @@ function [p,q,P]=PlotDM( X, varargin )
   
   set( gca, 'YTick', 1:length(dm.rowp));
   set( gca, 'XTick', 1:length(dm.colp));
-  set( gca, 'YTickLabel', dm.rowp, 'TickLabelInterpreter','none');
-  set( gca, 'XTickLabel', dm.colp, 'TickLabelInterpreter','none');
+  
+  if verLessThan('matlab', '8.4')
+    set( gca, 'YTickLabel', dm.rowp);
+    set( gca, 'XTickLabel', dm.colp);
+  else
+    set( gca, 'YTickLabel', dm.rowp, 'TickLabelInterpreter','none');
+    set( gca, 'XTickLabel', dm.colp, 'TickLabelInterpreter','none');
+  end
 
   if nargout > 0
     p = dm.rowp;

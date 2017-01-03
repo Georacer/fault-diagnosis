@@ -1,5 +1,5 @@
 function [im,df,ndf] = IsolabilityAnalysis(model, varargin)  
-% IsolabilityAnalysis  Perform structural isolability analysis of model
+% IsolabilityAnalysis  Perform structural single fault isolability analysis of model
 %
 %    [im,df,ndf] = model.IsolabilityAnalysis( options )  
 %
@@ -168,8 +168,14 @@ function PlotIsolabilityAnalysis(model, im, opts)
   spy(im(p,q), 40)
   set(gca,'XTick', 1:nf);
   set(gca,'YTick', 1:nf);
-  set(gca,'XTickLabel',model.f(p), 'TickLabelInterpreter','none');
-  set(gca,'YTickLabel',model.f(p), 'TickLabelInterpreter','none');
+
+  if verLessThan('matlab', '8.4')
+    set(gca,'XTickLabel',model.f(p));
+    set(gca,'YTickLabel',model.f(p));
+  else
+    set(gca,'XTickLabel',model.f(p), 'TickLabelInterpreter','none');
+    set(gca,'YTickLabel',model.f(p), 'TickLabelInterpreter','none');
+  end
   xlabel('')
   if ~isempty(model.name)
     titleString = sprintf('Isolability matrix for ''%s''', model.name );

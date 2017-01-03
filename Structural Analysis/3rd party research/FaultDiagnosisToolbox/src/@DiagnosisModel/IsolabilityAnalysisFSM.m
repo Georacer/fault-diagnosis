@@ -1,5 +1,5 @@
 function [im,df,ndf] = IsolabilityAnalysisFSM( model, fsm, varargin )
-% IsolabilityAnalysisFSM  Perform structural isolability analysis of a Fault Signature Matrix (FSM)
+% IsolabilityAnalysisFSM  Perform structural single fault isolability analysis of a Fault Signature Matrix (FSM)
 %
 %    [im,df,ndf] = model.IsolabilityAnalysisFSM( fsm, options )  
 %
@@ -55,8 +55,13 @@ function [im,df,ndf] = IsolabilityAnalysisFSM( model, fsm, varargin )
     spy(im(p,q), 40)
     set(gca,'XTick', 1:nf);
     set(gca,'YTick', 1:nf);
-    set(gca,'XTickLabel',model.f(p));
-    set(gca,'YTickLabel',model.f(p));
+    if verLessThan('matlab', '8.4')
+      set(gca,'XTickLabel',model.f(p));
+      set(gca,'YTickLabel',model.f(p));
+    else
+      set(gca,'XTickLabel',model.f(p), 'TickLabelInterpreter','none');
+      set(gca,'YTickLabel',model.f(p), 'TickLabelInterpreter','none');
+    end
     xlabel('')
     if ~isempty(model.name)
       title(sprintf('Isolability matrix for a given FSM in ''%s''', model.name ))
