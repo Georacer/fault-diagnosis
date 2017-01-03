@@ -8,12 +8,12 @@ if nargin==1
     eqIds = gh.equationIdArray;
 end
 
-if nargin<2
-    [A, varIds, eqIndices, varIndices] = gh.getSubmodel(eqIds);
+if nargin<=2
+    [A, varIds, eqIndices, varIndices] = gh.getSubmodel(eqIds,'direction','V2E');
 end
 
 if nargin==3
-    [A, varIds, eqIndices, varIndices] = gh.getSubmodel(eqIds,varIds);
+    [A, varIds, eqIndices, varIndices] = gh.getSubmodel(eqIds,varIds,'direction','V2E');
 end
 
 if debug

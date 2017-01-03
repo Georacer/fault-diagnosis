@@ -41,6 +41,9 @@ for ind=Findex
     model.F(ind,i) = 1;
     i = i+1;
 end
+if isempty(model.F)
+    error('Called createLiusm without any faultable equation');
+end
 
 model.rels = cell(1,gh.numEqs);
 for i=1:gh.numEqs

@@ -22,7 +22,9 @@ if (l1==l2) && (l2==l3)
         tempVar = Variable(id,alias); % Create a new variable object
         tempVar.isKnown = varProps.isKnown;
         tempVar.isMeasured = varProps.isMeasured;
+        if tempVar.isMeasured tempVar.rank = 0; end
         tempVar.isInput = varProps.isInput;
+        if tempVar.isInput tempVar.rank = 0; end
         tempVar.isOutput = varProps.isOutput;
         tempVar.isResidual = varProps.isResidual;
         tempVar.isMatched = varProps.isMatched;
