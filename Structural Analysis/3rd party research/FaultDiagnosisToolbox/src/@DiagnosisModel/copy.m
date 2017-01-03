@@ -15,6 +15,7 @@ function m2 = copy( model )
   m2.f = model.f;
   m2.z = model.z;
   m2.X = model.X;
+  %m2.Xi = model.Xi;
   m2.F = model.F;
   m2.Z = model.Z;
   m2.type = model.type;

@@ -1,9 +1,15 @@
-function plotDot(gh)
+function plotDot(gh,graphName)
 % Generate .dot code from this graph
 
 debug = true;
 
-fileID = fopen('mygraph.dot','w');
+if nargin<2
+    graphName = 'myGraph';
+end
+dotName = sprintf('%s.dot',graphName);
+imageName = sprintf('%s.ps',graphName);
+
+fileID = fopen(dotName,'w');
 % Write header
 fprintf(fileID,'digraph G {\n');
 fprintf(fileID,'rankdir = LR;\n');
@@ -66,7 +72,7 @@ fprintf(fileID,'}\n');
 fclose(fileID);
 
 % Run 'dot -Tps mygraph.dot -o mygraph.ps' in the command line
-s = system('dot -Tps mygraph.dot -o mygraph.ps');
+s = system(sprintf('dot -Tps %s -o %s',dotName, imageName));
 if s
     warning('Failed to run "dot" command to generate graph image');
 end

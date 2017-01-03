@@ -157,7 +157,6 @@ function [A0,C0] = ComputeLinearizationMatrices(model, sol, modelPartition, hod,
   C0 = -(C1-C2/A22*A21);
 end
 
-
 function r=EqToMatlab( s, e, o, res )
   if nargin==2 && isa(e,'sym')% e: y == x to Matlab: y = x;
     r = SymToMatlab( s, e );
@@ -181,7 +180,12 @@ end
 
 function r=SymToMatlab( s, e )
   r = char(feval(s,'generate::MATLAB',e));
-  r = strrep(r(3:end),'\n','');    
+  % Remove leading spaces
+  k=1;
+  while r(k)==' '
+    k = k+1;
+  end
+  r = strrep(r(k:end),'\n','');
 end
 
 function r=IsIfStatement( s )
@@ -286,7 +290,6 @@ function hod=HighestOrderDerivatives( model, eq )
   hod.cdX1 = cdX1;
   hod.cX2  = cX2;
 end
-
 
 function WriteMatlabNumObserver( model, sol, modelPartition, hod, name )
   mfileName = sprintf('%s.m',name); 

@@ -9,6 +9,7 @@ classdef DiagnosisModel < handle
 
   properties %(Hidden)
     X = []; % Incidence matrix for unknown variables
+    Xinv = []; % Incidence matrix for invertible unknown variables
     F = []; % Incidence matrix for fault variables
     Z = []; % Incidence matrix for known variables
     x = {}; % Unknown variables
@@ -99,10 +100,11 @@ classdef DiagnosisModel < handle
         end
 
         if ~all(sum(F>0)==1)
-          error('Fault variables must be included in one, and only one, equation. Rewrite model, it is simple!');
+          error('Fault variables must be included in one, and only one, equation. Rewrite model, it is simple!');          
         end
 
         obj.X = X;
+        obj.Xinv = [];
         obj.F = F;
         obj.Z = Z;
         obj.x = x;
@@ -121,12 +123,15 @@ classdef DiagnosisModel < handle
         if isfield(modelDef,'parameters_latex')
           obj.parameters_latex = modelDef.parameters_latex;
         end
-
-        obj.e = cell(1,size(X,1));
-        for ii=1:size(X,1)
-          [obj.e{ii},obj.e_latex{ii}] = obj.idGen.NewE();
-        end      
-
+        
+        if isfield(modelDef,'e') && length(modelDef.e)==size(X,1)
+          obj.e = modelDef.e;
+        else
+          obj.e = cell(1,size(X,1));
+          for ii=1:size(X,1)
+            [obj.e{ii},obj.e_latex{ii}] = obj.idGen.NewE();
+          end      
+        end
         obj.P = 1:numel(obj.x);
         
         % Choose compiled MSO implementation if available
@@ -241,10 +246,16 @@ classdef DiagnosisModel < handle
       n = size(model.X,1);
     end
     
-    function msos = MSO( model )
+    function [msos,psos] = MSO( model )
       % MSO Compute the set of MSO sets
       % 
-      %   msos = model.MSO()
+      %   [msos,psos] = model.MSO()
+      %
+      % Outputs:
+      %   msos      Cell array with all MSO sets as equation indices
+      %   psos      Cell array with all PSO sets as equation indices.
+      %             Output of all PSO sets is not supported in the compiled
+      %             version of the algorithm.
       % 
       % For details of the algorithm see the journal publication
       % Krysander, Mattias, Jan Aslund, and Mattias Nyberg. 
@@ -252,7 +263,16 @@ classdef DiagnosisModel < handle
       % subsystems for model-based diagnosis." 
       % Systems, Man and Cybernetics, Part A: Systems and Humans, 
       % IEEE Transactions on 38.1 (2008): 197-206.
-      msos = model.mso(sparse(model.X));
+      
+      if nargout < 2
+        msos = model.mso(sparse(model.X));
+      elseif nargout==2 && strcmp(func2str(model.mso), 'FindMSOcompiled')
+        warning('Compiled MSO function does not support finding all PSO sets');
+        psos = [];
+        msos = model.mso(sparse(model.X));
+      else
+        [msos,psos] = FindMSO(sparse(model.X), true);
+      end
     end
     
     function fsm=FSM( model, eqs )
@@ -347,6 +367,9 @@ classdef DiagnosisModel < handle
     m2 = copy( model ) 
     m2 = SubModel( model, eqs, varargin )
     ms = AddSensors( model, s, varargin )
+    ms = AddEquations( model, eq, xvars, zvars, fvars, params, varargin )
+    ms = RemoveFaultVariables( model, fvars )
+    sm = ReplaceEquations( model, eqs, reps, xvars, zvars, fvars, params, varargin )
     sm = LumpDynamics( model )
     sm = Structural( model )
     PlotModel( model, varargin )
@@ -363,9 +386,10 @@ classdef DiagnosisModel < handle
     r = MSOCausalitySweep( model, msos, varargin )
     r = TestSelection( model, arr, varargin )
     
-    r = IsHighIndex( model, eq ) 
+    r = IsObservable( model, eq )
+    r = IsHighIndex( model, eq )
     r = IsPSO( model, eq )
-    [sidx,nu]=Pantelides(model,eq)  
+    [sidx,nu]=Pantelides(model,eq)
     
     Gamma=Matching(model,eq)
     PlotMatching( model, Gamma )

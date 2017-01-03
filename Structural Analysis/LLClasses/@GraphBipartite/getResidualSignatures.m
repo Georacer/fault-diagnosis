@@ -22,7 +22,7 @@ if ~isempty(generator_id)
             fprintf('\n');
         end
         eqIndices = gh.getIndexById(affectingIds);
-        signatures(i, eqIndices) = 1;        
+        signatures(i, eqIndices) = 1;
     end
     
 else

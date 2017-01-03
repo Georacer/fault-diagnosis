@@ -7,13 +7,16 @@ function [ M, exitcode] = matchValid( gh, equIds, varIds )
 %           -3 - No valid matching found in one of the KH components
 %            1 - Integral edge in closed loop
 
-% Get the corresponding adjacency matrix
-[A, varIds, eqIndices, varIndices] = gh.getSubmodel(equIds);
+debug = false;
 
-assert(size(A,1)==size(A,2),'Provided model is not just-constrained');
+% Get the corresponding adjacency matrices
+[AV2E, varIds, eqIndices, varIndices] = gh.getSubmodel(equIds,'direction','V2E');
+[AE2V, varIds, eqIndices, varIndices] = gh.getSubmodel(equIds,'direction','E2V');
+
+assert(size(AE2V,1)==size(AE2V,2),'Provided model is not just-constrained');
 
 % Get the K-H components
-KH = gh.getKHComps(A, equIds, varIds);
+KH = gh.getKHComps(AV2E, equIds, varIds);
 
 % sort K-H blocks to deal with singular ones first
 KHsizes = zeros(1,length(KH));
@@ -32,8 +35,13 @@ for i=pivot
     % if |K-H|=1
     if length(KHedges)==1
         edgeIndex = gh.getIndexById(KHedges);
-        if gh.edges(edgeIndex).isIntegral
-%             fprintf('*** Failure: Found integral edge in OL component\n');
+        if gh.edges(edgeIndex).isNonSolvable
+            if debug fprintf('matchValid: Failure: Found non-invertible edge in path\n'); end
+            exitcode = -3;
+            M = {};
+            break % It's impossible not to match this invalid edge
+        elseif gh.edges(edgeIndex).isIntegral
+            if debug fprintf('matchValid: Failure: Found integral edge in path\n'); end
             exitcode = -1;
             M = {};
             break % It's impossible not to match this invalid edge

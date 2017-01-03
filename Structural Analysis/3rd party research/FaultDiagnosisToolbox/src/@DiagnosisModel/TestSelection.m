@@ -25,14 +25,14 @@ function r=TestSelection( model, arr, varargin )
 %                        performance. A 0 in position (i,j) represents that
 %                        fault i is isolable from fault j, a 1 indicates
 %                        that fault i is not isolable from fault j. A fault
-%                        can not be isolable from itself and hterefore must
+%                        can not be isolable from itself and therefore must
 %                        the diagonal always be 1.
 %
 %    method              Choice of test seleciton method. 
 %                          'aminc' -  Searches for a subset minimal sets of tests
 %                                     that fulfills requirements (default)
-%                                     Uses an approximative minimal cardinality 
-%                                     hitting set approach called aminc from:
+%                                     Uses aminc, an approximative minimal cardinality 
+%                                     hitting set approach from:
 %                                       Cormen, L., Leiserson, C. E., and
 %                                       Ronald, L. (1990). Rivest, 
 %                                       "Introduction to Algorithms.", 1990. 

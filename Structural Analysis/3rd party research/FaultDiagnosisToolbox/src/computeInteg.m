@@ -9,10 +9,10 @@ function G = computeInteg(X)
 %  Output:
 %   G         - A structure representing M+_int
 
-% Author(s): Erik Frisk, Mattias Krysander, Jan Åslund
+% Author(s): Erik Frisk, Mattias Krysander, Jan ?slund
 % Revision: 0.1, Date: 2010/09/12
 
-% Copyright (C) 2010 Erik Frisk, Mattias Krysander, and Jan Åslund
+% Copyright (C) 2010 Erik Frisk, Mattias Krysander, and Jan ?slund
 %
 % This file is part of CausalIsolability.
 % 
@@ -31,32 +31,33 @@ function G = computeInteg(X)
 % Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 % init
-G.X = X;
-n = size(X);
-G.row = 1:n(1);
-G.col = 1:n(2);
-stop = 0;
-while ~stop
-    % G = G^+
-    dm = GetDMParts(G.X);
-    G.row = G.row(dm.Mp.row);
-    G.col = G.col(dm.Mp.col);
-    G.X = G.X(dm.Mp.row,dm.Mp.col);
-    
-    % G1 = G - Ed
-    G1 = G;
-    G1.X = G.X > 0 & G.X < 3;
-    
-    % G = G - M(G,X(G1^-))
-    dm = GetDMParts(G1.X);
-    if ~isempty(G.X(:,dm.Mm.col))
-        M = find(any(G.X(:,dm.Mm.col),2)==0);
-        if length(M)==length(G.row)
-            stop = 1;
-        end
-        G.row = G.row(M);
-        G.X = G.X(M,:);
-    else
-        stop = 1;
-    end
+  G.X = X;
+  n = size(X);
+  G.row = 1:n(1);
+  G.col = 1:n(2);
+  stop = 0;
+  while ~stop
+      % G = G^+
+      dm = GetDMParts(G.X);
+      G.row = G.row(dm.Mp.row);
+      G.col = G.col(dm.Mp.col);
+      G.X = G.X(dm.Mp.row,dm.Mp.col);
+      
+      % G1 = G - Ed
+      G1 = G;
+      G1.X = G.X > 0 & G.X < 3;
+      
+      % G = G - M(G,X(G1^-))
+      dm = GetDMParts(G1.X);
+      if ~isempty(G.X(:,dm.Mm.col))
+          M = find(any(G.X(:,dm.Mm.col),2)==0);
+          if length(M)==length(G.row)
+              stop = 1;
+          end
+          G.row = G.row(M);
+          G.X = G.X(M,:);
+      else
+          stop = 1;
+      end
+  end
 end

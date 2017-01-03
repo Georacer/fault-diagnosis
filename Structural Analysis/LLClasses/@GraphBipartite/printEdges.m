@@ -2,6 +2,10 @@ function [ s ] = printEdges( gh, ids )
 %PRINTEDGES Summary of this function goes here
 %   Detailed explanation goes here
 
+if nargin < 3
+    printSExp = false;
+end
+
 edgeIndices = gh.getIndexById(ids);
 
 s = [];

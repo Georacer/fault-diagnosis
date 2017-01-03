@@ -22,7 +22,7 @@ function detSets=IsolabilitySubProblem( X, F, P, f )
   % Extract just determined part of Xisol
   dm = GetDMParts(Xisol);
   X0 = Xisol(dm.M0eqs, dm.M0vars);
-  
+
   % Find out which faults are included in X0
   feq = zeros(1,nf);
   for ii=1:nf

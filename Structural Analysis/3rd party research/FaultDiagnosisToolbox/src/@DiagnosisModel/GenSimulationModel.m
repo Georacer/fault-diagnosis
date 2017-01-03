@@ -1,24 +1,18 @@
 function resGen = GenSimulationModel( model, name, varargin )
-% SeqResGen  (Experimental) Generate Matlab code for sequential residual generator
+% GENSIMULATIONMODEL  (Experimental) Generate Matlab code for simulation
+%                     model. Model must be low-index and exactly
+%                     determined.
 %
-%    model.GenSimulationModel( name, options )  
+%    model.GenSimulationModel( name )  
 %
+
 %  The options are given as key/value pairs as
 %
 %  Key                Value
 %    implementation   Can be 'discrete' or 'continuous' (currently only
-%                     discrete is supported)
-%    diffres          Can be 'Int' or 'Der' (default 'Int'). Determines how
-%                     to treat differential constraints when used as a
-%                     residual equation.
-%    language         Defaults to Matlab but also C code can be generated
+%                     continuous is supported)
+%    language         Defaults to Matlab but also C code will be possible in the future
 %
-%    batch            Generate a batch mode residual generator, only
-%                     applicable when generating C code. Instead of
-%                     computing the residual for one data samnple, 
-%                     batch mode runs the residual generator for a whole
-%                     data set. This can significantly decrease
-%                     computational time.
 
 % Copyright Erik Frisk, 2015
 % Distributed under the MIT License.
@@ -30,32 +24,31 @@ function resGen = GenSimulationModel( model, name, varargin )
   end
   
   p = inputParser;
-  p.addOptional('implementation', 'discrete');
+  p.addOptional('implementation', 'continuous');
   p.addOptional('language', 'Matlab');
   p.addOptional('external', false);
   p.parse(varargin{:});
   opts = p.Results;
   
-  if ~strcmp(opts.implementation,'discrete') && (strcmp(Gamma.type,'Der') || strcmp(Gamma.type,'Mixed'))
-    error('Continuous time implementation not available for derivative or mixed causality residual generators');
+  if ~strcmp(opts.implementation,'continuous') && (strcmp(Gamma.type,'der') || strcmp(Gamma.type,'mixed'))
+    error('Only continuous time implementation, for integral causality matchings, is currently available');
   end
     
   if nargin < 2
     name = [];
   end
-
   
   [diffCIdx, stateVars, dStateVars] = model.DifferentialConstraints();
   algModel = model.SubModel(diffCIdx, stateVars, 'remove', true);
   Gamma = algModel.Matching( 1:algModel.ne );
   
   % TODO: Make feasibility test
-  fprintf('Generating simulation model %s', name);
+  fprintf('Generating simulation model %s:', name);
 
   % Generate code for exactly determined part of residual generator
   [resGen,iState, dState, integ] = GenerateExactlyDetermined( algModel, Gamma, opts.language );
   
-  fprintf('Finished generating code!\n');
+  fprintf('\nFinished generating code!\n');
   fprintf('Generating source file...\n');
   if ~isempty(name)
     if strcmp(opts.language, 'Matlab')
@@ -94,16 +87,15 @@ function WriteMatlabSimModel( model, resGen, state, dState, integ, name )
     end
     
     fprintf( fid, '%% Example of basic usage:\n');
-    fprintf( fid, '%%   Let z be the inputs and N the number of samples, then\n');
-    fprintf( fid, '%%   the discrete model can be simulated by:\n');
+    fprintf( fid, '%%   Let z be the inputs and t the corresponding time vector, then\n');
+    fprintf( fid, '%%   the continuous model can be simulated by:\n');
     fprintf( fid, '%%\n');
-    fprintf( fid, '%%   for k=1:N\n');
-    fprintf( fid, '%%     state = %s( z(k,:), state, params, 1/fs );\n',name);
-    fprintf( fid, '%%   end\n');
+    fprintf( fid, '%% [t, x] = ode15s(@(ts,x) %s( x, interp1(t,z,ts), params ), Tend, x0);\n', name);
+    fprintf( fid, '%%\n');
 
     if ~isempty(state)
-      fprintf( fid, '%%   where state is a structure with the state of the residual generator.\n');
-      fprintf( fid, '%%   The state vector with order: ');
+      fprintf( fid, '%%   where x0 is the initial state, a column vector with\n');
+      fprintf( fid, '%%   signal order: ');
       for k=1:length(state)-1
         fprintf( fid, '%s, ', state{k});
       end
@@ -189,9 +181,9 @@ function WriteMatlabSimModel( model, resGen, state, dState, integ, name )
       fprintf( fid, '  %% Collect output\n');
       fprintf( fid, '  dx = [');
       for k=1:length(state)-1
-        fprintf( fid, '  %s, ', dState{k});
+        fprintf( fid, '%s, ', dState{k});
       end
-      fprintf( fid, '  %s];\n', dState{end});
+      fprintf( fid, '%s];\n', dState{end});
     end
     fprintf( fid, 'end\n');
 
@@ -220,14 +212,14 @@ function [resGen, iState, dState, integ] = GenerateExactlyDetermined( model, Gam
   % Generate exactly determined part
   for k=1:length(Gamma.matching)
     fprintf('.');
-    if strcmp(Gamma.matching{k}.type,'Algebraic')
+    if strcmp(Gamma.matching{k}.type,'algebraic')
       resGen = [resGen{:} AlgebraicHallComponent(model, Gamma.matching{k}, language)];
-    elseif strcmp(Gamma.matching{k}.type,'Int') && length(Gamma.matching{k}.row)>1
+    elseif strcmp(Gamma.matching{k}.type,'int') && length(Gamma.matching{k}.row)>1
       [aRes, aState,aInt] = IntegralHallComponent(model, Gamma.matching{k},language);
       resGen = [resGen{:} aRes];
       iState = [iState aState];
       integ = [integ{:} aInt];
-    elseif strcmp(Gamma.matching{k}.type,'Int') && length(Gamma.matching{k}.row)==1
+    elseif strcmp(Gamma.matching{k}.type,'int') && length(Gamma.matching{k}.row)==1
       diffConstraint = model.syme{Gamma.matching{k}.row};
       matForm = sprintf('%s = ApproxInt(%s,state.%s,Ts); %s %s', ...
         diffConstraint{2},diffConstraint{1}, diffConstraint{2}, ...
@@ -235,14 +227,14 @@ function [resGen, iState, dState, integ] = GenerateExactlyDetermined( model, Gam
         model.e{Gamma.matching{k}.row});
       integ{end+1} = matForm;
       iState = [iState diffConstraint{2}];
-    elseif strcmp(Gamma.matching{k}.type,'Der')
+    elseif strcmp(Gamma.matching{k}.type,'der')
       diffConstraint = model.syme{Gamma.matching{k}.row};
       resGen{end+1} = sprintf('%s%s = ApproxDiff(%s,state.%s,Ts);  %s %s', ...
         langDeclaration,...
         diffConstraint{1},diffConstraint{2},diffConstraint{2},...
         CommentSymbol(language),model.e{Gamma.matching{k}.row});
       dState = [dState diffConstraint{2}];
-    elseif strcmp(Gamma.matching{k}.type,'Mixed')
+    elseif strcmp(Gamma.matching{k}.type,'mixed')
       [aRes, aiState,adState,aInt] = MixedHallComponent(model, Gamma.matching{k}, language);
       resGen = [resGen{:} aRes];
       iState = [iState aiState];
@@ -521,7 +513,7 @@ end
   
 function s = CommentSymbol( language )
   if strcmp(language,'Matlab')
-    s = '%%';
+    s = '%';
   elseif strcmp(language,'C')
     s = '//';
   else

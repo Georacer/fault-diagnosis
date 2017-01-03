@@ -1,5 +1,5 @@
 function ms = AddSensors( model, s, varargin )
-% Add sensor equations to a model
+% ADDSENSORS  Add sensor equations to a model
 %
 %  model2 = model.AddSensor( s, options )
 %
@@ -19,7 +19,9 @@ function ms = AddSensors( model, s, varargin )
 %
 %  Key        Value
 %    name       Cell array with names of new sensor variables
+%    fault      Cell array with names of fault variables for new sensors
 %    name_latex Cell array with latex names of new sensor variables
+%    fault_latex Cell array with latex names of new sensor variables
 %
 %             Important: If no output argument is given, the current
 %             object will be modified, i.e., it is allowed to write
@@ -35,18 +37,28 @@ function ms = AddSensors( model, s, varargin )
 
   pa = inputParser;
   pa.addOptional( 'name', {} );
+  pa.addOptional( 'fault', {} );
   pa.addOptional( 'name_latex', {} );
+  pa.addOptional( 'fault_latex', {} );
   pa.parse(varargin{:});
   opts = pa.Results;
 
   if ~isempty(opts.name) && length(opts.name)~=length(s)
     error('If sensor names are provided, all sensors must be named');
   end
+
+  if ~isempty(opts.fault) && length(opts.fault)~=length(s)
+    error('If sensor fault names are provided, all sensor faults must be named');
+  end
   
   if ~isempty(opts.name_latex) && length(opts.name_latex)~=length(s)
     error('If latex names for sensors are provided, all sensors must have latex names');
   end
-  
+
+  if ~isempty(opts.fault_latex) && length(opts.fault_latex)~=length(s)
+    error('If latex names for sensor faults are provided, all sensor faults must have latex names');
+  end
+
   if isa(s,'char')
     [~,sPos] = ismember(s, model.x);
   elseif isa(s, 'cell')
@@ -99,9 +111,17 @@ function ms = AddSensors( model, s, varargin )
 
         ms.F(end+1,:) = zeros(1,nf);
         if sensorFault
-          fName = sprintf('f%s', name);
+          if isempty(opts.fault)
+            fName = sprintf('f%s', name);
+          else
+            fName = opts.fault{ii};
+          end
           if ~isempty(ms.f_latex)
-            ms.f_latex{end+1} = sprintf('f%s', name_latex);
+            if isempty(opts.fault_latex)
+              ms.f_latex{end+1} = sprintf('f%s', name_latex);
+            else
+              ms.f_latex{end+1} = opts.fault_latex{ii};
+            end
           end
           
           ms.f{end+1} = fName;

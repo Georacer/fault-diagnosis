@@ -56,7 +56,12 @@ function PlotMatching( model, Gamma )
   % Place the text labels
   vars = {model.x{g.col}};
   t = text(Xt-0.1,Yl(2)*ones(1,length(Xt))+0.2,vars);
-  set(t,'Interpreter','none','HorizontalAlignment','right','VerticalAlignment','top','Rotation',90);
+  if verLessThan('matlab', '8.4')
+    set(t,'HorizontalAlignment','right','VerticalAlignment','top','Rotation',90);
+  else
+    set(t,'Interpreter','none','HorizontalAlignment','right','VerticalAlignment','top','Rotation',90);
+  end
+  
 
   set(gca,'XTickLabel','')
   set(gca,'Xlabel',xlabel(''))
