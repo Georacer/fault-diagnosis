@@ -12,7 +12,7 @@ clc;
 % [model, name, coords] = g001();
 % model = g002();
 % [model, coords] = g003();
-model = g004();
+% model = g004();
 % [model, name, coords] = g005();
 % [model, coords] = g006();
 % [model, name, coords] = g007();
@@ -45,7 +45,8 @@ end
 mygraph.readCostList(costList);
 
 % Create the simulation engine object to build the functions list
-simEngine = SimEngine(mygraph);
+mygraph.causality = 'Mixed'; % Set causality first in order to avoid requests for evaluations of non-invertible edges 
+% simEngine = SimEngine(mygraph); 
 % You can now discrad the SimEngine object and create another one based on
 % the matched GraphBipartite
 
@@ -72,7 +73,6 @@ mygraph.liusm.Lint();
 %
 % figure();
 % mygraph.plotDM();
-
 
 
 % % Display the graph using Graphviz4Matlab

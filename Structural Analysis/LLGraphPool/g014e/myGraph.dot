@@ -1,0 +1,1370 @@
+digraph G {
+rankdir = LR;
+size ="8.5"
+node [shape = box, fillcolor = white, style = filled, label="keq1
+1"]; keq1;
+node [shape = box, fillcolor = white, style = filled, label="keq2
+16"]; keq2;
+node [shape = box, fillcolor = white, style = filled, label="keq3
+25"]; keq3;
+node [shape = box, fillcolor = white, style = filled, label="keq4
+34"]; keq4;
+node [shape = box, fillcolor = white, style = filled, label="keq5
+45"]; keq5;
+node [shape = box, fillcolor = white, style = filled, label="keq6
+51"]; keq6;
+node [shape = box, fillcolor = white, style = filled, label="keq7
+58"]; keq7;
+node [shape = box, fillcolor = white, style = filled, label="keq8
+66"]; keq8;
+node [shape = box, fillcolor = white, style = filled, label="keq9
+73"]; keq9;
+node [shape = box, fillcolor = white, style = filled, label="keq10
+80"]; keq10;
+node [shape = box, fillcolor = white, style = filled, label="keq11
+94"]; keq11;
+node [shape = box, fillcolor = white, style = filled, label="keq12
+104"]; keq12;
+node [shape = box, fillcolor = white, style = filled, label="keq13
+114"]; keq13;
+node [shape = box, fillcolor = white, style = filled, label="keq14
+120"]; keq14;
+node [shape = box, fillcolor = white, style = filled, label="keq15
+129"]; keq15;
+node [shape = box, fillcolor = white, style = filled, label="keq16
+139"]; keq16;
+node [shape = box, fillcolor = white, style = filled, label="keq17
+144"]; keq17;
+node [shape = box, fillcolor = white, style = filled, label="keq18
+155"]; keq18;
+node [shape = box, fillcolor = white, style = filled, label="keq19
+165"]; keq19;
+node [shape = box, fillcolor = white, style = filled, label="keq20
+175"]; keq20;
+node [shape = box, fillcolor = white, style = filled, label="keq21
+181"]; keq21;
+node [shape = box, fillcolor = white, style = filled, label="keq22
+187"]; keq22;
+node [shape = box, fillcolor = white, style = filled, label="keq23
+193"]; keq23;
+node [shape = box, fillcolor = white, style = filled, label="keq24
+198"]; keq24;
+node [shape = box, fillcolor = white, style = filled, label="keq25
+204"]; keq25;
+node [shape = box, fillcolor = white, style = filled, label="keq26
+209"]; keq26;
+node [shape = box, fillcolor = white, style = filled, label="keq27
+215"]; keq27;
+node [shape = box, fillcolor = white, style = filled, label="keq28
+222"]; keq28;
+node [shape = box, fillcolor = white, style = filled, label="keq29
+229"]; keq29;
+node [shape = box, fillcolor = white, style = filled, label="feq1
+232"]; feq1;
+node [shape = box, fillcolor = white, style = filled, label="feq2
+240"]; feq2;
+node [shape = box, fillcolor = white, style = filled, label="feq3
+248"]; feq3;
+node [shape = box, fillcolor = white, style = filled, label="feq4
+256"]; feq4;
+node [shape = box, fillcolor = white, style = filled, label="feq5
+262"]; feq5;
+node [shape = box, fillcolor = white, style = filled, label="feq6
+268"]; feq6;
+node [shape = box, fillcolor = white, style = filled, label="feq7
+274"]; feq7;
+node [shape = box, fillcolor = white, style = filled, label="feq8
+280"]; feq8;
+node [shape = box, fillcolor = white, style = filled, label="feq9
+286"]; feq9;
+node [shape = box, fillcolor = white, style = filled, label="feq10
+292"]; feq10;
+node [shape = box, fillcolor = white, style = filled, label="feq11
+302"]; feq11;
+node [shape = box, fillcolor = white, style = filled, label="feq12
+307"]; feq12;
+node [shape = box, fillcolor = white, style = filled, label="feq13
+314"]; feq13;
+node [shape = box, fillcolor = white, style = filled, label="feq14
+320"]; feq14;
+node [shape = box, fillcolor = white, style = filled, label="feq15
+327"]; feq15;
+node [shape = box, fillcolor = white, style = filled, label="feq16
+334"]; feq16;
+node [shape = box, fillcolor = white, style = filled, label="feq17
+341"]; feq17;
+node [shape = box, fillcolor = white, style = filled, label="feq18
+347"]; feq18;
+node [shape = box, fillcolor = white, style = filled, label="feq19
+352"]; feq19;
+node [shape = box, fillcolor = white, style = filled, label="feq20
+357"]; feq20;
+node [shape = box, fillcolor = white, style = filled, label="feq21
+362"]; feq21;
+node [shape = box, fillcolor = white, style = filled, label="feq22
+369"]; feq22;
+node [shape = box, fillcolor = white, style = filled, label="feq23
+379"]; feq23;
+node [shape = box, fillcolor = white, style = filled, label="feq24
+385"]; feq24;
+node [shape = box, fillcolor = white, style = filled, label="feq25
+390"]; feq25;
+node [shape = box, fillcolor = white, style = filled, label="feq26
+395"]; feq26;
+node [shape = box, fillcolor = white, style = filled, label="feq27
+400"]; feq27;
+node [shape = box, fillcolor = white, style = filled, label="feq28
+408"]; feq28;
+node [shape = box, fillcolor = white, style = filled, label="feq29
+414"]; feq29;
+node [shape = box, fillcolor = white, style = filled, label="feq30
+422"]; feq30;
+node [shape = box, fillcolor = white, style = filled, label="feq31
+429"]; feq31;
+node [shape = box, fillcolor = white, style = filled, label="feq32
+431"]; feq32;
+node [shape = box, fillcolor = white, style = filled, label="feq33
+433"]; feq33;
+node [shape = box, fillcolor = white, style = filled, label="feq34
+440"]; feq34;
+node [shape = box, fillcolor = white, style = filled, label="feq35
+443"]; feq35;
+node [shape = box, fillcolor = white, style = filled, label="feq36
+446"]; feq36;
+node [shape = box, fillcolor = white, style = filled, label="feq37
+452"]; feq37;
+node [shape = box, fillcolor = white, style = filled, label="feq38
+458"]; feq38;
+node [shape = box, fillcolor = white, style = filled, label="feq39
+464"]; feq39;
+node [shape = box, fillcolor = white, style = filled, label="feq40
+470"]; feq40;
+node [shape = box, fillcolor = white, style = filled, label="feq41
+473"]; feq41;
+node [shape = box, fillcolor = white, style = filled, label="feq42
+478"]; feq42;
+node [shape = box, fillcolor = white, style = filled, label="feq43
+481"]; feq43;
+node [shape = box, fillcolor = white, style = filled, label="feq44
+487"]; feq44;
+node [shape = box, fillcolor = white, style = filled, label="feq45
+490"]; feq45;
+node [shape = box, fillcolor = white, style = filled, label="feq46
+497"]; feq46;
+node [shape = box, fillcolor = white, style = filled, label="feq47
+501"]; feq47;
+node [shape = box, fillcolor = white, style = filled, label="feq48
+505"]; feq48;
+node [shape = box, fillcolor = white, style = filled, label="feq49
+511"]; feq49;
+node [shape = box, fillcolor = white, style = filled, label="feq50
+516"]; feq50;
+node [shape = box, fillcolor = white, style = filled, label="feq51
+520"]; feq51;
+node [shape = box, fillcolor = white, style = filled, label="feq52
+525"]; feq52;
+node [shape = box, fillcolor = white, style = filled, label="deq1
+532"]; deq1;
+node [shape = box, fillcolor = white, style = filled, label="deq2
+536"]; deq2;
+node [shape = box, fillcolor = white, style = filled, label="deq3
+540"]; deq3;
+node [shape = box, fillcolor = white, style = filled, label="deq4
+544"]; deq4;
+node [shape = box, fillcolor = white, style = filled, label="deq5
+547"]; deq5;
+node [shape = box, fillcolor = white, style = filled, label="deq6
+550"]; deq6;
+node [shape = box, fillcolor = white, style = filled, label="deq7
+553"]; deq7;
+node [shape = box, fillcolor = white, style = filled, label="deq8
+556"]; deq8;
+node [shape = box, fillcolor = white, style = filled, label="deq9
+559"]; deq9;
+node [shape = box, fillcolor = white, style = filled, label="deq10
+562"]; deq10;
+node [shape = box, fillcolor = white, style = filled, label="deq11
+565"]; deq11;
+node [shape = box, fillcolor = white, style = filled, label="deq12
+568"]; deq12;
+node [shape = box, fillcolor = white, style = filled, label="deq13
+571"]; deq13;
+node [shape = box, fillcolor = white, style = filled, label="meq1
+574"]; meq1;
+node [shape = box, fillcolor = white, style = filled, label="meq2
+582"]; meq2;
+node [shape = box, fillcolor = white, style = filled, label="meq3
+589"]; meq3;
+node [shape = box, fillcolor = white, style = filled, label="meq4
+594"]; meq4;
+node [shape = box, fillcolor = white, style = filled, label="meq5
+598"]; meq5;
+node [shape = box, fillcolor = white, style = filled, label="meq6
+601"]; meq6;
+node [shape = box, fillcolor = white, style = filled, label="meq7
+609"]; meq7;
+node [shape = box, fillcolor = white, style = filled, label="meq8
+616"]; meq8;
+node [shape = box, fillcolor = white, style = filled, label="meq9
+622"]; meq9;
+node [shape = box, fillcolor = white, style = filled, label="meq10
+626"]; meq10;
+node [shape = box, fillcolor = white, style = filled, label="meq11
+632"]; meq11;
+node [shape = box, fillcolor = white, style = filled, label="meq12
+641"]; meq12;
+node [shape = box, fillcolor = white, style = filled, label="meq13
+648"]; meq13;
+node [shape = box, fillcolor = white, style = filled, label="seq1
+655"]; seq1;
+node [shape = box, fillcolor = white, style = filled, label="seq2
+662"]; seq2;
+node [shape = box, fillcolor = white, style = filled, label="seq3
+670"]; seq3;
+node [shape = box, fillcolor = white, style = filled, label="seq4
+678"]; seq4;
+node [shape = box, fillcolor = white, style = filled, label="seq5
+682"]; seq5;
+node [shape = box, fillcolor = white, style = filled, label="seq6
+686"]; seq6;
+node [shape = box, fillcolor = white, style = filled, label="seq7
+690"]; seq7;
+node [shape = box, fillcolor = white, style = filled, label="seq8
+694"]; seq8;
+node [shape = box, fillcolor = white, style = filled, label="seq9
+698"]; seq9;
+node [shape = box, fillcolor = white, style = filled, label="seq10
+702"]; seq10;
+node [shape = box, fillcolor = white, style = filled, label="seq11
+706"]; seq11;
+node [shape = box, fillcolor = white, style = filled, label="seq12
+710"]; seq12;
+node [shape = box, fillcolor = white, style = filled, label="seq13
+714"]; seq13;
+node [shape = box, fillcolor = white, style = filled, label="seq14
+718"]; seq14;
+node [shape = box, fillcolor = white, style = filled, label="seq15
+722"]; seq15;
+node [shape = box, fillcolor = white, style = filled, label="seq16
+726"]; seq16;
+node [shape = box, fillcolor = white, style = filled, label="seq17
+730"]; seq17;
+node [shape = box, fillcolor = white, style = filled, label="seq18
+734"]; seq18;
+node [shape = box, fillcolor = white, style = filled, label="seq19
+738"]; seq19;
+node [shape = box, fillcolor = white, style = filled, label="seq20
+741"]; seq20;
+node [shape = box, fillcolor = white, style = filled, label="seq21
+745"]; seq21;
+node [shape = box, fillcolor = white, style = filled, label="seq22
+749"]; seq22;
+node [shape = box, fillcolor = white, style = filled, label="seq23
+753"]; seq23;
+node [shape = box, fillcolor = white, style = filled, label="seq24
+757"]; seq24;
+node [shape = box, fillcolor = white, style = filled, label="seq25
+761"]; seq25;
+node [shape = box, fillcolor = white, style = filled, label="seq26
+765"]; seq26;
+node [shape = box, fillcolor = white, style = filled, label="seq27
+769"]; seq27;
+node [shape = box, fillcolor = white, style = filled, label="seq28
+773"]; seq28;
+node [shape = box, fillcolor = white, style = filled, label="seq29
+777"]; seq29;
+node [shape = box, fillcolor = white, style = filled, label="seq30
+781"]; seq30;
+node [shape = box, fillcolor = white, style = filled, label="seq31
+785"]; seq31;
+node [shape = box, fillcolor = white, style = filled, label="seq32
+789"]; seq32;
+node [shape = box, fillcolor = white, style = filled, label="seq33
+791"]; seq33;
+node [shape = box, fillcolor = white, style = filled, label="seq34
+793"]; seq34;
+node [shape = box, fillcolor = white, style = filled, label="seq35
+795"]; seq35;
+node [shape = box, fillcolor = white, style = filled, label="seq36
+797"]; seq36;
+node [shape = box, fillcolor = white, style = filled, label="seq37
+799"]; seq37;
+node [shape = box, fillcolor = white, style = filled, label="seq38
+801"]; seq38;
+node [shape = circle, fillcolor = white, style = filled, label="dot_north
+2"]; dot_north;
+node [shape = circle, fillcolor = white, style = filled, label="phi
+4"]; phi;
+node [shape = circle, fillcolor = white, style = filled, label="theta
+6"]; theta;
+node [shape = circle, fillcolor = white, style = filled, label="psi
+8"]; psi;
+node [shape = circle, fillcolor = white, style = filled, label="u
+10"]; u;
+node [shape = circle, fillcolor = white, style = filled, label="v
+12"]; v;
+node [shape = circle, fillcolor = white, style = filled, label="w
+14"]; w;
+node [shape = circle, fillcolor = white, style = filled, label="dot_east
+17"]; dot_east;
+node [shape = circle, fillcolor = white, style = filled, label="dot_down
+26"]; dot_down;
+node [shape = circle, fillcolor = white, style = filled, label="dot_phi
+35"]; dot_phi;
+node [shape = circle, fillcolor = white, style = filled, label="p
+39"]; p;
+node [shape = circle, fillcolor = white, style = filled, label="q
+41"]; q;
+node [shape = circle, fillcolor = white, style = filled, label="r
+43"]; r;
+node [shape = circle, fillcolor = white, style = filled, label="dot_theta
+46"]; dot_theta;
+node [shape = circle, fillcolor = white, style = filled, label="dot_psi
+52"]; dot_psi;
+node [shape = circle, fillcolor = white, style = filled, label="C_0
+59"]; C_0;
+node [shape = circle, fillcolor = white, style = filled, label="J
+64"]; J;
+node [shape = circle, fillcolor = white, style = filled, label="C_1
+67"]; C_1;
+node [shape = circle, fillcolor = white, style = filled, label="C_2
+74"]; C_2;
+node [shape = circle, fillcolor = white, style = filled, label="dot_p
+81"]; dot_p;
+node [shape = circle, fillcolor = white, style = filled, label="Ji
+83"]; Ji;
+node [shape = circle, fillcolor = white, style = filled, label="T_x
+85"]; T_x;
+node [shape = circle, fillcolor = white, style = filled, label="T_y
+87"]; T_y;
+node [shape = circle, fillcolor = white, style = filled, label="T_z
+89"]; T_z;
+node [shape = circle, fillcolor = white, style = filled, label="dot_q
+95"]; dot_q;
+node [shape = circle, fillcolor = white, style = filled, label="dot_r
+105"]; dot_r;
+node [shape = circle, fillcolor = white, style = filled, label="V_i
+115"]; V_i;
+node [shape = circle, fillcolor = white, style = filled, label="chi
+121"]; chi;
+node [shape = circle, fillcolor = white, style = filled, label="gamma
+130"]; gamma;
+node [shape = circle, fillcolor = white, style = filled, label="V_g
+140"]; V_g;
+node [shape = circle, fillcolor = white, style = filled, label="dot_u
+145"]; dot_u;
+node [shape = circle, fillcolor = white, style = filled, label="F_x
+151"]; F_x;
+node [shape = circle, fillcolor = white, style = filled, label="m
+153"]; m;
+node [shape = circle, fillcolor = white, style = filled, label="dot_v
+156"]; dot_v;
+node [shape = circle, fillcolor = white, style = filled, label="F_y
+162"]; F_y;
+node [shape = circle, fillcolor = white, style = filled, label="dot_w
+166"]; dot_w;
+node [shape = circle, fillcolor = white, style = filled, label="F_z
+172"]; F_z;
+node [shape = circle, fillcolor = white, style = filled, label="u_r
+176"]; u_r;
+node [shape = circle, fillcolor = white, style = filled, label="u_w
+179"]; u_w;
+node [shape = circle, fillcolor = white, style = filled, label="v_r
+182"]; v_r;
+node [shape = circle, fillcolor = white, style = filled, label="v_w
+185"]; v_w;
+node [shape = circle, fillcolor = white, style = filled, label="w_r
+188"]; w_r;
+node [shape = circle, fillcolor = white, style = filled, label="w_w
+191"]; w_w;
+node [shape = circle, fillcolor = white, style = filled, label="alpha
+194"]; alpha;
+node [shape = circle, fillcolor = white, style = filled, label="beta
+199"]; beta;
+node [shape = circle, fillcolor = white, style = filled, label="V_a
+202"]; V_a;
+node [shape = circle, fillcolor = white, style = filled, label="m_nom
+211"]; m_nom;
+node [shape = circle, fillcolor = white, style = filled, label="m_i
+213"]; m_i;
+node [shape = circle, fillcolor = white, style = filled, label="p_cm
+216"]; p_cm;
+node [shape = circle, fillcolor = white, style = filled, label="p_mi
+219"]; p_mi;
+node [shape = circle, fillcolor = white, style = filled, label="J_nom
+224"]; J_nom;
+node [shape = circle, fillcolor = white, style = filled, label="F_g_x
+234"]; F_g_x;
+node [shape = circle, fillcolor = white, style = filled, label="F_a_x
+236"]; F_a_x;
+node [shape = circle, fillcolor = white, style = filled, label="F_t_x
+238"]; F_t_x;
+node [shape = circle, fillcolor = white, style = filled, label="F_g_y
+242"]; F_g_y;
+node [shape = circle, fillcolor = white, style = filled, label="F_a_y
+244"]; F_a_y;
+node [shape = circle, fillcolor = white, style = filled, label="F_t_y
+246"]; F_t_y;
+node [shape = circle, fillcolor = white, style = filled, label="F_g_z
+250"]; F_g_z;
+node [shape = circle, fillcolor = white, style = filled, label="F_a_z
+252"]; F_a_z;
+node [shape = circle, fillcolor = white, style = filled, label="F_t_z
+254"]; F_t_z;
+node [shape = circle, fillcolor = white, style = filled, label="T_atot_x
+258"]; T_atot_x;
+node [shape = circle, fillcolor = white, style = filled, label="T_ttot_x
+260"]; T_ttot_x;
+node [shape = circle, fillcolor = white, style = filled, label="T_atot_y
+264"]; T_atot_y;
+node [shape = circle, fillcolor = white, style = filled, label="T_ttot_y
+266"]; T_ttot_y;
+node [shape = circle, fillcolor = white, style = filled, label="T_atot_z
+270"]; T_atot_z;
+node [shape = circle, fillcolor = white, style = filled, label="T_ttot_z
+272"]; T_ttot_z;
+node [shape = circle, fillcolor = white, style = filled, label="g
+278"]; g;
+node [shape = circle, fillcolor = white, style = filled, label="F_D
+296"]; F_D;
+node [shape = circle, fillcolor = white, style = filled, label="F_Y
+298"]; F_Y;
+node [shape = circle, fillcolor = white, style = filled, label="F_L
+300"]; F_L;
+node [shape = circle, fillcolor = white, style = filled, label="dp_CL
+315"]; dp_CL;
+node [shape = circle, fillcolor = white, style = filled, label="p_cl
+318"]; p_cl;
+node [shape = circle, fillcolor = white, style = filled, label="T_a_x
+322"]; T_a_x;
+node [shape = circle, fillcolor = white, style = filled, label="T_a_y
+329"]; T_a_y;
+node [shape = circle, fillcolor = white, style = filled, label="T_a_z
+336"]; T_a_z;
+node [shape = circle, fillcolor = white, style = filled, label="q_bar
+342"]; q_bar;
+node [shape = circle, fillcolor = white, style = filled, label="rho
+344"]; rho;
+node [shape = circle, fillcolor = white, style = filled, label="C_D
+350"]; C_D;
+node [shape = circle, fillcolor = white, style = filled, label="C_Y
+355"]; C_Y;
+node [shape = circle, fillcolor = white, style = filled, label="C_L
+360"]; C_L;
+node [shape = circle, fillcolor = white, style = filled, label="delta_e
+367"]; delta_e;
+node [shape = circle, fillcolor = white, style = filled, label="delta_a
+375"]; delta_a;
+node [shape = circle, fillcolor = white, style = filled, label="delta_r
+377"]; delta_r;
+node [shape = circle, fillcolor = white, style = filled, label="C_l
+388"]; C_l;
+node [shape = circle, fillcolor = white, style = filled, label="C_m
+393"]; C_m;
+node [shape = circle, fillcolor = white, style = filled, label="C_n
+398"]; C_n;
+node [shape = circle, fillcolor = white, style = filled, label="C_t
+424"]; C_t;
+node [shape = circle, fillcolor = white, style = filled, label="n_prop
+427"]; n_prop;
+node [shape = circle, fillcolor = white, style = filled, label="T_t_x
+434"]; T_t_x;
+node [shape = circle, fillcolor = white, style = filled, label="P_prop
+436"]; P_prop;
+node [shape = circle, fillcolor = white, style = filled, label="w_prop
+438"]; w_prop;
+node [shape = circle, fillcolor = white, style = filled, label="T_t_y
+441"]; T_t_y;
+node [shape = circle, fillcolor = white, style = filled, label="T_t_z
+444"]; T_t_z;
+node [shape = circle, fillcolor = white, style = filled, label="dp_prop
+447"]; dp_prop;
+node [shape = circle, fillcolor = white, style = filled, label="p_prop
+450"]; p_prop;
+node [shape = circle, fillcolor = white, style = filled, label="Jar
+474"]; Jar;
+node [shape = circle, fillcolor = white, style = filled, label="C_p
+483"]; C_p;
+node [shape = circle, fillcolor = white, style = filled, label="dot_n_prop
+491"]; dot_n_prop;
+node [shape = circle, fillcolor = white, style = filled, label="P_mot
+493"]; P_mot;
+node [shape = circle, fillcolor = white, style = filled, label="n_mot
+499"]; n_mot;
+node [shape = circle, fillcolor = white, style = filled, label="E_i
+503"]; E_i;
+node [shape = circle, fillcolor = white, style = filled, label="V_mot
+507"]; V_mot;
+node [shape = circle, fillcolor = white, style = filled, label="I_mot
+509"]; I_mot;
+node [shape = circle, fillcolor = white, style = filled, label="I_i
+514"]; I_i;
+node [shape = circle, fillcolor = white, style = filled, label="P_elec
+521"]; P_elec;
+node [shape = circle, fillcolor = white, style = filled, label="V_bat
+527"]; V_bat;
+node [shape = circle, fillcolor = white, style = filled, label="delta_t
+530"]; delta_t;
+node [shape = circle, fillcolor = white, style = filled, label="north
+534"]; north;
+node [shape = circle, fillcolor = white, style = filled, label="east
+538"]; east;
+node [shape = circle, fillcolor = white, style = filled, label="down
+542"]; down;
+node [shape = circle, fillcolor = white, style = filled, label="z
+576"]; z;
+node [shape = circle, fillcolor = white, style = filled, label="lat
+578"]; lat;
+node [shape = circle, fillcolor = white, style = filled, label="lat_0
+580"]; lat_0;
+node [shape = circle, fillcolor = white, style = filled, label="lon
+585"]; lon;
+node [shape = circle, fillcolor = white, style = filled, label="lon_0
+587"]; lon_0;
+node [shape = circle, fillcolor = white, style = filled, label="z_0
+592"]; z_0;
+node [shape = circle, fillcolor = white, style = filled, label="h
+595"]; h;
+node [shape = circle, fillcolor = white, style = filled, label="T
+602"]; T;
+node [shape = circle, fillcolor = white, style = filled, label="T_0
+604"]; T_0;
+node [shape = circle, fillcolor = white, style = filled, label="h_0
+607"]; h_0;
+node [shape = circle, fillcolor = white, style = filled, label="P
+610"]; P;
+node [shape = circle, fillcolor = white, style = filled, label="P_0
+612"]; P_0;
+node [shape = circle, fillcolor = white, style = filled, label="P_t
+627"]; P_t;
+node [shape = circle, fillcolor = white, style = filled, label="w_n
+637"]; w_n;
+node [shape = circle, fillcolor = white, style = filled, label="w_e
+639"]; w_e;
+node [shape = circle, fillcolor = yellow, style = filled, label="a_m_x
+656"]; a_m_x;
+node [shape = circle, fillcolor = yellow, style = filled, label="a_m_y
+663"]; a_m_y;
+node [shape = circle, fillcolor = yellow, style = filled, label="a_m_z
+671"]; a_m_z;
+node [shape = circle, fillcolor = yellow, style = filled, label="p_m
+679"]; p_m;
+node [shape = circle, fillcolor = yellow, style = filled, label="q_m
+683"]; q_m;
+node [shape = circle, fillcolor = yellow, style = filled, label="r_m
+687"]; r_m;
+node [shape = circle, fillcolor = yellow, style = filled, label="phi_m
+691"]; phi_m;
+node [shape = circle, fillcolor = yellow, style = filled, label="theta_m
+695"]; theta_m;
+node [shape = circle, fillcolor = yellow, style = filled, label="psi_m
+699"]; psi_m;
+node [shape = circle, fillcolor = yellow, style = filled, label="lat_0_gps
+703"]; lat_0_gps;
+node [shape = circle, fillcolor = yellow, style = filled, label="lon_0_gps
+707"]; lon_0_gps;
+node [shape = circle, fillcolor = yellow, style = filled, label="lat_gps
+711"]; lat_gps;
+node [shape = circle, fillcolor = yellow, style = filled, label="lon_gps
+715"]; lon_gps;
+node [shape = circle, fillcolor = yellow, style = filled, label="z_gps
+719"]; z_gps;
+node [shape = circle, fillcolor = yellow, style = filled, label="V_g_gps
+723"]; V_g_gps;
+node [shape = circle, fillcolor = yellow, style = filled, label="chi_gps
+727"]; chi_gps;
+node [shape = circle, fillcolor = yellow, style = filled, label="T_0_m
+731"]; T_0_m;
+node [shape = circle, fillcolor = yellow, style = filled, label="z_0_m
+735"]; z_0_m;
+node [shape = circle, fillcolor = yellow, style = filled, label="P_bar
+742"]; P_bar;
+node [shape = circle, fillcolor = yellow, style = filled, label="T_m
+746"]; T_m;
+node [shape = circle, fillcolor = yellow, style = filled, label="P_t_m
+750"]; P_t_m;
+node [shape = circle, fillcolor = yellow, style = filled, label="alpha_m
+754"]; alpha_m;
+node [shape = circle, fillcolor = yellow, style = filled, label="beta_m
+758"]; beta_m;
+node [shape = circle, fillcolor = yellow, style = filled, label="V_mot_m
+762"]; V_mot_m;
+node [shape = circle, fillcolor = yellow, style = filled, label="I_mot_m
+766"]; I_mot_m;
+node [shape = circle, fillcolor = yellow, style = filled, label="n_prop_m
+770"]; n_prop_m;
+node [shape = doublecircle, fillcolor = green, style = filled, label="delta_a_inp
+775"]; delta_a_inp;
+node [shape = doublecircle, fillcolor = green, style = filled, label="delta_e_inp
+779"]; delta_e_inp;
+node [shape = doublecircle, fillcolor = green, style = filled, label="delta_t_inp
+783"]; delta_t_inp;
+node [shape = doublecircle, fillcolor = green, style = filled, label="delta_r_inp
+787"]; delta_r_inp;
+node [shape = circle, fillcolor = yellow, style = filled, label="g_0
+803"]; g_0;
+keq1 -> dot_north [penwidth = 1];
+dot_north -> keq1 [penwidth = 1];
+phi -> keq1 [penwidth = 1];
+theta -> keq1 [penwidth = 1];
+psi -> keq1 [penwidth = 1];
+u -> keq1 [penwidth = 1];
+v -> keq1 [penwidth = 1];
+w -> keq1 [penwidth = 1];
+keq2 -> dot_east [penwidth = 1];
+dot_east -> keq2 [penwidth = 1];
+phi -> keq2 [penwidth = 1];
+theta -> keq2 [penwidth = 1];
+psi -> keq2 [penwidth = 1];
+u -> keq2 [penwidth = 1];
+v -> keq2 [penwidth = 1];
+w -> keq2 [penwidth = 1];
+keq3 -> dot_down [penwidth = 1];
+dot_down -> keq3 [penwidth = 1];
+phi -> keq3 [penwidth = 1];
+theta -> keq3 [penwidth = 1];
+psi -> keq3 [penwidth = 1];
+u -> keq3 [penwidth = 1];
+v -> keq3 [penwidth = 1];
+w -> keq3 [penwidth = 1];
+keq4 -> dot_phi [penwidth = 1];
+dot_phi -> keq4 [penwidth = 1];
+phi -> keq4 [penwidth = 1];
+theta -> keq4 [penwidth = 1];
+keq4 -> p [penwidth = 1];
+p -> keq4 [penwidth = 1];
+q -> keq4 [penwidth = 1];
+r -> keq4 [penwidth = 1];
+keq5 -> dot_theta [penwidth = 1];
+dot_theta -> keq5 [penwidth = 1];
+phi -> keq5 [penwidth = 1];
+keq5 -> q [penwidth = 1];
+q -> keq5 [penwidth = 1];
+r -> keq5 [penwidth = 1];
+keq6 -> dot_psi [penwidth = 1];
+dot_psi -> keq6 [penwidth = 1];
+phi -> keq6 [penwidth = 1];
+theta -> keq6 [penwidth = 1];
+q -> keq6 [penwidth = 1];
+keq6 -> r [penwidth = 1];
+r -> keq6 [penwidth = 1];
+keq7 -> C_0 [penwidth = 1];
+C_0 -> keq7 [penwidth = 1];
+p -> keq7 [penwidth = 1];
+q -> keq7 [penwidth = 1];
+r -> keq7 [penwidth = 1];
+J -> keq7 [penwidth = 1];
+keq8 -> C_1 [penwidth = 1];
+C_1 -> keq8 [penwidth = 1];
+p -> keq8 [penwidth = 1];
+q -> keq8 [penwidth = 1];
+r -> keq8 [penwidth = 1];
+J -> keq8 [penwidth = 1];
+keq9 -> C_2 [penwidth = 1];
+C_2 -> keq9 [penwidth = 1];
+p -> keq9 [penwidth = 1];
+q -> keq9 [penwidth = 1];
+r -> keq9 [penwidth = 1];
+J -> keq9 [penwidth = 1];
+keq10 -> dot_p [penwidth = 1];
+dot_p -> keq10 [penwidth = 1];
+Ji -> keq10 [penwidth = 1];
+T_x -> keq10 [penwidth = 1];
+T_y -> keq10 [penwidth = 1];
+T_z -> keq10 [penwidth = 1];
+C_0 -> keq10 [penwidth = 1];
+C_1 -> keq10 [penwidth = 1];
+C_2 -> keq10 [penwidth = 1];
+keq11 -> dot_q [penwidth = 1];
+dot_q -> keq11 [penwidth = 1];
+Ji -> keq11 [penwidth = 1];
+T_x -> keq11 [penwidth = 1];
+T_y -> keq11 [penwidth = 1];
+T_z -> keq11 [penwidth = 1];
+C_0 -> keq11 [penwidth = 1];
+C_1 -> keq11 [penwidth = 1];
+C_2 -> keq11 [penwidth = 1];
+keq12 -> dot_r [penwidth = 1];
+dot_r -> keq12 [penwidth = 1];
+Ji -> keq12 [penwidth = 1];
+T_x -> keq12 [penwidth = 1];
+T_y -> keq12 [penwidth = 1];
+T_z -> keq12 [penwidth = 1];
+C_0 -> keq12 [penwidth = 1];
+C_1 -> keq12 [penwidth = 1];
+C_2 -> keq12 [penwidth = 1];
+keq13 -> V_i [penwidth = 1];
+V_i -> keq13 [penwidth = 1];
+u -> keq13 [penwidth = 1];
+v -> keq13 [penwidth = 1];
+w -> keq13 [penwidth = 1];
+keq14 -> chi [penwidth = 1];
+chi -> keq14 [penwidth = 1];
+u -> keq14 [penwidth = 1];
+v -> keq14 [penwidth = 1];
+w -> keq14 [penwidth = 1];
+phi -> keq14 [penwidth = 1];
+theta -> keq14 [penwidth = 1];
+psi -> keq14 [penwidth = 1];
+keq15 -> gamma [penwidth = 1];
+gamma -> keq15 [penwidth = 1];
+u -> keq15 [penwidth = 1];
+v -> keq15 [penwidth = 1];
+w -> keq15 [penwidth = 1];
+phi -> keq15 [penwidth = 1];
+theta -> keq15 [penwidth = 1];
+psi -> keq15 [penwidth = 1];
+keq15 -> V_i [penwidth = 1];
+V_i -> keq15 [penwidth = 1];
+keq16 -> V_g [penwidth = 1];
+V_g -> keq16 [penwidth = 1];
+keq16 -> V_i [penwidth = 1];
+V_i -> keq16 [penwidth = 1];
+keq16 -> gamma [penwidth = 1];
+gamma -> keq16 [penwidth = 1];
+keq17 -> dot_u [penwidth = 1];
+dot_u -> keq17 [penwidth = 1];
+v -> keq17 [penwidth = 1];
+w -> keq17 [penwidth = 1];
+r -> keq17 [penwidth = 1];
+q -> keq17 [penwidth = 1];
+keq17 -> F_x [penwidth = 1];
+F_x -> keq17 [penwidth = 1];
+m -> keq17 [penwidth = 1];
+keq18 -> dot_v [penwidth = 1];
+dot_v -> keq18 [penwidth = 1];
+u -> keq18 [penwidth = 1];
+w -> keq18 [penwidth = 1];
+p -> keq18 [penwidth = 1];
+keq18 -> r [penwidth = 1];
+r -> keq18 [penwidth = 1];
+keq18 -> F_y [penwidth = 1];
+F_y -> keq18 [penwidth = 1];
+m -> keq18 [penwidth = 1];
+keq19 -> dot_w [penwidth = 1];
+dot_w -> keq19 [penwidth = 1];
+u -> keq19 [penwidth = 1];
+v -> keq19 [penwidth = 1];
+p -> keq19 [penwidth = 1];
+keq19 -> q [penwidth = 1];
+q -> keq19 [penwidth = 1];
+keq19 -> F_z [penwidth = 1];
+F_z -> keq19 [penwidth = 1];
+m -> keq19 [penwidth = 1];
+keq20 -> u_r [penwidth = 1];
+u_r -> keq20 [penwidth = 1];
+keq20 -> u [penwidth = 1];
+u -> keq20 [penwidth = 1];
+keq20 -> u_w [penwidth = 1];
+u_w -> keq20 [penwidth = 1];
+keq21 -> v_r [penwidth = 1];
+v_r -> keq21 [penwidth = 1];
+keq21 -> v [penwidth = 1];
+v -> keq21 [penwidth = 1];
+keq21 -> v_w [penwidth = 1];
+v_w -> keq21 [penwidth = 1];
+keq22 -> w_r [penwidth = 1];
+w_r -> keq22 [penwidth = 1];
+keq22 -> w [penwidth = 1];
+w -> keq22 [penwidth = 1];
+keq22 -> w_w [penwidth = 1];
+w_w -> keq22 [penwidth = 1];
+keq23 -> alpha [penwidth = 1];
+alpha -> keq23 [penwidth = 1];
+keq23 -> w_r [penwidth = 1];
+w_r -> keq23 [penwidth = 1];
+keq23 -> u_r [penwidth = 1];
+u_r -> keq23 [penwidth = 1];
+keq24 -> beta [penwidth = 1];
+beta -> keq24 [penwidth = 1];
+keq24 -> v_r [penwidth = 1];
+v_r -> keq24 [penwidth = 1];
+keq24 -> V_a [penwidth = 1];
+V_a -> keq24 [penwidth = 1];
+keq25 -> V_a [penwidth = 1];
+V_a -> keq25 [penwidth = 1];
+u_r -> keq25 [penwidth = 1];
+v_r -> keq25 [penwidth = 1];
+w_r -> keq25 [penwidth = 1];
+keq26 -> m [penwidth = 1];
+m -> keq26 [penwidth = 1];
+keq26 -> m_nom [penwidth = 1];
+m_nom -> keq26 [penwidth = 1];
+keq26 -> m_i [penwidth = 1];
+m_i -> keq26 [penwidth = 1];
+keq27 -> p_cm [penwidth = 1];
+p_cm -> keq27 [penwidth = 1];
+m -> keq27 [penwidth = 1];
+p_mi -> keq27 [penwidth = 1];
+m_i -> keq27 [penwidth = 1];
+keq28 -> J [penwidth = 1];
+J -> keq28 [penwidth = 1];
+keq28 -> J_nom [penwidth = 1];
+J_nom -> keq28 [penwidth = 1];
+p_mi -> keq28 [penwidth = 1];
+m_i -> keq28 [penwidth = 1];
+m_nom -> keq28 [penwidth = 1];
+keq29 -> Ji [penwidth = 1];
+Ji -> keq29 [penwidth = 1];
+J -> keq29 [penwidth = 1];
+feq1 -> F_x [penwidth = 1];
+F_x -> feq1 [penwidth = 1];
+feq1 -> F_g_x [penwidth = 1];
+F_g_x -> feq1 [penwidth = 1];
+feq1 -> F_a_x [penwidth = 1];
+F_a_x -> feq1 [penwidth = 1];
+feq1 -> F_t_x [penwidth = 1];
+F_t_x -> feq1 [penwidth = 1];
+feq2 -> F_y [penwidth = 1];
+F_y -> feq2 [penwidth = 1];
+feq2 -> F_g_y [penwidth = 1];
+F_g_y -> feq2 [penwidth = 1];
+feq2 -> F_a_y [penwidth = 1];
+F_a_y -> feq2 [penwidth = 1];
+feq2 -> F_t_y [penwidth = 1];
+F_t_y -> feq2 [penwidth = 1];
+feq3 -> F_z [penwidth = 1];
+F_z -> feq3 [penwidth = 1];
+feq3 -> F_g_z [penwidth = 1];
+F_g_z -> feq3 [penwidth = 1];
+feq3 -> F_a_z [penwidth = 1];
+F_a_z -> feq3 [penwidth = 1];
+feq3 -> F_t_z [penwidth = 1];
+F_t_z -> feq3 [penwidth = 1];
+feq4 -> T_x [penwidth = 1];
+T_x -> feq4 [penwidth = 1];
+feq4 -> T_atot_x [penwidth = 1];
+T_atot_x -> feq4 [penwidth = 1];
+feq4 -> T_ttot_x [penwidth = 1];
+T_ttot_x -> feq4 [penwidth = 1];
+feq5 -> T_y [penwidth = 1];
+T_y -> feq5 [penwidth = 1];
+feq5 -> T_atot_y [penwidth = 1];
+T_atot_y -> feq5 [penwidth = 1];
+feq5 -> T_ttot_y [penwidth = 1];
+T_ttot_y -> feq5 [penwidth = 1];
+feq6 -> T_z [penwidth = 1];
+T_z -> feq6 [penwidth = 1];
+feq6 -> T_atot_z [penwidth = 1];
+T_atot_z -> feq6 [penwidth = 1];
+feq6 -> T_ttot_z [penwidth = 1];
+T_ttot_z -> feq6 [penwidth = 1];
+feq7 -> F_g_x [penwidth = 1];
+F_g_x -> feq7 [penwidth = 1];
+feq7 -> theta [penwidth = 1];
+theta -> feq7 [penwidth = 1];
+m -> feq7 [penwidth = 1];
+g -> feq7 [penwidth = 1];
+feq8 -> F_g_y [penwidth = 1];
+F_g_y -> feq8 [penwidth = 1];
+feq8 -> phi [penwidth = 1];
+phi -> feq8 [penwidth = 1];
+theta -> feq8 [penwidth = 1];
+m -> feq8 [penwidth = 1];
+g -> feq8 [penwidth = 1];
+feq9 -> F_g_z [penwidth = 1];
+F_g_z -> feq9 [penwidth = 1];
+feq9 -> phi [penwidth = 1];
+phi -> feq9 [penwidth = 1];
+feq9 -> theta [penwidth = 1];
+theta -> feq9 [penwidth = 1];
+feq9 -> m [penwidth = 1];
+m -> feq9 [penwidth = 1];
+feq9 -> g [penwidth = 1];
+g -> feq9 [penwidth = 1];
+feq10 -> F_a_x [penwidth = 1];
+F_a_x -> feq10 [penwidth = 1];
+alpha -> feq10 [penwidth = 1];
+beta -> feq10 [penwidth = 1];
+feq10 -> F_D [penwidth = 1];
+F_D -> feq10 [penwidth = 1];
+F_Y -> feq10 [penwidth = 1];
+F_L -> feq10 [penwidth = 1];
+feq11 -> F_a_y [penwidth = 1];
+F_a_y -> feq11 [penwidth = 1];
+beta -> feq11 [penwidth = 1];
+F_D -> feq11 [penwidth = 1];
+feq11 -> F_Y [penwidth = 1];
+F_Y -> feq11 [penwidth = 1];
+feq12 -> F_a_z [penwidth = 1];
+F_a_z -> feq12 [penwidth = 1];
+alpha -> feq12 [penwidth = 1];
+beta -> feq12 [penwidth = 1];
+F_D -> feq12 [penwidth = 1];
+F_Y -> feq12 [penwidth = 1];
+feq12 -> F_L [penwidth = 1];
+F_L -> feq12 [penwidth = 1];
+feq13 -> dp_CL [penwidth = 1];
+dp_CL -> feq13 [penwidth = 1];
+feq13 -> p_cm [penwidth = 1];
+p_cm -> feq13 [penwidth = 1];
+feq13 -> p_cl [penwidth = 1];
+p_cl -> feq13 [penwidth = 1];
+feq14 -> T_atot_x [penwidth = 1];
+T_atot_x -> feq14 [penwidth = 1];
+feq14 -> T_a_x [penwidth = 1];
+T_a_x -> feq14 [penwidth = 1];
+dp_CL -> feq14 [penwidth = 1];
+F_a_y -> feq14 [penwidth = 1];
+F_a_z -> feq14 [penwidth = 1];
+feq15 -> T_atot_y [penwidth = 1];
+T_atot_y -> feq15 [penwidth = 1];
+feq15 -> T_a_y [penwidth = 1];
+T_a_y -> feq15 [penwidth = 1];
+dp_CL -> feq15 [penwidth = 1];
+F_a_x -> feq15 [penwidth = 1];
+F_a_z -> feq15 [penwidth = 1];
+feq16 -> T_atot_z [penwidth = 1];
+T_atot_z -> feq16 [penwidth = 1];
+feq16 -> T_a_z [penwidth = 1];
+T_a_z -> feq16 [penwidth = 1];
+dp_CL -> feq16 [penwidth = 1];
+F_a_x -> feq16 [penwidth = 1];
+F_a_y -> feq16 [penwidth = 1];
+feq17 -> q_bar [penwidth = 1];
+q_bar -> feq17 [penwidth = 1];
+feq17 -> rho [penwidth = 1];
+rho -> feq17 [penwidth = 1];
+feq17 -> V_a [penwidth = 1];
+V_a -> feq17 [penwidth = 1];
+feq18 -> F_D [penwidth = 1];
+F_D -> feq18 [penwidth = 1];
+q_bar -> feq18 [penwidth = 1];
+feq18 -> C_D [penwidth = 1];
+C_D -> feq18 [penwidth = 1];
+feq19 -> F_Y [penwidth = 1];
+F_Y -> feq19 [penwidth = 1];
+q_bar -> feq19 [penwidth = 1];
+feq19 -> C_Y [penwidth = 1];
+C_Y -> feq19 [penwidth = 1];
+feq20 -> F_L [penwidth = 1];
+F_L -> feq20 [penwidth = 1];
+q_bar -> feq20 [penwidth = 1];
+feq20 -> C_L [penwidth = 1];
+C_L -> feq20 [penwidth = 1];
+feq21 -> C_D [penwidth = 1];
+C_D -> feq21 [penwidth = 1];
+V_a -> feq21 [penwidth = 1];
+alpha -> feq21 [penwidth = 1];
+q -> feq21 [penwidth = 1];
+delta_e -> feq21 [penwidth = 1];
+feq22 -> C_Y [penwidth = 1];
+C_Y -> feq22 [penwidth = 1];
+V_a -> feq22 [penwidth = 1];
+beta -> feq22 [penwidth = 1];
+p -> feq22 [penwidth = 1];
+r -> feq22 [penwidth = 1];
+delta_a -> feq22 [penwidth = 1];
+delta_r -> feq22 [penwidth = 1];
+feq23 -> C_L [penwidth = 1];
+C_L -> feq23 [penwidth = 1];
+V_a -> feq23 [penwidth = 1];
+alpha -> feq23 [penwidth = 1];
+q -> feq23 [penwidth = 1];
+delta_e -> feq23 [penwidth = 1];
+feq24 -> T_a_x [penwidth = 1];
+T_a_x -> feq24 [penwidth = 1];
+q_bar -> feq24 [penwidth = 1];
+feq24 -> C_l [penwidth = 1];
+C_l -> feq24 [penwidth = 1];
+feq25 -> T_a_y [penwidth = 1];
+T_a_y -> feq25 [penwidth = 1];
+q_bar -> feq25 [penwidth = 1];
+feq25 -> C_m [penwidth = 1];
+C_m -> feq25 [penwidth = 1];
+feq26 -> T_a_z [penwidth = 1];
+T_a_z -> feq26 [penwidth = 1];
+q_bar -> feq26 [penwidth = 1];
+feq26 -> C_n [penwidth = 1];
+C_n -> feq26 [penwidth = 1];
+feq27 -> C_l [penwidth = 1];
+C_l -> feq27 [penwidth = 1];
+V_a -> feq27 [penwidth = 1];
+beta -> feq27 [penwidth = 1];
+p -> feq27 [penwidth = 1];
+r -> feq27 [penwidth = 1];
+delta_a -> feq27 [penwidth = 1];
+delta_r -> feq27 [penwidth = 1];
+feq28 -> C_m [penwidth = 1];
+C_m -> feq28 [penwidth = 1];
+V_a -> feq28 [penwidth = 1];
+alpha -> feq28 [penwidth = 1];
+q -> feq28 [penwidth = 1];
+delta_e -> feq28 [penwidth = 1];
+feq29 -> C_n [penwidth = 1];
+C_n -> feq29 [penwidth = 1];
+V_a -> feq29 [penwidth = 1];
+beta -> feq29 [penwidth = 1];
+p -> feq29 [penwidth = 1];
+r -> feq29 [penwidth = 1];
+delta_a -> feq29 [penwidth = 1];
+delta_r -> feq29 [penwidth = 1];
+feq30 -> F_t_x [penwidth = 1];
+F_t_x -> feq30 [penwidth = 1];
+feq30 -> C_t [penwidth = 1];
+C_t -> feq30 [penwidth = 1];
+rho -> feq30 [penwidth = 1];
+n_prop -> feq30 [penwidth = 1];
+feq31 -> F_t_y [penwidth = 1];
+F_t_y -> feq31 [penwidth = 1];
+feq32 -> F_t_z [penwidth = 1];
+F_t_z -> feq32 [penwidth = 1];
+feq33 -> T_t_x [penwidth = 1];
+T_t_x -> feq33 [penwidth = 1];
+feq33 -> P_prop [penwidth = 1];
+P_prop -> feq33 [penwidth = 1];
+w_prop -> feq33 [penwidth = 1];
+feq34 -> T_t_y [penwidth = 1];
+T_t_y -> feq34 [penwidth = 1];
+feq35 -> T_t_z [penwidth = 1];
+T_t_z -> feq35 [penwidth = 1];
+feq36 -> dp_prop [penwidth = 1];
+dp_prop -> feq36 [penwidth = 1];
+feq36 -> p_cm [penwidth = 1];
+p_cm -> feq36 [penwidth = 1];
+feq36 -> p_prop [penwidth = 1];
+p_prop -> feq36 [penwidth = 1];
+feq37 -> T_ttot_x [penwidth = 1];
+T_ttot_x -> feq37 [penwidth = 1];
+feq37 -> T_t_x [penwidth = 1];
+T_t_x -> feq37 [penwidth = 1];
+dp_prop -> feq37 [penwidth = 1];
+F_t_x -> feq37 [penwidth = 1];
+F_t_z -> feq37 [penwidth = 1];
+feq38 -> T_ttot_y [penwidth = 1];
+T_ttot_y -> feq38 [penwidth = 1];
+feq38 -> T_t_y [penwidth = 1];
+T_t_y -> feq38 [penwidth = 1];
+dp_prop -> feq38 [penwidth = 1];
+F_t_x -> feq38 [penwidth = 1];
+F_t_z -> feq38 [penwidth = 1];
+feq39 -> T_ttot_z [penwidth = 1];
+T_ttot_z -> feq39 [penwidth = 1];
+feq39 -> T_t_z [penwidth = 1];
+T_t_z -> feq39 [penwidth = 1];
+dp_prop -> feq39 [penwidth = 1];
+F_t_x -> feq39 [penwidth = 1];
+F_t_y -> feq39 [penwidth = 1];
+feq40 -> n_prop [penwidth = 1];
+n_prop -> feq40 [penwidth = 1];
+feq40 -> w_prop [penwidth = 1];
+w_prop -> feq40 [penwidth = 1];
+feq41 -> Jar [penwidth = 1];
+Jar -> feq41 [penwidth = 1];
+feq41 -> V_a [penwidth = 1];
+V_a -> feq41 [penwidth = 1];
+feq41 -> n_prop [penwidth = 1];
+n_prop -> feq41 [penwidth = 1];
+feq42 -> C_t [penwidth = 1];
+C_t -> feq42 [penwidth = 1];
+Jar -> feq42 [penwidth = 1];
+feq43 -> P_prop [penwidth = 1];
+P_prop -> feq43 [penwidth = 1];
+feq43 -> C_p [penwidth = 1];
+C_p -> feq43 [penwidth = 1];
+rho -> feq43 [penwidth = 1];
+n_prop -> feq43 [penwidth = 1];
+feq44 -> C_p [penwidth = 1];
+C_p -> feq44 [penwidth = 1];
+Jar -> feq44 [penwidth = 1];
+feq45 -> dot_n_prop [penwidth = 1];
+dot_n_prop -> feq45 [penwidth = 1];
+feq45 -> P_mot [penwidth = 1];
+P_mot -> feq45 [penwidth = 1];
+feq45 -> P_prop [penwidth = 1];
+P_prop -> feq45 [penwidth = 1];
+n_prop -> feq45 [penwidth = 1];
+feq46 -> n_prop [penwidth = 1];
+n_prop -> feq46 [penwidth = 1];
+feq46 -> n_mot [penwidth = 1];
+n_mot -> feq46 [penwidth = 1];
+feq47 -> n_mot [penwidth = 1];
+n_mot -> feq47 [penwidth = 1];
+feq47 -> E_i [penwidth = 1];
+E_i -> feq47 [penwidth = 1];
+feq48 -> E_i [penwidth = 1];
+E_i -> feq48 [penwidth = 1];
+feq48 -> V_mot [penwidth = 1];
+V_mot -> feq48 [penwidth = 1];
+feq48 -> I_mot [penwidth = 1];
+I_mot -> feq48 [penwidth = 1];
+feq49 -> P_mot [penwidth = 1];
+P_mot -> feq49 [penwidth = 1];
+E_i -> feq49 [penwidth = 1];
+I_i -> feq49 [penwidth = 1];
+feq50 -> I_i [penwidth = 1];
+I_i -> feq50 [penwidth = 1];
+feq50 -> I_mot [penwidth = 1];
+I_mot -> feq50 [penwidth = 1];
+feq50 -> E_i [penwidth = 1];
+E_i -> feq50 [penwidth = 1];
+feq51 -> P_elec [penwidth = 1];
+P_elec -> feq51 [penwidth = 1];
+V_mot -> feq51 [penwidth = 1];
+I_mot -> feq51 [penwidth = 1];
+feq52 -> V_mot [penwidth = 1];
+V_mot -> feq52 [penwidth = 1];
+feq52 -> V_bat [penwidth = 1];
+V_bat -> feq52 [penwidth = 1];
+feq52 -> I_mot [penwidth = 1];
+I_mot -> feq52 [penwidth = 1];
+delta_t -> feq52 [penwidth = 1];
+deq1 -> dot_north [penwidth = 1];
+dot_north -> deq1 [penwidth = 1];
+deq1 -> north [penwidth = 1];
+north -> deq1 [penwidth = 1];
+deq2 -> dot_east [penwidth = 1];
+dot_east -> deq2 [penwidth = 1];
+deq2 -> east [penwidth = 1];
+east -> deq2 [penwidth = 1];
+deq3 -> dot_down [penwidth = 1];
+dot_down -> deq3 [penwidth = 1];
+deq3 -> down [penwidth = 1];
+down -> deq3 [penwidth = 1];
+deq4 -> dot_phi [penwidth = 1];
+dot_phi -> deq4 [penwidth = 1];
+deq4 -> phi [penwidth = 1];
+phi -> deq4 [penwidth = 1];
+deq5 -> dot_theta [penwidth = 1];
+dot_theta -> deq5 [penwidth = 1];
+deq5 -> theta [penwidth = 1];
+theta -> deq5 [penwidth = 1];
+deq6 -> dot_psi [penwidth = 1];
+dot_psi -> deq6 [penwidth = 1];
+deq6 -> psi [penwidth = 1];
+psi -> deq6 [penwidth = 1];
+deq7 -> dot_p [penwidth = 1];
+dot_p -> deq7 [penwidth = 1];
+deq7 -> p [penwidth = 1];
+p -> deq7 [penwidth = 1];
+deq8 -> dot_q [penwidth = 1];
+dot_q -> deq8 [penwidth = 1];
+deq8 -> q [penwidth = 1];
+q -> deq8 [penwidth = 1];
+deq9 -> dot_r [penwidth = 1];
+dot_r -> deq9 [penwidth = 1];
+deq9 -> r [penwidth = 1];
+r -> deq9 [penwidth = 1];
+deq10 -> dot_u [penwidth = 1];
+dot_u -> deq10 [penwidth = 1];
+deq10 -> u [penwidth = 1];
+u -> deq10 [penwidth = 1];
+deq11 -> dot_v [penwidth = 1];
+dot_v -> deq11 [penwidth = 1];
+deq11 -> v [penwidth = 1];
+v -> deq11 [penwidth = 1];
+deq12 -> dot_w [penwidth = 1];
+dot_w -> deq12 [penwidth = 1];
+deq12 -> w [penwidth = 1];
+w -> deq12 [penwidth = 1];
+deq13 -> dot_n_prop [penwidth = 1];
+dot_n_prop -> deq13 [penwidth = 1];
+deq13 -> n_prop [penwidth = 1];
+n_prop -> deq13 [penwidth = 1];
+meq1 -> north [penwidth = 1];
+north -> meq1 [penwidth = 1];
+meq1 -> z [penwidth = 1];
+z -> meq1 [penwidth = 1];
+meq1 -> lat [penwidth = 1];
+lat -> meq1 [penwidth = 1];
+meq1 -> lat_0 [penwidth = 1];
+lat_0 -> meq1 [penwidth = 1];
+meq2 -> east [penwidth = 1];
+east -> meq2 [penwidth = 1];
+meq2 -> z [penwidth = 1];
+z -> meq2 [penwidth = 1];
+meq2 -> lon [penwidth = 1];
+lon -> meq2 [penwidth = 1];
+meq2 -> lon_0 [penwidth = 1];
+lon_0 -> meq2 [penwidth = 1];
+meq3 -> down [penwidth = 1];
+down -> meq3 [penwidth = 1];
+meq3 -> z [penwidth = 1];
+z -> meq3 [penwidth = 1];
+meq3 -> z_0 [penwidth = 1];
+z_0 -> meq3 [penwidth = 1];
+meq4 -> h [penwidth = 1];
+h -> meq4 [penwidth = 1];
+z -> meq4 [penwidth = 1];
+meq5 -> z [penwidth = 1];
+z -> meq5 [penwidth = 1];
+h -> meq5 [penwidth = 1];
+meq6 -> T [penwidth = 1];
+T -> meq6 [penwidth = 1];
+meq6 -> T_0 [penwidth = 1];
+T_0 -> meq6 [penwidth = 1];
+h -> meq6 [penwidth = 1];
+h_0 -> meq6 [penwidth = 1];
+meq7 -> P [penwidth = 1];
+P -> meq7 [penwidth = 1];
+meq7 -> P_0 [penwidth = 1];
+P_0 -> meq7 [penwidth = 1];
+T_0 -> meq7 [penwidth = 1];
+T -> meq7 [penwidth = 1];
+meq8 -> h [penwidth = 1];
+h -> meq8 [penwidth = 1];
+T_0 -> meq8 [penwidth = 1];
+P -> meq8 [penwidth = 1];
+P_0 -> meq8 [penwidth = 1];
+meq8 -> h_0 [penwidth = 1];
+h_0 -> meq8 [penwidth = 1];
+meq9 -> rho [penwidth = 1];
+rho -> meq9 [penwidth = 1];
+meq9 -> P [penwidth = 1];
+P -> meq9 [penwidth = 1];
+meq9 -> T [penwidth = 1];
+T -> meq9 [penwidth = 1];
+meq10 -> P_t [penwidth = 1];
+P_t -> meq10 [penwidth = 1];
+meq10 -> P [penwidth = 1];
+P -> meq10 [penwidth = 1];
+meq10 -> rho [penwidth = 1];
+rho -> meq10 [penwidth = 1];
+meq10 -> V_a [penwidth = 1];
+V_a -> meq10 [penwidth = 1];
+meq11 -> u_w [penwidth = 1];
+u_w -> meq11 [penwidth = 1];
+phi -> meq11 [penwidth = 1];
+theta -> meq11 [penwidth = 1];
+psi -> meq11 [penwidth = 1];
+w_n -> meq11 [penwidth = 1];
+w_e -> meq11 [penwidth = 1];
+meq12 -> v_w [penwidth = 1];
+v_w -> meq12 [penwidth = 1];
+phi -> meq12 [penwidth = 1];
+theta -> meq12 [penwidth = 1];
+psi -> meq12 [penwidth = 1];
+w_n -> meq12 [penwidth = 1];
+w_e -> meq12 [penwidth = 1];
+meq13 -> w_w [penwidth = 1];
+w_w -> meq13 [penwidth = 1];
+phi -> meq13 [penwidth = 1];
+theta -> meq13 [penwidth = 1];
+psi -> meq13 [penwidth = 1];
+w_n -> meq13 [penwidth = 1];
+w_e -> meq13 [penwidth = 1];
+a_m_x -> seq1 [penwidth = 1];
+seq1 -> F_x [penwidth = 1];
+F_x -> seq1 [penwidth = 1];
+m -> seq1 [penwidth = 1];
+g -> seq1 [penwidth = 1];
+seq1 -> theta [penwidth = 1];
+theta -> seq1 [penwidth = 1];
+a_m_y -> seq2 [penwidth = 1];
+seq2 -> F_y [penwidth = 1];
+F_y -> seq2 [penwidth = 1];
+m -> seq2 [penwidth = 1];
+g -> seq2 [penwidth = 1];
+seq2 -> phi [penwidth = 1];
+phi -> seq2 [penwidth = 1];
+theta -> seq2 [penwidth = 1];
+a_m_z -> seq3 [penwidth = 1];
+seq3 -> F_z [penwidth = 1];
+F_z -> seq3 [penwidth = 1];
+m -> seq3 [penwidth = 1];
+g -> seq3 [penwidth = 1];
+seq3 -> phi [penwidth = 1];
+phi -> seq3 [penwidth = 1];
+seq3 -> theta [penwidth = 1];
+theta -> seq3 [penwidth = 1];
+p_m -> seq4 [penwidth = 1];
+seq4 -> p [penwidth = 1];
+p -> seq4 [penwidth = 1];
+q_m -> seq5 [penwidth = 1];
+seq5 -> q [penwidth = 1];
+q -> seq5 [penwidth = 1];
+r_m -> seq6 [penwidth = 1];
+seq6 -> r [penwidth = 1];
+r -> seq6 [penwidth = 1];
+phi_m -> seq7 [penwidth = 1];
+seq7 -> phi [penwidth = 1];
+phi -> seq7 [penwidth = 1];
+theta_m -> seq8 [penwidth = 1];
+seq8 -> theta [penwidth = 1];
+theta -> seq8 [penwidth = 1];
+psi_m -> seq9 [penwidth = 1];
+seq9 -> psi [penwidth = 1];
+psi -> seq9 [penwidth = 1];
+lat_0_gps -> seq10 [penwidth = 1];
+seq10 -> lat_0 [penwidth = 1];
+lat_0 -> seq10 [penwidth = 1];
+lon_0_gps -> seq11 [penwidth = 1];
+seq11 -> lon_0 [penwidth = 1];
+lon_0 -> seq11 [penwidth = 1];
+lat_gps -> seq12 [penwidth = 1];
+seq12 -> lat [penwidth = 1];
+lat -> seq12 [penwidth = 1];
+lon_gps -> seq13 [penwidth = 1];
+seq13 -> lon [penwidth = 1];
+lon -> seq13 [penwidth = 1];
+z_gps -> seq14 [penwidth = 1];
+seq14 -> z [penwidth = 1];
+z -> seq14 [penwidth = 1];
+V_g_gps -> seq15 [penwidth = 1];
+seq15 -> V_g [penwidth = 1];
+V_g -> seq15 [penwidth = 1];
+chi_gps -> seq16 [penwidth = 1];
+seq16 -> chi [penwidth = 1];
+chi -> seq16 [penwidth = 1];
+T_0_m -> seq17 [penwidth = 1];
+seq17 -> T_0 [penwidth = 1];
+T_0 -> seq17 [penwidth = 1];
+z_0_m -> seq18 [penwidth = 1];
+seq18 -> z_0 [penwidth = 1];
+z_0 -> seq18 [penwidth = 1];
+seq19 -> z_0 [penwidth = 1];
+z_0 -> seq19 [penwidth = 1];
+seq19 -> h_0 [penwidth = 1];
+h_0 -> seq19 [penwidth = 1];
+P_bar -> seq20 [penwidth = 1];
+seq20 -> P [penwidth = 1];
+P -> seq20 [penwidth = 1];
+T_m -> seq21 [penwidth = 1];
+seq21 -> T [penwidth = 1];
+T -> seq21 [penwidth = 1];
+P_t_m -> seq22 [penwidth = 1];
+seq22 -> P_t [penwidth = 1];
+P_t -> seq22 [penwidth = 1];
+alpha_m -> seq23 [penwidth = 1];
+seq23 -> alpha [penwidth = 1];
+alpha -> seq23 [penwidth = 1];
+beta_m -> seq24 [penwidth = 1];
+seq24 -> beta [penwidth = 1];
+beta -> seq24 [penwidth = 1];
+V_mot_m -> seq25 [penwidth = 1];
+seq25 -> V_mot [penwidth = 1];
+V_mot -> seq25 [penwidth = 1];
+I_mot_m -> seq26 [penwidth = 1];
+seq26 -> I_mot [penwidth = 1];
+I_mot -> seq26 [penwidth = 1];
+n_prop_m -> seq27 [penwidth = 1];
+seq27 -> n_prop [penwidth = 1];
+n_prop -> seq27 [penwidth = 1];
+seq28 -> delta_a [penwidth = 1];
+delta_a -> seq28 [penwidth = 1];
+delta_a_inp -> seq28 [penwidth = 1];
+seq29 -> delta_e [penwidth = 1];
+delta_e -> seq29 [penwidth = 1];
+delta_e_inp -> seq29 [penwidth = 1];
+seq30 -> delta_t [penwidth = 1];
+delta_t -> seq30 [penwidth = 1];
+delta_t_inp -> seq30 [penwidth = 1];
+seq31 -> delta_r [penwidth = 1];
+delta_r -> seq31 [penwidth = 1];
+delta_r_inp -> seq31 [penwidth = 1];
+seq32 -> m_nom [penwidth = 1];
+m_nom -> seq32 [penwidth = 1];
+seq33 -> m_i [penwidth = 1];
+m_i -> seq33 [penwidth = 1];
+seq34 -> p_mi [penwidth = 1];
+p_mi -> seq34 [penwidth = 1];
+seq35 -> p_prop [penwidth = 1];
+p_prop -> seq35 [penwidth = 1];
+seq36 -> p_cl [penwidth = 1];
+p_cl -> seq36 [penwidth = 1];
+seq37 -> J_nom [penwidth = 1];
+J_nom -> seq37 [penwidth = 1];
+seq38 -> g [penwidth = 1];
+g -> seq38 [penwidth = 1];
+g_0 -> seq38 [penwidth = 1];
+}

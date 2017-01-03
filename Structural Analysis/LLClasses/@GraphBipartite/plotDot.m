@@ -8,8 +8,10 @@ if nargin<2
 end
 dotName = sprintf('%s.dot',graphName);
 imageName = sprintf('%s.ps',graphName);
+dotFilePath = sprintf('LLGraphPool/%s/%s',gh.name,dotName);
+imageFilePath = sprintf('LLGraphPool/%s/%s',gh.name,imageName);
 
-fileID = fopen(dotName,'w');
+fileID = fopen(dotFilePath,'w');
 % Write header
 fprintf(fileID,'digraph G {\n');
 fprintf(fileID,'rankdir = LR;\n');
@@ -72,7 +74,7 @@ fprintf(fileID,'}\n');
 fclose(fileID);
 
 % Run 'dot -Tps mygraph.dot -o mygraph.ps' in the command line
-s = system(sprintf('dot -Tps %s -o %s',dotName, imageName));
+s = system(sprintf('dot -Tps %s -o %s',dotFilePath, imageFilePath));
 if s
     warning('Failed to run "dot" command to generate graph image');
 end
