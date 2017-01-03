@@ -23,8 +23,15 @@ model = g004();
 % [model, name, coords] = g011();
 % [model, name, coords] = g012();
 % [model, name, coords] = g013();
-% [model, name, coords] = g014(); if exist('g014_costlist.mat') load g014_costlist.mat; end
+% model = g014(); if exist('g014_costlist.mat') load g014_costlist.mat; end
+% model = g014a();
+% model = g014b();
+% model = g014c();
+model = g014e();
 % model = g015();
+% model = g016();
+% model = g016b();
+% model = g017();
 
 % Create the graph object
 mygraph = GraphBipartite(model);
@@ -81,9 +88,9 @@ mygraph.liusm.Lint();
 % mygraph.coords = coords;
 
 % Display the graph using external dot compiler
-mygraph.plotDot();
+mygraph.plotDot('myGraph');
 
-% return
+return
 
 %% Verify Graph
 % % Investigate the graph attributes
@@ -118,6 +125,8 @@ graphOver.liusm.Lint();
 % figure();
 % graphOver.plotDM();
 
+return
+
 %% Select causality
 mygraph.causality = 'Differential'; % None, Integral, Differential, Mixed, Realistic
 
@@ -125,7 +134,8 @@ mygraph.causality = 'Differential'; % None, Integral, Differential, Mixed, Reali
 % profile on
 
 % graphOver.matchRanking();
-graphOver.matchWeightedElimination();
+graphOver.matchWeightedElimination('maxRank',4);
+% graphOver.plotDot('graphOver');
 
 graphUndir = graphOver.copy();
 
@@ -158,27 +168,35 @@ graphMTES.liusm.Lint();
 % figure();
 % graphMTES.plotSparse()
 
-figure();
-graphMTES.liusm.PlotModel();
-set(gca,'YTickLabel',graphMTES.equationAliasArray);
+% figure();
+% graphMTES.liusm.PlotModel();
+% set(gca,'YTickLabel',graphMTES.equationAliasArray);
+% 
+% figure();
+% graphMTES.plotDM();
+% graphMTES.plotDot('graphMTES');
 
-figure();
-graphMTES.plotDM();
+% return
 
 %% Find MSOs involving faults
-
+tic
 faultIndArray = find(sum(graphMTES.liusm.F,2))';
 MSOs = graphMTES.liusm.MSO();
+% MSOs = graphMTES.liusm.MTES();
 MTESs = cell(0,0);
 for i=1:length(MSOs)
     if any(ismember(MSOs{i},faultIndArray));
         MTESs(end+1) = MSOs(i);
     end
 end
+fprintf('MTESs found:');
+toc
 
+% return
 %% Loop over available MSOs
-clc
-
+% clc
+debug = false;
+tic
 % Initialize valid matchings container
 Mvalid = {};
 
@@ -193,17 +211,30 @@ for indexMTES = 1:length(MTESs)
     % Loop over available just-constrained submodels
     M0weights = ones(1,length(MSOcurr))*inf;
     M0pool = cell(1,length(MSOcurr));
+    indexIntegral = [];
     for i=1:length(MSOcurr)
 
-        fprintf('*** Examining new M0\n');
+        if debug fprintf('*** Examining new M0\n'); end
         SMjust = MSOcurr(setdiff(1:length(MSOcurr),i));
         SMjustIds = graphMTES.equationIdArray(SMjust);
-
+        if debug fprintf('with equation ids: ');  fprintf('%d, ',SMjustIds); fprintf('\n'); end
+        if debug fprintf('and aliases: ');  fprintf('%s, ',graphMTES.equations(graphMTES.getIndexById(SMjustIds)).prAlias ); fprintf('\n'); end
         % Find a valid matching for that M0
-        Mcurr = graphMTES.matchValid(SMjustIds);
-        
+        A = graphMTES.getSubmodel(SMjustIds,'direction','E2V');
+        if (size(A,1)~=size(A,2))
+            if debug warning('Tried to match a non-square system'); end
+            Mcurr = {};
+        else
+            [Mcurr] = graphMTES.matchValid(SMjustIds);
+        end
+        % Count matching lenght
+        counter = 0;
+        for j=1:length(Mcurr)
+            counter = counter + length(Mcurr{j});
+        end
         % TODO: compare weights from all MCurrs
-        if ~isempty(Mcurr)
+        if counter==length(SMjustIds)            
+            if debug fprintf('A valid matching for that M0 is (edgeIds): ');  fprintf('%d, ',Mcurr{:}); fprintf('\n'); end
             M0pool(i) = {Mcurr};
             KHcomp = Mcurr(:);
             scc = [];
@@ -211,11 +242,36 @@ for indexMTES = 1:length(MTESs)
                 scc = [scc KHcomp{j}];
             end
             M0weights(i) = sum(graphMTES.getEdgeWeight(scc));
+            
+%             % Select for existence of integral edge
+%             edgeIndices = graphMTES.getIndexById(scc);
+%             foundIntegralEdge = false;
+%             for j=edgeIndices
+%                 if graphMTES.edges(j).isIntegral
+%                     foundIntegralEdge = true;
+%                     fprintf('Found integral edge!\n');
+%                     break;
+%                 end
+%             end
+        
+            
+        elseif counter>0            
+            if debug fprintf('Only partial matching found\n'); end
+        else
+            if debug fprintf('No valid matching found\n'); end
         end
     end
-    [~, pivot] = sort(M0weights);
-    i = pivot(1);
-    Mvalid(end+1) = {[MSOcurr(i) M0pool(i)]};
+    if any(isfinite(M0weights)) %Process matching of this M0   
+
+        % Search for cheapest matching weight
+        [~, pivot] = sort(M0weights);
+        i = pivot(1);
+        Mvalid(end+1) = {[MSOcurr(i) M0pool(i)]};
+        
+        if debug fprintf('The selected matching for this MSO is (edgeIds): ');  fprintf('%d, ',M0pool{i}{:}); fprintf('\n'); end
+    else
+        if debug fprintf('No valid matching could be found for this MSO\n'); end
+    end
 end
 
 close(h)
@@ -223,6 +279,9 @@ close(h)
 if ~exist('Mvalid')
     load Mvalid
 end
+fprintf('Valid MTESs found:');
+toc
+% return
 
 %% Validate matching results
 validMatchings = zeros(1,length(Mvalid));
@@ -230,7 +289,9 @@ for i = 1:length(Mvalid)
     validMatchings(i) = graphMTES.validateMatching(Mvalid{i}{2:end});
 end
 
-%% Check if different MSOs match the same equation is different ways
+% return
+
+%% Check if different MSOs match the same equation in different ways
 % In general they do
 % clc
 %
@@ -295,31 +356,87 @@ for i=1:length(Mvalid)
     affectingEqs = [resGenId affectingEqs];
     signatures2{i+length(generator_id),1} = resGenId;
     signatures2{i+length(generator_id),2} = affectingEqs;
-    matchingWeight = sum(graphOver.getEdgeWeight(matching)) + 1;
+    matchingWeight = sum(graphNew.getEdgeWeight(matching)) + 1;
 %     matchingWeight = sum(graphOver.getEdgeWeight(MvalidFlat{i}{2})) + 1;
     signatures2{i+length(generator_id),3} = matchingWeight;
     signatures2{i+length(generator_id),4} = matching;
 end
 
+
+%% Check if any Mvalid has an integral edge
+integralEdges=[];
+for i=1:length(MvalidFlat)
+    edges = MvalidFlat{i}{2};
+    for j=1:length(edges)
+        if graphOver.edges(graphOver.getIndexById(edges(j))).isIntegral
+            integralEdges(end+1,:)=[j,edges(j)];
+        end
+    end
+end
+
+return
+
 %% Convert to proper signature table
 
 % clc
-% 
-% FSM = zeros(size(signatures2,1),graphOver.numEqs);
-% 
-% for i=1:size(FSM,1)
-%     FSM(i,graphOver.equationIdToIndexArray(signatures2{i,2}))=1;
-% end
-% 
-% % Reduce FSM columns to only faultable equations
-% faultIds = graphOver.getEquIdByProperty('isFaultable');
-% faultIndices = graphOver.getIndexById(faultIds);
-% FSM = FSM(:,faultIndices);
-% IM = isolabilityMatrix(FSM);
 
+if isempty(signatures2)
+    fprintf('No residuals could be found in the system - Finish\n');
+    return;
+end
+
+FSM = zeros(size(signatures2,1),graphOver.numEqs);
+
+for i=1:size(FSM,1)
+    FSM(i,graphOver.equationIdToIndexArray(signatures2{i,2}))=1;
+end
+
+resSelected = 1:length(signatures2);
+
+% Plot detectability matrix
+figure();
+spy(FSM);
+set(gca,'XTick',1:graphOver.numEqs);
+set(gca,'XTickLabel',graphOver.equationAliasArray);
+% Reduce FSM columns to only faultable equations
+faultIds = graphOver.getEquIdByProperty('isFaultable');
+faultIndices = graphOver.getIndexById(faultIds);
+FSM = FSM(:,faultIndices);
+figure();
+spy(FSM);
+set(gca,'XTick',1:length(faultIndices));
+set(gca,'XTickLabel',graphOver.equationAliasArray(faultIndices));
+% Reduce FSM columns to only detectable faults
+detectionIndices = find(sum(FSM,1));
+faultIndices = faultIndices(detectionIndices);
+FSM = FSM(:,detectionIndices);
+figure();
+spy(FSM);
+set(gca,'XTick',1:length(faultIndices));
+set(gca,'XTickLabel',graphOver.equationAliasArray(faultIndices));
+
+IM = isolabilityMatrix(FSM);
+figure();
+spy(IM);
+set(gca,'XTick',1:length(faultIndices));
+set(gca,'XTickLabel',graphOver.equationAliasArray(faultIndices));
+set(gca,'YTick',1:length(faultIndices));
+set(gca,'YTickLabel',graphOver.equationAliasArray(faultIndices));
+
+fprintf('Detectable fault for equations\n');
+for i=1:length(faultIndices)
+fprintf('%s/%d: %s\n',graphOver.equationAliasArray{faultIndices(i)},graphOver.equationIdArray(faultIndices(i)),graphOver.equations(faultIndices(i)).expressionStructural)
+end
+
+fprintf('Residuals detecting each fault\n');
+for i=1:length(faultIndices)
+fprintf('%d: ',i); fprintf('%d,\t',find(FSM(:,i))); fprintf('\n');
+end
+
+% return
 %% Decide upon matchings based on detectability and isolability
 
-clc
+% clc
 
 resWeights = zeros(1,size(signatures2,1));
 
@@ -347,6 +464,21 @@ for i=1:length(pivot)
     end    
 end
 
+% Plot detectability matrix
+figure();
+spy(FSM);
+set(gca,'XTick',graphOver.numEqs);
+set(gca,'XTickLabel',graphOver.equationAliasArray);
+% Reduce FSM columns to only faultable equations
+faultIds = graphOver.getEquIdByProperty('isFaultable');
+faultIndices = graphOver.getIndexById(faultIds);
+FSM = FSM(:,faultIndices);
+IM = isolabilityMatrix(FSM);
+figure();
+spy(FSM);
+set(gca,'XTick',1:length(faultIndices));
+set(gca,'XTickLabel',graphOver.equationAliasArray(faultIndices));
+
 % Print selected residuals
 fprintf('Building MSO generator lookup table\n');
 MSOGenerators = zeros(1,size(MvalidFlat,2));
@@ -355,7 +487,11 @@ for j=1:length(MSOGenerators)
 end
 fprintf('Building ranking generator lookup table\n');
 overGenerators = graphOver.getEquIdByProperty('isResGenerator'); % For matching information on initial generators
-fprintf('Iterating over generators\n');
+
+return
+
+%% Print matching of selected residuals
+resSelected = 8;
 for i=resSelected
     
     generatorId = signatures2{i,1};
