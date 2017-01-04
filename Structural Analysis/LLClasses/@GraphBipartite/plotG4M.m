@@ -1,5 +1,5 @@
 function plotG4M(obj)
-% Plot graph using Graphviz4Matlab library
+% DEPRECATED!!! Plot graph using Graphviz4Matlab library
 
 gray = [0.3 0.3 0.3];
 yellow = [1.0 1.0 0.0];

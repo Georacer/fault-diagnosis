@@ -6,11 +6,49 @@ clc;
 % profile on
 
 %% Create the graph
+tic
+
 % mygraph = createGraph('random',[10 9]);
 mygraph = createGraph('g018');
 
-% graph.causality = 'Mixed'; % Set causality first in order to avoid requests for evaluations of non-invertible edges 
+graph.causality = 'Mixed'; % Set causality first in order to avoid requests for evaluations of non-invertible edges
+
+fprintf('Graph creation lasted %g secs\n',toc);
+% return
+
+%% Verify Graph
+% Investigate the graph attributes
+% cyclic = mygraph.hasCycles();
+% if cyclic
+%     disp('The system graph is cyclic');
+% else
+%     disp('The system graph is not cyclic');
+% end
+
+% return
+
 %% Plot the graph
+tic
+
+% Display the adjacency matrices:
+% figure();
+% mygraph.plotSparse()
+
+% Display the embedded LiUSM plotter:
+% figure();
+% mygraph.liusm.PlotModel();
+% set(gca,'YTickLabel',mygraph.equationAliasArray);
+
+% Display the LiUSM plotDM output
+% figure();
+% mygraph.plotDM();
+
+% Create a .dot file and a complied .ps image
+mygraph.plotDot('myGraph');
+
+fprintf('Graph visualization lasted %g secs\n',toc);
+% return
+
 %% Perform preliminary matchings
 %% Find MTESs and generate candidate residual generators
 %% Verify candidate residual generators
@@ -18,52 +56,6 @@ mygraph = createGraph('g018');
 %% Plot matchings
 
 % profile off
-
-%% Select causality
-mygraph.causality = 'Mixed'; % None, Integral, Differential, Mixed, Realistic
-
-
-
-%% Plot the created graph
-% Display the adjacency matrices
-% figure();
-% mygraph.plotSparse()
-%
-% figure();
-% mygraph.liusm.PlotModel();
-% set(gca,'YTickLabel',mygraph.equationAliasArray);
-%
-% figure();
-% mygraph.plotDM();
-
-
-% % Display the graph using Graphviz4Matlab
-% mygraph.plotG4M();
-% if (isempty(coords))
-%     coords = mygraph.coords;
-% end
-%
-% % Let the use re-arrange the nodes
-% disp('Rearrange node positions if needed and press ENTER');
-% pause();
-% coords = mygraph.ph.getNodePositions();
-% mygraph.coords = coords;
-
-% Display the graph using external dot compiler
-mygraph.plotDot('myGraph');
-
-return
-
-%% Verify Graph
-% % Investigate the graph attributes
-% cyclic = mygraph.hasCycles();
-% if cyclic
-%     disp('The system graph is cyclic');
-% else
-%     disp('The system graph is not cyclic');
-% end
-%
-% % return
 
 %% Get over-constrained part
 

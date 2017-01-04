@@ -3,10 +3,10 @@ function [ graph ] = createGraph( graphName, dimension )
 %   Detailed explanation goes here
 
 if strcmp(graphName,'random')
-    fprintf('Creating a new random graph');
+    fprintf('Creating a new random graph\n');
     model = randomGraph(dimension(1),dimension(2));
 else
-    fprintf('Loading model %s',graphName);
+    fprintf('Loading model %s\n',graphName);
     model = feval(sprintf('%s',graphName));
 end
 
@@ -30,7 +30,7 @@ graph.createAdjacency();
 
 %% Create Linkopping University structural model
 graph.createLiusm();
-fprintf('LiU SM Linter output:');
+fprintf('LiU SM Linter output:\n');
 graph.liusm.Lint();
 
 % Create the simulation engine object to build the functions list
