@@ -5,52 +5,23 @@ clc;
 
 % profile on
 
+%% Create the graph
+% mygraph = createGraph('random',[10 9]);
+mygraph = createGraph('g018');
+
+% graph.causality = 'Mixed'; % Set causality first in order to avoid requests for evaluations of non-invertible edges 
+%% Plot the graph
+%% Perform preliminary matchings
+%% Find MTESs and generate candidate residual generators
+%% Verify candidate residual generators
+%% Build fault signatures, detectability and isolability specification
+%% Plot matchings
+
+% profile off
+
 %% Create graph
 
-% Select a model file to create the cell structure
-% [model, coords] = randomGraph(8,5);
-% [model, name, coords] = g001();
-% model = g002();
-% [model, coords] = g003();
-% model = g004();
-% [model, name, coords] = g005();
-% [model, coords] = g006();
-% [model, name, coords] = g007();
-% [model, name, coords] = g007a();
-% [model, coords] = g008();
-% [model, name, coords] = g009a();
-% [model, name, coords] = g010();
-% [model, name, coords] = g011();
-% [model, name, coords] = g012();
-% [model, name, coords] = g013();
-% model = g014(); if exist('g014_costlist.mat') load g014_costlist.mat; end
-% model = g014a();
-% model = g014b();
-% model = g014c();
-model = g014e();
-% model = g015();
-% model = g016();
-% model = g016b();
-% model = g017();
 
-% Create the graph object
-mygraph = GraphBipartite(model);
-disp('Built graph object');
-
-if ~exist('costList')
-    disp('No cost list found in the workspace, creating a default one');
-    costList = mygraph.createCostList(true);
-end
-
-mygraph.readCostList(costList);
-
-% Create the simulation engine object to build the functions list
-mygraph.causality = 'Mixed'; % Set causality first in order to avoid requests for evaluations of non-invertible edges 
-% simEngine = SimEngine(mygraph); 
-% You can now discrad the SimEngine object and create another one based on
-% the matched GraphBipartite
-
-% return
 
 %% Select causality
 mygraph.causality = 'Mixed'; % None, Integral, Differential, Mixed, Realistic
@@ -125,7 +96,7 @@ graphOver.liusm.Lint();
 % figure();
 % graphOver.plotDM();
 
-return
+% return
 
 %% Select causality
 mygraph.causality = 'Differential'; % None, Integral, Differential, Mixed, Realistic
@@ -134,7 +105,7 @@ mygraph.causality = 'Differential'; % None, Integral, Differential, Mixed, Reali
 % profile on
 
 % graphOver.matchRanking();
-graphOver.matchWeightedElimination('maxRank',4);
+graphOver.matchWeightedElimination('maxRank',0);
 % graphOver.plotDot('graphOver');
 
 graphUndir = graphOver.copy();
@@ -181,8 +152,9 @@ graphMTES.liusm.Lint();
 %% Find MSOs involving faults
 tic
 faultIndArray = find(sum(graphMTES.liusm.F,2))';
-MSOs = graphMTES.liusm.MSO();
-% MSOs = graphMTES.liusm.MTES();
+graphMTES.liusm.CompiledMSO();
+% MSOs = graphMTES.liusm.MSO();
+MSOs = graphMTES.liusm.MTES();
 MTESs = cell(0,0);
 for i=1:length(MSOs)
     if any(ismember(MSOs{i},faultIndArray));
