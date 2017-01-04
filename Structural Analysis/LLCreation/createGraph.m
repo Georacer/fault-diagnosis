@@ -25,6 +25,14 @@ end
 
 graph.readCostList(costList);
 
+%% Create the incidence matrix
+graph.createAdjacency();
+
+%% Create Linkopping University structural model
+graph.createLiusm();
+fprintf('LiU SM Linter output:');
+graph.liusm.Lint();
+
 % Create the simulation engine object to build the functions list
 % simEngine = SimEngine(mygraph); 
 % You can now discrad the SimEngine object and create another one based on

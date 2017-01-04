@@ -19,19 +19,10 @@ mygraph = createGraph('g018');
 
 % profile off
 
-%% Create graph
-
-
-
 %% Select causality
 mygraph.causality = 'Mixed'; % None, Integral, Differential, Mixed, Realistic
 
-%% Create the incidence matrix
-mygraph.createAdjacency();
 
-%% Create Linkopping University structural model
-mygraph.createLiusm();
-mygraph.liusm.Lint();
 
 %% Plot the created graph
 % Display the adjacency matrices
