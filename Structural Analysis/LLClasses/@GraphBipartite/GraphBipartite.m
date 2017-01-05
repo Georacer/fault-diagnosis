@@ -129,7 +129,7 @@ classdef GraphBipartite < matlab.mixin.Copyable
         id = getVarIdByProperty(this,property,value,operator)
 
         plotG4M(this)        
-        plotDot(this,graphName)
+        plotDot(this,graphName,compile)
         plotSparse(this)
         s = printEdges(gh,ids)
         plotDM(gh)

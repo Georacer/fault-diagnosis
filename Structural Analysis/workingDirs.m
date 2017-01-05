@@ -9,3 +9,4 @@ addpath(genpath('3rd party research/FaultDiagnosisToolbox'));
 addpath(genpath('3rd party libraries/munkres'));
 addpath(genpath('LLMatching'));
 addpath(genpath('LLCreation'));
+addpath(genpath('LLDisplay'));
