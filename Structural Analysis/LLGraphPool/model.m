@@ -7,6 +7,7 @@ classdef model
         description = '';
         constraints = [];
         coordinates = [];
+        costlist = [];
     end
     
     methods

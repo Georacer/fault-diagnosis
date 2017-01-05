@@ -1,4 +1,4 @@
-function plotDot(gh,graphName)
+function plotDot(gh,graphName,compile)
 % Generate .dot code from this graph
 
 debug = true;
@@ -6,6 +6,10 @@ debug = true;
 if nargin<2
     graphName = 'myGraph';
 end
+if nargin<3
+    compile = true;
+end
+
 dotName = sprintf('%s.dot',graphName);
 imageName = sprintf('%s.ps',graphName);
 dotFilePath = sprintf('LLGraphPool/%s/%s',gh.name,dotName);
@@ -74,9 +78,11 @@ fprintf(fileID,'}\n');
 fclose(fileID);
 
 % Run 'dot -Tps mygraph.dot -o mygraph.ps' in the command line
-s = system(sprintf('dot -Tps %s -o %s',dotFilePath, imageFilePath));
-if s
-    warning('Failed to run "dot" command to generate graph image');
+if compile
+    s = system(sprintf('dot -Tps %s -o %s',dotFilePath, imageFilePath));
+    if s
+        warning('Failed to run "dot" command to generate graph image');
+    end
 end
 
 end
