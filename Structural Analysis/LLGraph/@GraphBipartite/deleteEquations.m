@@ -7,7 +7,7 @@ debug=false;
 
 resp = false;
 
-ind2keep = setdiff(1:this.numEqs,indices);
+ind2Keep = setdiff(1:this.numEqs,indices);
 
 this.equations = this.equations(ind2Keep);
 

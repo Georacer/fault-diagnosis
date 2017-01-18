@@ -7,10 +7,7 @@ if size(indicse)~=size(weights)
 end
 
 for i=1:length(indices)
-    
     gh.edges(indices(i)).weight = weights(i);
-    
 end
-
 
 end

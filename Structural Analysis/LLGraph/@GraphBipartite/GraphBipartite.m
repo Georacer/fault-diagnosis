@@ -35,7 +35,6 @@ classdef GraphBipartite < matlab.mixin.Copyable
             this.gi = gi;
         end
         
-        
         %%
         function res = get.numVars(this)
             res = length(this.variables);
@@ -55,11 +54,15 @@ classdef GraphBipartite < matlab.mixin.Copyable
         [resp, id] = addEdge(this,id,equId,varId,edgeProps)
         [resp, id] = addEquation(this,id, alias, description)
         [resp, id] = addVariable(this,id,alias,description,varProps)
+        resp = addEdgeToEqu(this,equIndices,edgeIndices)
+        resp = addEdgeToVar(this,varIndices,edgeIndices)
         
         % delete methods
         resp = deleteEdges(this, indices)
         resp = deleteEquations(this, indices)
         resp = deleteVariables(this, indices)
+        resp = removeEdgeFromEqu(this, equIndices,edgeIndices)
+        resp = removeEdgeFromVar(this, varIndices,edgeIndices)
         
         % Get methods
         [ids] = getEdgesEqu(this,indices)

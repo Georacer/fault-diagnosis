@@ -7,7 +7,7 @@ debug=false;
 
 resp = false;
 
-ind2keep = setdiff(1:this.numVars,indices);
+ind2Keep = setdiff(1:this.numVars,indices);
 
 this.variables = this.variables(ind2Keep);
 

@@ -1,4 +1,4 @@
-function setMatchedVar( gh, index, value )
+function setMatchedVar( gh, index, value, equId )
 %SETKNOWN Set a variable property known to true
 %   Detailed explanation goes here
 
@@ -13,6 +13,11 @@ end
 for i=1:length(index)
     
     gh.variables(index(i)).isMatched = value(i);
+    if value(i)
+        gh.variables(index(i)).matchedTo = equId(i);
+    else
+        gh.variables(index(i)).matchedTo = [];
+    end
     
 end
 

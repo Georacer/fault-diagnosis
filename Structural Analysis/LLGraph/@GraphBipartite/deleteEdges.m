@@ -4,7 +4,7 @@ function [ resp ] = deleteEdges( this, indices )
 
 resp = false;
 
-ind2keep = setdiff(1:this.numEdges,indices);
+ind2Keep = setdiff(1:this.numEdges,indices);
 
 this.edges = this.edges(ind2Keep);
 

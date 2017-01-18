@@ -4,15 +4,1227 @@ classdef GraphInterface
     
     properties
         graph = GraphBipartite.empty
+        reg = Registry.empty
         idProvider = IDProvider() % ID provider object
+        adjacency = Adjacency.empty
         formulaList
     end
     
     methods
-        function this = GraphInterface(model)
+        function this = GraphInterface()
+        end
+        
+        %% External methods declarations
+        
+        %% Add methods
+        function [ respAdded, id ] = addEdge( gi, id,equId,varId,edgeProps )
+            %ADDEDGE Summary of gh function goes here
+            %   Detailed explanation goes here
+            
+            % debug = true;
+            debug = false;
+            
+            respAdded = false;
+            
+            l1 = length(gi.graph.edges);
+            l2 = length(gi.reg.edgeIdArray);
+            
+            if ~(l1==l2)
+                error('Inconsistent edge arrays sizes');
+            end
+            % Lookup the edge
+            edgeId = gi.getEdgeIdByVertices(equId, varId);
+            
+            if isempty(edgeId) % gh edge was not yet met
+                
+                if isempty(id)
+                    id = this.idProvider.giveID();
+                end
+                
+                this.graph.addEdge(id,equId,varId,edgeProps )
+                equIndex = this.getIndexById(equId);
+                varIndex = this.getIndexById(varId);
+                edgeIndex = this.getIndexById(id);
+                this.graph.addEdgeToEqu(equIndex,edgeIndex);
+                this.graph.addEdgeToVar(varIndex,edgeIndex);
+                
+                gi.reg.edgeIdArray(end+1) = id;
+                gi.reg.edgeIdToIndexArray(id) = l1+1;
+                
+                gi.graph.equations(equIndex).edgeIdArray(end+1) = id;
+                gi.graph.variables(varIndex).edgeIdArray(end+1) = id;
+                
+                respAdded = true;
+                if debug fprintf('addEdge: Created new edge from (%d,%d) with ID %d\n',equId,varId,id); end
+            else
+                warning('I should not be here');
+                gi.setPropertyOR(edgeId,'isMatched',edgeProps.isMatched);
+                gi.setPropertyOR(edgeId,'isDerivative',edgeProps.isDerivative);
+                gi.setPropertyOR(edgeId,'isIntegral',edgeProps.isIntegral);
+                gi.setPropertyOR(edgeId,'isNonSolvable',edgeProps.isNonSolvable);
+            end
+        end
+        function [respAdded, id] = addEquation( this, id, alias, prefix, expStr )
+            %ADDEQUATION Add equation to graph
+            %   Detailed explanation goes here
+            
+            respAdded = false;
+            
+            if isempty(id)
+                id = this.idProvider.giveID();
+            end
+            
+            l1 = length(this.graph.equations);
+            l2 = length(this.reg.equAliasArray);
+            l3 = length(this.reg.equIdArray);
+            
+            if (l1==l2) && (l2==l3)
+                this.graph.addEquation(id, [prefix alias],expStr); %TODO: change expStr for description
+                
+                this.reg.equAliasArray{end+1} = [prefix alias];
+                this.reg.equaIdArray(end+1) = id;
+                this.reg.equIdToIndexArray(id) = l1+1;
+                respAdded = true;
+            else
+                error('Inconsistent equation arrays sizes');
+            end
+            
+        end
+        function [ resp, id ] = addResidual( gi, equId )
+            %ADDRESIDUAL Summary of this function goes here
+            %   Detailed explanation goes here
+            
+            alias = sprintf('res_%d',equId);
+            varProps.isKnown = true;
+            varProps.isMeasured = false;
+            varProps.isInput = false;
+            varProps.isOutput = false;
+            varProps.isResidual = true;
+            varProps.isMatched = true;
+            [resp, id] = gi.addVariable([],alias,varProps);
+            
+            equIndex = gi.getIndexById(equId);
+            
+            gi.setMatched(equId);
+            gi.graph.equations(equIndex).matchedTo = id;
+            
+            edgeProps.isMatched = true;
+            edgeProps.isDerivative = false;
+            edgeProps.isIntegral = false;
+            edgeProps.isNonSolvable = false;
+            gi.addEdge([],equId,id,edgeProps);
+            
+        end
+        function [respAdded, id] = addVariable( this, id,alias,varProps,description )
+            %ADDVARIABLE Summary of this function goes here
+            %   Detailed explanation goes here
+            
+            respAdded = false;
+            
+            l1 = length(this.graph.variables);
+            l2 = length(this.reg.variableAliasArray);
+            l3 = length(this.reg.variableIdArray);
+            
+            if (l1==l2) && (l2==l3)
+                
+                % Lookup the variable
+                varId = this.getVarIdByAlias(alias);
+                
+                if isempty(varId) % This variable was not yet met
+                    
+                    if isempty(id)
+                        id = this.idProvider.giveID();
+                    end
+                    
+                    this.graph.addVariable(id,alias,description,varProps);
+                    
+                    this.reg.variableAliasArray{end+1} = alias;
+                    this.reg.variableIdArray(end+1) = id;
+                    this.reg.variableIdToIndexArray(id) = l1+1;
+                    
+                    respAdded = true;
+                else
+                    this.setPropertyOR(varId,'isKnown',varProps.isKnown);
+                    this.setPropertyOR(varId,'isMeasured',varProps.isMeasured);
+                    this.setPropertyOR(varId,'isInput',varProps.isInput);
+                    this.setPropertyOR(varId,'isOutput',varProps.isOutput);
+                    this.setPropertyOR(varId,'isMatched',varProps.isMatched);
+                    id = varId;
+                end
+            else
+                error('Inconsistent variable arrays sizes');
+            end
+            
+            
+        end
+        
+        %% Delete methods
+        function [ resp ] = deleteEdges( this, ids )
+            %DELETEEDGE Delete edges
+            %   Detailed explanation goes here
+            
+            resp = false;
+            
+            if ~all(isEdge(ids))
+                error('Requested to delete an edge while passing non-edge Id');
+            end
+            
+            edgeIndices = this.getIndexById(ids);
+            
+            varIds = this.getVariables(ids);
+            varIndices = this.getIndexById(varIds);
+            this.graph.removeEdgeFromVar(varIndices,edgeIndices)
+            
+            equIds = this.getEquations(ids);
+            equIndices = this.getIndexById(equIds);
+            this.graph.removeEdgeFromEqu(equIndices,edgeIndices)
+            
+            this.graph.deleteEdges(ids);
+            
+            this.reg.update();
+            
+            resp = true;
+            
+        end
+        function [ resp ] = deleteEquations( this, ids )
+            %DELETEEQUATION Delete equations from graph
+            %   Detailed explanation goes here
+            
+            % debug=true;
+            debug=false;
+            
+            resp = false;
+            
+            if ~all(isEquation(ids))
+                error('Requested to delete an equation while passing non-equation Id');
+            end
+            
+            % Find related edges
+            edgeIds = [];
+            for id = ids
+                equIndex = this.getIndexById(id);
+                edgeIds = [edgeIds this.graph.equations(equIndex).edgeIdArray];
+            end
+            % Find related variables
+            relVarIds = [];
+            for id = ids
+                equIndex = this.getIndexById(id);
+                relVarIds = [relVarIds this.equations(equIndex).neighbourIdArray];
+            end
+            relVarIds = unique(relVarIds);
+            
+            this.deleteEdges(edgeIds);
+            this.deleteVariables(relVarIds,true);
+            
+            % % Find exclusive variables and delete them
+            % for id = relVarIds
+            %     varIndex = this.getIndexById(id);
+            %     edgeIds2 = this.graph.variables(varIndex).edgeIdArray;
+            %     if all(ismember(edgeIds2,edgeIds))
+            %         if (debug)
+            %             fprintf('*** Deleting variable with id %d\n',id);
+            %         end
+            %         this.deleteVariable(id);
+            %     end
+            % end
+            %
+            % % Delete related edges first
+            % edgeId = [];
+            % for id = ids
+            %     edgeId = [edgeId this.getEdgeIdByVertices(id,[])];
+            % end
+            % this.deleteEdge(edgeId);
+            
+            % Delete equations
+            indices = this.getIndexById(ids);
+            this.graph.deleteEquations(indices);
+            
+            this.reg.update();
+            
+            resp = true;
+            
+        end
+        function [ resp ] = deleteVariables( this, ids, safe )
+            %DELETEVARIABLE Delete variable from graph
+            %   Also delete related edges
+            
+            % debug=true;
+            debug=false;
+            
+            resp = false;
+            
+            if ~all(isVariable(ids))
+                error('Requested to delete an edge while passing non-edge Id');
+            end
+            
+            if nargin<3
+                safe=true;
+            end
+            
+            % Delete only orphan variables
+            if safe
+                newIds = [];
+                for id=ids
+                    if isempty(this.getEquations(id))
+                        newIds = [newIds id];
+                    end
+                end
+                ids = newIds;
+            end
+            
+            % Delete related edges first
+            for id = ids
+                edgeIds = this.getEdgeIdByVertices([],id);
+                this.deleteEdges(edgeIds);
+            end
+            
+            % Delete variables
+            ind2Del = this.getIndexById(ids);
+            this.graph.deleteVariables(ind2Del);
+            
+            if debug
+                fprintf('*** %d variables left in graph\n',this.numVars);
+            end
+            
+            this.reg.update();
+            
+            resp = true;
+            
+        end
+        
+        %% Get methods        
+        function [ equIds ] = getEquations( gh, ids )
+            %GETVARIABLES get equations related to a variable or edge
+            %   Detailed explanation goes here
+            
+            % debug = true;
+            debug = false;
+            
+            equIds = [];
+            
+            indices = gh.getIndexById(ids);
+            
+            for i=1:length(id)
+                
+                if gh.isVariable(id(i))
+                    tempVect = gh.graph.variables(indices(i)).neighbourIdArray;
+                    equIds = [equIds tempVect];
+                    
+                elseif gh.isEdge(id(i))
+                    equIds(end+1) = gh.graph.edges(indices(i)).equId;
+                    
+                elseif gh.isEquation(id(i))
+                    warning('Requested getEquations from an equation');
+                    equIds(end+1) = id(i);
+                    
+                else
+                    error('Unknown object of id %d\n',id(i));
+                end
+                
+            end
+            
+        end
+        function [ varIds ] = getVariables( gh, ids )
+            %GETVARIABLES get variables related to equations or edges
+            %   Detailed explanation goes here
+            
+            % debug = true;
+            debug = false;
+            
+            varIds = [];
+            
+            indices = gh.getIndexById(ids);
+            
+            for i=1:length(id)
+                
+                if gh.isEquations(id(i))
+                    tempVect = gh.graph.variables(indices(i)).neighbourIdArray;
+                    varIds = [varIds tempVect];
+                    
+                elseif gh.isEdge(id(i))
+                    varIds(end+1) = gh.graph.edges(indices(i)).equId;
+                    
+                elseif gh.isVariable(id(i))
+                    warning('Requested getEquations from a variable');
+                    varIds(end+1) = id(i);
+                    
+                else
+                    error('Unknown object of id %d\n',id(i));
+                end
+                
+            end
+            
+        end
+        function E = getEdgeList(gh, option)
+            % Returns an E(m,2) matrix, which lists all of the m edges of the graph
+            %OPTIONAL: option - [V2E, E2V] return only V2E/E2V edges
+            
+            % debug = true;
+            debug = false;
+            
+            noV2E = false;
+            noE2V = false;
+            
+            if nargin==2
+                if option == 'V2E'
+                    noE2V = true;
+                elseif option == 'E2V'
+                    noV2E = true;
+                else
+                    error('Unknown argument %s\n',option);
+                end
+            end
+            
+            E = [];
+            for i=1:gh.numEdges
+                if debug fprintf('Examining edge with ID: %d ',gh.edges(i).id); end
+                flagE2V = true;
+                flagV2E = true;
+                equId = gh.edges(i).equId;
+                varId = gh.edges(i).varId;
+                varIndex = gh.getIndexById(gh.edges(i).varId);
+                if debug fprintf('linking equtation %d and variable %d\n',gh.edges(i).equId, gh.edges(i).varId); end
+                if gh.variables(varIndex).isKnown
+                    % No operation
+                end
+                if gh.variables(varIndex).isMeasured
+                    flagE2V = false;
+                    if debug fprintf('The E->V direction is disabled, because the variable is measured\n'); end
+                end
+                if gh.variables(varIndex).isInput
+                    flagE2V = false; % From equation to variable
+                    if debug fprintf('The E->V direction is disabled, because the variable is an input\n'); end
+                end
+                if gh.variables(varIndex).isOutput
+                    % No operation
+                end
+                if gh.edges(i).isMatched
+                    flagV2E = false;
+                    if debug fprintf('The V->E direction is disabled, because the edge is matched\n'); end
+                elseif gh.isMatched(varId)
+                    flagE2V = false;
+                    if debug fprintf('The E->V direction is disabled, because the variable is matched\n'); end
+                elseif ~gh.isMatchable(gh.edges(i).id)
+                    flagE2V = false; % Equation to Variable
+                    if debug fprintf('The E->V direction is disabled, because the variable cannot be matched\n'); end
+                end
+                if flagE2V && ~noE2V
+                    E(end+1,:) = [gh.edges(i).equId gh.edges(i).varId gh.edges(i).weight]; % with added cost of solving the edge
+                end
+                % Variable to Equation
+                if flagV2E && ~noV2E
+                    E(end+1,:) = [gh.edges(i).varId gh.edges(i).equId 0]; % V2E edges are free
+                end
+            end
+        end
+        function [ alias ] = getAliasById( gh, id )
+            %GETALIASBYID Summary of gh function goes here
+            %   Detailed explanation goes here
+            
+            if isempty(id)
+                error('Empty ID given');
+            end
+            if id==0
+                error('ID cannot be equal to 0');
+            end
+            
+            index = gh.getIndexById(id);
+            
+            alias = cell(1,length(id));
+            
+            k=1;
+            for ind=index
+                
+                if gh.isVariable(id(k))
+                    alias{k} = gh.variables(ind).alias;
+                elseif gh.isEquation(id(k))
+                    alias{k} = gh.equations(ind).prAlias;
+                elseif gh.isEdge(id(k))
+                    error('Edge objects do not have an alias');
+                else
+                    error('Unknown object type with id %d',id(k));
+                end
+                
+                k = k+1;
+                
+            end
+            
+        end
+        function [ tally, matching ] = getAncestorEqs( gh, id, tally, matching )
+            %GETPARENTEQS Find all the parent equations of a variable or equation
+            %   Usable only in a directed subgraph
+            
+            % debug = true;
+            debug = false;
+            
+            if nargin <3
+                tally = [];
+                matching = [];
+            end
+            
+            % idArray = [];
+            
+            % if gh.isEquation(id)
+            %     tally(end+1) = id; % Add this equation to the visited list
+            %     if debug fprintf('getAncestorEqs: Sourcing parent variables of %s\n',gh.getAliasById(id)); end
+            %     parentVars = gh.getParentVars(id);
+            %     for i=parentVars
+            %         if debug fprintf('getAncestorEqs: Sourcing parent equation of variable %s\n',gh.getAliasById(i)); end
+            %         [newIds, tally] = gh.getAncestorEqs(i, tally);
+            %         idArray = unique([idArray newIds]);
+            %     end
+            
+            if gh.isEquation(id)
+                if debug fprintf('getAncestorEqs: Sourcing parent variables of %s\n',gh.getAliasById(id)); end
+                parentVars = gh.getParentVars(id);
+                for i=parentVars
+                    if debug fprintf('getAncestorEqs: Sourcing parent equation of variable %s\n',gh.getAliasById(i)); end
+                    [tally, matching] = gh.getAncestorEqs(i, tally, matching);
+                end
+                
+                % elseif gh.isVariable(id)
+                %     if gh.isMatched(id)
+                %         % Find which equation gh variable is matched to
+                %         varIndex = gh.getIndexById(id);
+                %         equId = gh.variables(varIndex).matchedTo;
+                %         if ~any(ismember(tally,equId)) % Check if this equation has been previously visited
+                %             if debug fprintf('getAncestorEqs: Adding equation %s and sourcing its ancestors.\n',gh.getAliasById(equId)); end
+                %             [newIds, tally] = gh.getAncestorEqs(equId, tally);
+                %             idArray = unique([equId newIds]);
+                %         end
+                %     end
+                
+            elseif gh.isVariable(id)
+                if gh.isMatched(id)
+                    % Find which equation gh variable is matched to
+                    varIndex = gh.getIndexById(id);
+                    equId = gh.graph.variables(varIndex).matchedTo;
+                    if ~any(ismember(tally,equId)) % Check if this equation has been previously visited
+                        if debug fprintf('getAncestorEqs: Adding equation %s and sourcing its ancestors.\n',gh.getAliasById(equId)); end
+                        tally(end+1) = equId;
+                        matching(end+1) = gh.getEdgeIdByVertices(equId,id);
+                        [tally, matching] = gh.getAncestorEqs(equId, tally, matching);
+                    end
+                end
+                
+            else
+                error('Unknown id %d\n',id);
+            end
+            
+        end
+        function [ ids ] = getEdgeIdArray( gh, id )
+            %GETEDGEIDARRAY Return edgeIdArray
+            %   Detailed explanation goes here
+            
+            if length(id)>1
+                error('This function does not support array inputs');
+            end
+            
+            [index, type] = gh.getIndexById(id);
+            if type==0
+                ids = gh.equations(index).edgeIdArray;
+            elseif type ==1
+                ids = gh.variables(index).edgeIdArray;
+            else
+                error('This function supports only Node arguments');
+            end
+            
+        end
+        function [ id ] = getEdgeIdByProperty( gh,property,value,operator )
+            %GETEDGEIDBYPROPERTY Summary of gh function goes here
+            %   Detailed explanation goes here
+            
+            if nargin<3
+                value = true;
+            end
+            
+            if nargin<4
+                operator = '==';
+            end
+            
+            id = [];
+            
+            for i = 1:gh.graph.numEdges
+                if gh.testPropertyExists(gh.reg.edgeIdArray(i),property)
+                    switch operator
+                        case '=='
+                            if (gh.graph.edges(i).(property) == value)
+                                id(end+1) = gh.graph.edges(i).id;
+                            end
+                        case '<'
+                            if (gh.graph.edges(i).(property) < value)
+                                id(end+1) = gh.graph.edges(i).id;
+                            end
+                        case '>'
+                            if (gh.graph.edges(i).(property) > value)
+                                id(end+1) = gh.graph.edges(i).id;
+                            end
+                        case '<='
+                            if (gh.graph.edges(i).(property) <= value)
+                                id(end+1) = gh.graph.edges(i).id;
+                            end
+                        case '>='
+                            if (gh.graph.edges(i).(property) >= value)
+                                id(end+1) = gh.graph.edges(i).id;
+                            end
+                        case '~='
+                            if (gh.graph.edges(i).(property) ~= value)
+                                id(end+1) = gh.graph.edges(i).id;
+                            end
+                        otherwise
+                            error('Unsupported operator %s\n',operator);
+                    end
+                else
+                    error('Unsupported property %s',property)
+                    
+                end
+            end
+            
+        end
+        function [ id ] = getEdgeIdByVertices( gh, equId, varId )
+            %GETEDGEIDBYVERTICES Find edge ids by vertices
+            %   Detailed explanation goes here
+            
+            id = [];
+            
+            for i=1:gh.numEdges
+                if isempty(equId)
+                    if (gh.edges(i).varId == varId)
+                        id = [id gh.edges(i).id];
+                    end
+                elseif isempty(varId)
+                    if (gh.edges(i).equId == equId)
+                        id = [id gh.edges(i).id];
+                    end
+                    
+                else
+                    if (gh.edges(i).equId==equId) && (gh.edges(i).varId==varId)
+                        id = gh.edges(i).id;
+                        return
+                    end
+                end
+            end
+            
+        end
+        function [ w ] = getEdgeWeight( gh, id )
+            %GETEDGEWEIGHT Summary of this function goes here
+            %   Detailed explanation goes here
+            
+            w = zeros(size(id));
+            edgeIndices = gh.getIndexById(id);
+            
+            for i=1:length(id)
+                if ~gh.isEdge(id(i))
+                    error('Requested weight of non-edge object');
+                end
+                w(i) = gh.edges(edgeIndices(i)).weight;
+            end
+            
+        end
+        function [ id ] = getEquIdByAlias( this, alias )
+            %GETEQUIDBYALIAS Summary of this function goes here
+            %   Detailed explanation goes here
+            
+            equIndex = find(strcmp(this.equationAliasArray,alias));
+            id = this.equationIdArray(equIndex);
+            
+        end
+        function [ id ] = getEquIdByProperty(gh,property,value,operator)
+            %GETIDBYPROPERTY Return an ID array with objects with requested property
+            %   gh applies and searches both equations and variables
+            
+            if nargin<3
+                value = true;
+            end
+            
+            if nargin<4
+                operator = '==';
+            end
+            
+            id = [];
+            
+            for i = 1:gh.numEqs
+                if gh.testPropertyExists(gh.reg.equationIdArray(i),property)
+                    switch operator
+                        case '=='
+                            if (gh.graph.equations(i).(property) == value)
+                                id(end+1) = gh.graph.equations(i).id;
+                            end
+                        case '<'
+                            if (gh.graph.equations(i).(property) < value)
+                                id(end+1) = gh.graph.equations(i).id;
+                            end
+                        case '>'
+                            if (gh.graph.equations(i).(property) > value)
+                                id(end+1) = gh.graph.equations(i).id;
+                            end
+                        case '<='
+                            if (gh.graph.equations(i).(property) <= value)
+                                id(end+1) = gh.graph.equations(i).id;
+                            end
+                        case '>='
+                            if (gh.graph.equations(i).(property) >= value)
+                                id(end+1) = gh.graph.equations(i).id;
+                            end
+                        case '~='
+                            if (gh.graph.equations(i).(property) ~= value)
+                                id(end+1) = gh.graph.equations(i).id;
+                            end
+                        otherwise
+                            error('Unsupported operator %s\n',operator);
+                    end
+                else
+                    error('Unsupported property %s',property)
+                end
+            end
+            
+        end
+        function [ index, type ] = getIndexById( gh,id )
+            %GETEQINDEXBYID Return object indices for the provided IDs
+            %   Also returns the object type:
+            %   0: equation
+            %   1: variable
+            %   2: edge
+            
+            index = zeros(1,length(id));
+            type = zeros(1,length(id));
+            
+            for i=1:length(id)
+                
+                if gh.isEquation(id(i))
+                    index(i) = gh.equationIdToIndexArray(id(i));
+                    type(i) = 0;
+                elseif gh.isVariable(id(i))
+                    index(i) = gh.variableIdToIndexArray(id(i));
+                    type(i) = 1;
+                elseif gh.isEdge(id(i))
+                    index(i) = gh.edgeIdToIndexArray(id(i));
+                    type(i) = 2;
+                else
+                    error('Unknown object type with id %d',id(i));
+                end
+                
+            end
+            
+        end
+        function [ varId ] = getParentVars( gh, id )
+            %GETPARENTVARS Return variables directly used for calculation
+            %   Detailed explanation goes here
+            
+            % debug = true;
+            debug = false;
+            
+            varId = [];
+            
+            if gh.isVariable(id) || gh.isEdge(id)
+                error('getParentVars function only applies to equations\n');
+            end
+            
+            eqIndex = gh.getIndexById(id);
+            
+            edgeIds = gh.graph.equations(eqIndex).edgeIdArray;
+            for id=edgeIds
+                if ~gh.isMatched(id)
+                    if debug fprintf('Adding variable %s\n',gh.getAliasById(id)); end
+                    varId = [varId gh.getVariables(id)];
+                end
+            end
+            
+            if debug
+                fprintf('getParentVars: The parent variables of %s are %d: ',gh.getAliasById(id), length(varId));
+                for i=1:length(varId)
+                    fprintf('%s, ',gh.getAliasById(varId(i)));
+                end
+                fprintf('\n');
+            end
+            
+        end
+        function [ value ] = getPropertyById( gh, id, property )
+            %GETPROPERTYBYID Get object property value by id
+            %   Detailed explanation goes here
+            
+            index = gh.getIndexById(id);
+            if index==0
+                error('Unkown id %d',id);
+            elseif gh.testPropertyExists(id,property)
+                if gh.isEquation(id)
+                    value = gh.equations(index).(property);
+                elseif gh.isVariable(id)
+                    value = gh.variables(index).(property);
+                elseif gh.isEdge(id)
+                    value = gh.edges(index).(property);
+                else
+                    error('Unknown object type with id %d',id);
+                end
+                
+            end
+            
+        end
+        function [ expr ] = getStrExprByAlias( gh, alias )
+            %GETSTREXPRBYALIAS Returns the str. expression of input alias
+            %   Detailed explanation goes here
+            
+            equIndex = find(strcmp(gh.equationAliasArray,alias));
+            expr = gh.equations(equIndex).expressionStructural;
+            
+        end
+        function [ id ] = getVariablesUnknown( gh, id )
+            %GETVARIABLESUNKNOWN Return the uknown variables of a constraint
+            %   Detailed explanation goes here
+            
+            id = gh.getVariables(id);
+            
+            knownVars = zeros(size(id));
+            for index = 1:length(id)
+                if gh.isKnown(id(index))
+                    knownVars(index) = 1;
+                end
+            end
+            
+            id(logical(knownVars)) = [];
+            
+        end
+        function [ id ] = getVarIdByAlias( this, alias )
+            %GETVARIDBYALIAS Summary of this function goes here
+            %   Detailed explanation goes here
+            
+            varIndex = find(strcmp(this.variableAliasArray,alias));
+            id = this.variableIdArray(varIndex);
+            
+        end
+        function [ id ] = getVarIdByProperty( gh,property,value,operator )
+            %GETVARIDBYPROPERTY Summary of gh function goes here
+            %   Detailed explanation goes here
+            
+            if nargin<3
+                value = true;
+            end
+            
+            if nargin<4
+                operator = '==';
+            end
+            
+            id = [];
+            
+            for i = 1:gh.numVars
+                if gh.testPropertyExists(gh.reg.variableIdArray(i),property)
+                    switch operator
+                        case '=='
+                            if (gh.graph.variables(i).(property) == value)
+                                id(end+1) = gh.graph.variables(i).id;
+                            end
+                        case '<'
+                            if (gh.graph.variables(i).(property) < value)
+                                id(end+1) = gh.graph.variables(i).id;
+                            end
+                        case '>'
+                            if (gh.graph.variables(i).(property) > value)
+                                id(end+1) = gh.graph.variables(i).id;
+                            end
+                        case '<='
+                            if (gh.graph.variables(i).(property) <= value)
+                                id(end+1) = gh.graph.variables(i).id;
+                            end
+                        case '>='
+                            if (gh.graph.variables(i).(property) >= value)
+                                id(end+1) = gh.graph.variables(i).id;
+                            end
+                        case '~='
+                            if (gh.graph.variables(i).(property) ~= value)
+                                id(end+1) = gh.graph.variables(i).id;
+                            end
+                        otherwise
+                            error('Unsupported operator %s\n',operator);
+                    end
+                else
+                    error('Unsupported property %s',property)
+                    
+                end
+            end
+            
+        end
+        
+        %% Is methods
+        function resp = isEdge( gh, ids )
+            %ISEDGE Summary of gh function goes here
+            %   Detailed explanation goes here
+            
+            resp = zeros(size(ids));
+            
+            for i=1:length(resp)
+                if ids(i)<=(length(gh.reg.edgeIdToIndexArray))
+                    index = gh.reg.edgeIdToIndexArray(ids(i));
+                    if index==0
+                        resp(i) = false;
+                    else
+                        resp(i) = true;
+                    end
+                else
+                    resp(i) = false;
+                end
+            end
+            
+            
+        end
+        function [ resp ] = isEquation( gh, ids )
+            %ISEQUATION Answer whether an object is an equation
+            %   Detailed explanation goes here
+            
+            resp = zeros(size(ids));
+            
+            for i=1:length(resp)
+                if ids(i)<=(length(gh.reg.equationIdToIndexArray))
+                    index = gh.reg.equationIdToIndexArray(ids(i));
+                    if index==0
+                        resp(i) = false;
+                    else
+                        resp(i) = true;
+                    end
+                else
+                    resp(i) = false;
+                end
+            end
+            
+        end
+        function [ resp ] = isKnown( gh, id )
+            %ISMATCHED Summary of this function goes here
+            %   Detailed explanation goes here
+            
+            index = gh.getIndexById(id);
+            
+            if gh.isVariable(id)
+                resp = gh.graph.isKnownVar(index);
+            elseif gh.isEquation(id)
+                error('isKnown does not apply to equations');
+            elseif gh.isEdge(id)
+                error('isKnown does not apply to equations');
+            else
+                error('Unkown object type with ID %d',id);
+            end
+            
+        end
+        function [ resp ] = isMatched( gh, id )
+            %ISMATCHED Summary of this function goes here
+            %   Detailed explanation goes here
+            
+            index = gh.getIndexById(id);
+            
+            if gh.isVariable(id)
+                resp = gh.graph.isMatchedVar(index);
+            elseif gh.isEquation(id)
+                resp = gh.graph.isMatchedEqu(index);
+            elseif gh.isEdge(id)
+                resp = gh.graph.isMatchedEdge(index);
+            else
+                error('Unkown object type with ID %d',id);
+            end
+            
+        end
+        function [ resp ] = isVariable( gh, ids )
+            %ISVARIABLE Answer whether an object is a variable
+            %   Detailed explanation goes here
+            
+            resp = zeros(size(ids));
+            
+            for i=1:length(resp)
+                if ids(i)<=(length(gh.variableIdToIndexArray))
+                    index = gh.reg.variableIdToIndexArray(ids(i));
+                    if index==0
+                        resp(i) = false;
+                    else
+                        resp(i) = true;
+                    end
+                else
+                    resp(i) = false;
+                end
+            end
+            
+        end
+        
+        %% Set methods
+        function [ resp ] = setEdgeWeight( gh, ids, weights )
+            %SETEDGEWEIGHT Summary of this function goes here
+            %   Detailed explanation goes here
+            
+            if size(ids)~=size(weights)
+                error('id and weight arrays size mismatch');
+            end
+            
+            if ~all(gh.isEdge(ids))
+                error('setEdgeWeight applies only to edges');
+            end
+            
+            indices = gh.getIndexById(ids);
+            gh.graph.setEdgeWeight(indices,weights);
+            
+        end
+        function resp = setMatched( gh, id,  value )
+            %SETPROPERTYOR Summary of gh function goes here
+            %   Detailed explanation goes here
+            
+            resp = false;
+            
+            if nargin<3
+                value = true;
+            end
+            
+            if gh.isEquation(id)
+                error('Use edges to match equations');
+            elseif gh.isVariable(id)
+                error('Use edges to match variables');
+            elseif gh.isEdge(id)
+                index = gh.getIndexById(id);
+                equId = gh.graph.edges(index).equId;
+                equIndex = gr.getIndexById(equId);
+                varId = gh.graph.edges(index).varId;
+                varIndex = gr.getIndexById(varId);
+                
+                gh.graph.setMatchedEdge(index,value);
+                gh.graph.setMatchedEqu(equIndex, value, varId);
+                gh.graph.setMatchedVar(varIndex, value, equId);
+            else
+                error('Unkown object type with id %d',id);
+            end
+            
+        end
+        function resp = setProperty( gh, id, property, value )
+            %SETPROPERTYOR Summary of gh function goes here
+            %   Detailed explanation goes here
+            
+            resp = false;
+            
+            if nargin<4
+                value = true;
+            end
+            
+            if gh.testPropertyExists(id,property)
+                
+                if gh.isEquation(id)
+                    index = gh.getIndexById(id);
+                    gh.graph.setPropertyEqu(index,property,value);
+                elseif gh.isVariable(id)
+                    index = gh.getIndexById(id);
+                    gh.graph.setPropertyVar(index,property,value);
+                elseif gh.isEdge(id)
+                    index = gh.getIndexById(id);
+                    gh.graph.setPropertyEdge(index,property,value);
+                else
+                    error('Unkown object type with id %d',id);
+                end
+                
+            else
+                error('Unknown property %s for object with ID %d',property,id);
+            end
+            
+        end
+        function resp = setPropertyOR( gh, id, property, value )
+            %SETPROPERTYOR Summary of gh function goes here
+            %   Detailed explanation goes here
+            
+            resp = false;
+            
+            if nargin<4
+                value = true;
+            end
+            
+            % Logical OR for properties
+            if isEquation(id)
+                index = gh.getIndexById(id);
+                gh.graph.setPropertORyEqu(index,property,value);
+            elseif isVariable(id)
+                index = gh.getIndexById(id);
+                gh.graph.setPropertyORVar(index,property,value);
+            elseif isEdge(id)
+                index = gh.getIndexById(id);
+                gh.graph.setPropertyOREdge(index,property,value);
+            else
+                error('Unknown object type with id %d',id);
+            end
+            
+            
+        end
+
+        %% Other methods
+        function [ resp ] = applyMatching( gh, M )
+            %APPLYMATCHING Apply a matching (set of edge IDs) to the graph as Matched
+            %   Detailed explanation goes here
+            
+            for i=1:length(M)
+                m = M(i);
+                varId = gh.getVariables(m);
+                
+                gh.setMatched(m);
+                gh.setKnown(varId);
+            end
+            
+            resp = true;
+            
+        end
+        function [ list ] = createCostList( gh, zeroWeight )
+            %CREATECOSTLIST Creat a cost list for all edges
+            %   Detailed explanation goes here
+            
+            if nargin<2
+                zeroWeight = false;
+            end
+            
+            % Initialize list: eqname, varname, weight
+            list = cell(gh.numEdges,5);
+            
+            for i=1:gh.numEdges
+                list{i,1} = gh.graph.edges(i).equId; % TODO: replace with reg.edgeIDArray but verify that order is the same
+                list{i,2} = gh.graph.edges(i).varId;
+                list{i,3} = gh.getAliasById(gh.graph.edges(i).equId);
+                list{i,4} = gh.getAliasById(gh.graph.edges(i).varId);
+                if zeroWeight
+                    list{i,5} = 1;
+                else
+                    list{i,5} = gh.graph.edges(i).weight;
+                end
+            end
+            
+            
+        end
+        function resp = hasCycles(gh)
+            % Answer whether the provided graph has cycles or not. Uses the
+            % matlab_networks_routines library
+            n = num_loops(gh.adjacency.BD);
+            if n==0
+                resp = false;
+            else
+                resp = true;
+            end
+        end
+        function parseExpression( this, exprStr, alias, prefix )
+            %PARSEEXPRESSION Parse a structural expression
+            %   Parse a structural expression and create equation, variable and edge
+            %   objects in the calling graph object
+            
+            % debug = true;
+            debug = false;
+            
+            % Parse structural expression
+            [resp, equId] = this.addEquation([], alias, prefix, exprStr);
+            % this.equations(end+1) = Equation([],alias, prefix, exprStr);
+            
+            % legend:
+            % {} - normal term
+            % dot - differential term
+            % int - integral term
+            % trig - trigonometric term
+            % ni - general non-invertible term
+            % inp - input variable
+            % out - output variable
+            % msr - measured variable
+            operators = {'dot','int','ni','inp','out','msr','fault'}; % Available operators
+            words = strsplit(exprStr,' '); % Split expression to operands and variables
+            linkedVariables = []; % Array with variables linked to this equation
+            initProperties = true; % New variable flag for properties initialization
+            for i=1:size(words,2)
+                if initProperties
+                    isKnown = false;
+                    isMeasured = false;
+                    isInput = false;
+                    isOutput = false;
+                    isResidual = false;
+                    isMatched = false;
+                    isDerivative = false;
+                    isIntegral = false;
+                    isNonSolvable = false;
+                    initProperties = false;
+                end
+                word = words{i};
+                opIndex = find(strcmp(operators, word));
+                if isempty(opIndex)
+                    opIndex = -1; % Found a new variable alias
+                end
+                
+                if debug disp(sprintf('parseExpression: opIndex=%i',opIndex)); end
+                
+                switch opIndex % Test if the word is an operator
+                    case 1
+                        %             isDerivative = true;
+                        isIntegral = true;
+                    case 2
+                        %             isIntegral = true;
+                        isDerivative = true;
+                    case 3
+                        isNonSolvable = true;
+                    case 4
+                        isInput = true;
+                        isKnown = true;
+                    case 5
+                        isOutput = true;
+                    case 6
+                        isMeasured = true;
+                        isKnown = true;
+                    case 7
+                        this.setProperty(equId,'isFaultable');
+                    otherwise % Found a variable
+                        
+                        varProps.isKnown = isKnown;
+                        varProps.isMeasured = isMeasured;
+                        varProps.isInput = isInput;
+                        varProps.isOutput = isOutput;
+                        varProps.isResidual = isResidual;
+                        varProps.isMatched = isMatched;
+                        [resp, varId] = this.addVariable([],word,varProps);
+                        
+                        edgeProps.isMatched = false;
+                        edgeProps.isDerivative = isDerivative;
+                        edgeProps.isIntegral = isIntegral;
+                        edgeProps.isNonSolvable = isNonSolvable;
+                        this.addEdge([],equId,varId,edgeProps);
+                        
+                        initProperties = true;
+                        
+                end
+            end
+            
+        end
+        function [ s ] = printEdges( gh, ids )
+            %PRINTEDGES Summary of this function goes here
+            %   Detailed explanation goes here
+            
+            s = [];
+            for id=ids
+                equId = gh.getIndexById(gh.getEquations(id));
+                varId = gh.getIndexById(gh.getVariables(id));
+                s = [s sprintf('%s -> %s\n',gh.getAliasById(equId),gh.getAliasById(varId))];
+            end
+            
+            disp(s)
+            
+        end
+        function [ resp ] = readCostList( gh, list )
+            %READCOSTLIST Summary of this function goes here
+            %   Detailed explanation goes here
+            
+            if size(list,1)~=gh.graph.numEdges
+                resp = false;
+                error('List length is not equal to number of graph edges');
+            elseif size(list,2)~=5
+                resp = false;
+                error('List is expected to have 5 columns: equId, varId, equAlias, varAlias, weight');
+            else
+                equIds = cell2mat(list(:,1));
+                varIds = cell2mat(list(:,2));
+                weights = cell2mat(list(:,5));
+                edgeIds = gh.getEdgeIdByVertices(equIds,varIds);
+                edgeIndices = gh.getIndexById(edgeIds);
+                gh.graph.setEdgeWeight(edgeIndices,weights);
+            end
+            
+        end
+        function [ resp ] = readModel(this, model )
+            %READMODEL Summary of this function goes here
+            %   Detailed explanation goes here
+            
+            resp = false;
+            
             constraints = model.constraints;
-            this.name = model.name;
-            this.coords = model.coordinates;
+            this.gr.name = model.name;
+            this.gr.coords = model.coordinates;
             
             % Read model file and store related equations and variables
             groupsNum = size(constraints,1); % Number of equation groups in model
@@ -28,19 +1240,87 @@ classdef GraphInterface
                     this.parseExpression(group{i,1},grEqAliases{i},grPrefix);
                 end
             end
+            
+            resp = true;
+            
         end
-        
-        function [resp,id] = addFormula(this)
+        function resp = testPropertyExists( gh, ids, property )
+            %TESTPROPTERTYEMPTY Summary of this function goes here
+            %   Detailed explanation goes here
+            
+            resp = zeros(size(ids));
+            
+            indices = gh.getIndexById(ids);
+            
+            for i=1:length(ids)
+                if gh.isEquation(ids(i))
+                    if gh.graph.testPropertyExistsEqu(indices(i),property);
+                        resp(i) = true;
+                    end
+                elseif gh.isVariable(ids(i))
+                    if gh.graph.testPropertyExistsVar(indices(i),property);
+                        resp(i) = true;
+                    end
+                elseif gh.isEdge(ids(i))
+                    if gh.graph.testPropertyExistsEdge(indices(i),property);
+                        resp(i) = true;
+                    end
+                else
+                    error('Unknown object with id=%d',ids(i))
+                end
+                
+            end
         end
-        
-        function [resp,id] = addVariable(this)
-        end
-        
-        function [resp,id] = addEdge(this)
-        end
-        
-        
-    end
-    
-end
+        function resp = testPropertyEmpty( gh, ids, property )
+            %TESTPROPTERTYEMPTY Summary of this function goes here
+            %   Detailed explanation goes here
+            
+            resp = zeros(size(ids));
+            
+            indices = gh.getIndexById(ids);
+            
+            for i=1:length(ids)
+                if gh.testPropertyExists(ids(i),property)
+                    if gh.isEquation(ids(i))
+                        if gh.graph.testPropertyEmptyEqu(indices(i),property);
+                            resp(i) = true;
+                        end
+                    elseif gh.isVariable(ids(i)
+                        if gh.graph.testPropertyEmptyVar(indices(i),property);
+                            resp(i) = true;
+                        end
+                    elseif gh.isEdge(ids(i))
+                        if gh.graph.testPropertyEmptyEdge(indices(i),property);
+                            resp(i) = true;
+                        end
+                    else
+                        error('Unknown object with id=%d',ids(i))
+                    end
+                    
+                else
+                    error('Unsupported Property %s for id %d',property,ids(i));
+                end
+                
+            end
 
+
+
+
+
+
+
+
+
+
+
+
+
+        
+        
+        %%
+        
+        
+        end
+    
+    end
+end
