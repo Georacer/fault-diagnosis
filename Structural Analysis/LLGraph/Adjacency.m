@@ -3,6 +3,7 @@ classdef Adjacency < matlab.mixin.Copyable
     %   Detailed explanation goes here
     
     properties
+        gi
         BD
         numVars
         numEqs
@@ -19,28 +20,43 @@ classdef Adjacency < matlab.mixin.Copyable
     
     methods
         
-        %%
-        function obj = Adjacency(array,eqNames,eqIds,varNames,varIds)
-            obj.BD = array;
-            obj.eqNames = eqNames;
-            obj.eqIds = eqIds;
-            obj.numEqs = length(eqNames);
-            obj.varNames = varNames;
-            obj.varIds = varIds;
-            obj.numVars = length(varNames);
+        function obj = Adjacency(gi)
+            obj.gi = gi;
+            obj.parseModel();
+        end
+        
+        function parseModel(this,gi)
+            % Create the graph adjacency matrix and other related objects
+            this.numVars = gi.graph.numVars;
+            this.numEqs = gh.graph.numEqs;
+            this.numEls = this.numVars + this.numEqs;
+            this.BD = zeros(numEls,numEls);
+            E = gh.getEdgeList();
+            
+            for i=1:size(E,1)
+                id1 = E(i,1);
+                id2 = E(i,2);
+                if gh.isVariable(id1) % V2E edge
+                    varIndex = gh.getIndexById(id1);
+                    equIndex = gh.getIndexById(id2);
+                    this.BD(varIndex,this.numVars+equIndex) = 1;
+                else% E2V edge
+                    equIndex = gh.getIndexById(id1);
+                    varIndex = gh.getIndexById(id2);
+                    this.BD(this.numVars+equIndex,varIndex) = E(i,3);
+                end
+            end
+            
         end
 
-        %%
         function array = get.E2V(obj)
             array = obj.BD((obj.numVars+1):end,1:obj.numVars);
         end
         
-        %%
         function array = get.V2E(obj)
             array = obj.BD(1:obj.numVars,(obj.numVars+1):end);
         end
         
-        %%
         function table = getTable(this,selection)
             switch selection
                 case 'BD'
@@ -53,32 +69,6 @@ classdef Adjacency < matlab.mixin.Copyable
                 otherwise
                     error('Available adjacency types are: BD, E2V and V2E');
             end        
-        end
-        
-        function createAdjacency(gh)
-            % Create the graph adjacency matrix
-            numVars = gh.numVars;
-            numEqs = gh.numEqs;
-            numEls = numVars + numEqs;
-            adjacency = zeros(numEls,numEls);
-            E = gh.getEdges();
-            
-            for i=1:size(E,1)
-                id1 = E(i,1);
-                id2 = E(i,2);
-                if gh.isVariable(id1) % V2E edge
-                    varIndex = gh.getIndexById(id1);
-                    equIndex = gh.getIndexById(id2);
-                    adjacency(varIndex,numVars+equIndex) = 1;
-                else% E2V edge
-                    equIndex = gh.getIndexById(id1);
-                    varIndex = gh.getIndexById(id2);
-                    adjacency(numVars+equIndex,varIndex) = E(i,3);
-                end
-            end
-            
-            gh.adjacency = Adjacency(adjacency,gh.equationAliasArray,gh.equationIdArray,gh.variableAliasArray,gh.variableIdArray);
-            
         end
         
     end

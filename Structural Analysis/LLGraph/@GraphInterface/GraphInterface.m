@@ -356,7 +356,7 @@ classdef GraphInterface
             
         end
         function E = getEdgeList(gh, option)
-            % Returns an E(m,2) matrix, which lists all of the m edges of the graph
+            % Returns an E(m,3) matrix, which lists all of the m edges of the graph
             %OPTIONAL: option - [V2E, E2V] return only V2E/E2V edges
             
             % debug = true;
