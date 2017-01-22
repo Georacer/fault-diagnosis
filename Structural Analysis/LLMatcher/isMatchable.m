@@ -15,7 +15,7 @@ intOK = strcmp(gh.causality,'None') || strcmp(gh.causality,'Mixed') || strcmp(gh
 niOK = strcmp(gh.causality,'None');
 
 if gh.edges(edgeIndex).isMatched
-   resp = false;
+    resp = false;
 end
 if gh.edges(edgeIndex).isDerivative && ~derOK
     resp = false;

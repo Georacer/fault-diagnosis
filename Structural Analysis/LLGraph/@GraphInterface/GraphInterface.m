@@ -405,7 +405,7 @@ classdef GraphInterface < matlab.mixin.Copyable
             end
             
             E = [];
-            for i=1:gh.numEdges
+            for i=1:gh.graph.numEdges
                 if debug; fprintf('Examining edge with ID: %d ',gh.graph.edges(i).id); end
                 flagE2V = true;
                 flagV2E = true;
@@ -433,7 +433,7 @@ classdef GraphInterface < matlab.mixin.Copyable
                 elseif gh.isMatched(varId)
                     flagE2V = false;
                     if debug; fprintf('The E->V direction is disabled, because the variable is matched\n'); end
-                elseif ~gh.isMatchable(gh.edges(i).id)
+                elseif ~gh.isMatchable(gh.graph.edges(i).id)
                     flagE2V = false; % Equation to Variable
                     if debug; fprintf('The E->V direction is disabled, because the variable cannot be matched\n'); end
                 end
@@ -969,6 +969,41 @@ classdef GraphInterface < matlab.mixin.Copyable
             end
             
         end
+        function [ resp ] = isMatchable( gh, id )
+            %ISMATCHABLE Decide if an edge can be matched
+            %   This should be of minimal use and functionality since
+            %   this decision belongs to the LLMatcher module
+            
+            if ~gh.isEdge(id)
+                error('Only edges can pass this test');
+            end
+            
+            resp = true;
+            
+            edgeIndex = gh.getIndexById(id);
+            
+            if gh.graph.edges(edgeIndex).isNonSolvable
+                resp = false;
+            end
+            
+            varId = gh.graph.edges(edgeIndex).varId;
+            varIndex = gh.getIndexById(varId);
+            
+            if gh.isKnown(varId);
+                % No operation
+            end
+            
+            if gh.graph.variables(varIndex).isMeasured
+                resp = false;
+            end
+            if gh.graph.variables(varIndex).isInput
+                resp = false;
+            end
+            if gh.graph.variables(varIndex).isOutput
+                % No operation
+            end
+            
+        end
         
         %% Set methods
         function [ resp ] = setEdgeWeight( gh, ids, weights )
@@ -1334,24 +1369,9 @@ classdef GraphInterface < matlab.mixin.Copyable
                 end
                 
             end
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-        
-        %%
-        
-        
+        end
+        function resp = createAdjacency(gi)
+            gi.adjacency = Adjacency(gi);
         end
     
     end

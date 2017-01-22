@@ -25,24 +25,24 @@ classdef Adjacency < matlab.mixin.Copyable
             obj.parseModel();
         end
         
-        function parseModel(this,gi)
+        function parseModel(this)
             % Create the graph adjacency matrix and other related objects
-            this.numVars = gi.graph.numVars;
-            this.numEqs = gh.graph.numEqs;
-            this.numEls = this.numVars + this.numEqs;
+            this.numVars = this.gi.graph.numVars;
+            this.numEqs = this.gi.graph.numEqs;
+            numEls = this.numVars + this.numEqs;
             this.BD = zeros(numEls,numEls);
-            E = gh.getEdgeList();
+            E = this.gi.getEdgeList();
             
             for i=1:size(E,1)
                 id1 = E(i,1);
                 id2 = E(i,2);
-                if gh.isVariable(id1) % V2E edge
-                    varIndex = gh.getIndexById(id1);
-                    equIndex = gh.getIndexById(id2);
+                if this.gi.isVariable(id1) % V2E edge
+                    varIndex = this.gi.getIndexById(id1);
+                    equIndex = this.gi.getIndexById(id2);
                     this.BD(varIndex,this.numVars+equIndex) = 1;
                 else% E2V edge
-                    equIndex = gh.getIndexById(id1);
-                    varIndex = gh.getIndexById(id2);
+                    equIndex = this.gi.getIndexById(id1);
+                    varIndex = this.gi.getIndexById(id2);
                     this.BD(this.numVars+equIndex,varIndex) = E(i,3);
                 end
             end

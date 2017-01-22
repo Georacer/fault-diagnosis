@@ -5,7 +5,7 @@ function [ resp ] = isMatchedVar( gh, indices )
 resp = zeros(1,length(indices));
 
 for i=1:length(indices)
-    resp(i)=gh.variables(indces(i)).isMatched;
+    resp(i)=gh.variables(indices(i)).isMatched;
 end
 
 end
