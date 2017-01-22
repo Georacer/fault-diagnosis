@@ -7,34 +7,20 @@ classdef Variable < Vertex
     %       NAME:
     %       DESCRIPTION: 
     
-    properties (SetAccess = private)
+    properties (SetAccess = public)
         isKnown
         isMeasured
         isInput
         isOutput
         isResidual
     end
-    
-    properties (Hidden = true)
-        debug = false;
-%         debug = true;
-    end
-    
+        
     methods
         
         function this = Variable(id,alias,description)
+            this = this@Vertex(id);
         % Constructor
-        
-            % Set Id property
-            if nargin>=1
-                if ~isempty(id)
-                    this.id = id;
-                    if (this.debug) fprintf('Variable: Acquired ID %d\n',id); end
-                else
-                    error('Variable: Empty id given');
-                end
-            end
-            
+                    
             % Set Alias property
             if nargin>=2
                 this.alias = alias;

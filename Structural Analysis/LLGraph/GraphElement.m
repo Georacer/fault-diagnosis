@@ -6,7 +6,7 @@ classdef GraphElement < matlab.mixin.Copyable
         id = 0;
     end
     
-    properties (SetAccess = private)
+    properties (SetAccess = public)
         isMatched = false;
     end
     
@@ -20,7 +20,7 @@ classdef GraphElement < matlab.mixin.Copyable
             % Assign an ID to the object
             if ~isempty(id)
                 obj.id = id;
-                if obj.debug fprintf('Equation: Acquired ID %d from provider\n', obj.id); end
+                if obj.debug; fprintf('Equation: Acquired ID %d from provider\n', obj.id); end
             else
                 error('Equation: Empty ID given');
             end
@@ -28,6 +28,10 @@ classdef GraphElement < matlab.mixin.Copyable
         
         function setMatched(obj,tf_value)
             obj.isMatched = tf_value;
+        end
+        
+        function resp = getProperties(this)
+            resp = properties(this);
         end
     end
     

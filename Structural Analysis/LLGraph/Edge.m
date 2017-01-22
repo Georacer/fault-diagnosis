@@ -8,7 +8,7 @@ classdef Edge < GraphElement
         weight = 1;
     end
     
-    properties (SetAccess = private)
+    properties (SetAccess = public)
         isDerivative = false;
         isIntegral = false;
         isNonSolvable = false;

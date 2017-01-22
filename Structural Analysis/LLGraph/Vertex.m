@@ -5,6 +5,7 @@ classdef Vertex < GraphElement
     properties
         alias = '';
         name
+        description = '';
         matchedTo = [];
         coordinates = [];
         rank = inf;
@@ -20,7 +21,9 @@ classdef Vertex < GraphElement
     end
         
     methods
-
+        function this = Vertex(id)
+            this = this@GraphElement(id);
+        end
     end
     
 end

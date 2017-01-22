@@ -9,7 +9,7 @@ if nargin<4
 end
 
 % Logical OR for properties
-if gh.testPropertyEmptyEdge(index, property)
+if gh.testPropertyEmptyVar(index, property)
     gh.variables(index).(property) = value;
 else
     gh.variables(index).(property) = gh.variables(index).(property) || value ;

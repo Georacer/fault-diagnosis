@@ -4,7 +4,7 @@ function resp = testPropertyEmptyEdge( gh, index, property )
 
 resp = false;
 
-gh.testPropertyExistsEdge(id,property);
+gh.testPropertyExistsEdge(index,property);
 
 if isempty(gh.edges(index).(property))
     resp = true;

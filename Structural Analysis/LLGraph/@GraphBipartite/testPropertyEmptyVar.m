@@ -4,7 +4,7 @@ function resp = testPropertyEmptyVar( gh, index, property )
 
 resp = false;
 
-gh.testPropertyExistsEdgeVar(id,property);
+gh.testPropertyExistsVar(index,property);
 
 if isempty(gh.variables(index).(property))
     resp = true;

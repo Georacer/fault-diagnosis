@@ -7,15 +7,9 @@ classdef Equation < Vertex
     %       PREFIX:
     
     properties
-        description
     end
     
-    properties (Hidden = true)
-        debug = false;
-%         debug = true;
-    end
-        
-    properties (SetAccess = private)
+    properties (SetAccess = public)
         isStatic = false;
         isDynamic = false;
         isNonLinear = false;
@@ -26,35 +20,26 @@ classdef Equation < Vertex
     methods
         
         function obj = Equation(id, alias, description)
-        % Constructor
-
+            % Constructor
+            obj = obj@Vertex(id);
+            
             if (nargin==0)
                 error('No arguments provided to Equation constructor');
             end
             
-            % Assign an ID to the object
-            if nargin>=1
-                if ~isempty(id)
-                    obj.id = id;
-                    if obj.debug fprintf('Equation: Acquired ID %d from provider\n', obj.id); end
-                else
-                    error('Equation: Empty ID given');
-                end
-            end 
-                
             % If an alias is provided...
             if nargin>=2
                 if ~isempty(alias)
                     obj.alias = alias;
                 else
-                    alias = 'con';
+                    obj.alias = 'con';
                 end
             end
-                
+            
             % If a description is provided
             if nargin>=3
                 obj.description = description;
-            end   
+            end
         end
         
         

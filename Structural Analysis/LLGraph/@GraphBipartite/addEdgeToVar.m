@@ -10,9 +10,9 @@ end
 
 for i=1:length(varIndices)
     varId = this.edges(edgeIndices(i)).varId;
-    edgeId = this.edge(edgeIndices(i)).id;
-    this.equations(varIndices(i)).edgeIdArray = [this.variables(varIndices(i)).edgeIdArray edgeId];
-    this.equations(varIndices(i)).neigbourIdArray = [this.variables(varIndices(i)).neigbourIdArray varId];
+    edgeId = this.edges(edgeIndices(i)).id;
+    this.variables(varIndices(i)).edgeIdArray = [this.variables(varIndices(i)).edgeIdArray edgeId];
+    this.variables(varIndices(i)).neighbourIdArray = [this.variables(varIndices(i)).neighbourIdArray varId];
 end
 
 resp = true;
