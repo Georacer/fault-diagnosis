@@ -15,9 +15,7 @@ classdef GraphInterface < matlab.mixin.Copyable
             this.idProvider = IDProvider();
             this.reg = Registry();
         end
-        
-        %% External methods declarations
-        
+                
         %% Add methods
         function [ respAdded, id ] = addEdge( gi, id,equId,varId,edgeProps )
             %ADDEDGE Summary of gh function goes here
@@ -364,21 +362,21 @@ classdef GraphInterface < matlab.mixin.Copyable
             
             indices = gh.getIndexById(ids);
             
-            for i=1:length(id)
+            for i=1:length(ids)
                 
-                if gh.isEquations(id(i))
+                if gh.isEquation(ids(i))
                     tempVect = gh.graph.variables(indices(i)).neighbourIdArray;
                     varIds = [varIds tempVect];
                     
-                elseif gh.isEdge(id(i))
+                elseif gh.isEdge(ids(i))
                     varIds(end+1) = gh.graph.edges(indices(i)).equId;
                     
-                elseif gh.isVariable(id(i))
+                elseif gh.isVariable(ids(i))
                     warning('Requested getEquations from a variable');
-                    varIds(end+1) = id(i);
+                    varIds(end+1) = ids(i);
                     
                 else
-                    error('Unknown object of id %d\n',id(i));
+                    error('Unknown object of id %d\n',ids(i));
                 end
                 
             end
@@ -672,8 +670,8 @@ classdef GraphInterface < matlab.mixin.Copyable
             
             id = [];
             
-            for i = 1:gh.numEqs
-                if gh.testPropertyExists(gh.reg.equationIdArray(i),property)
+            for i = 1:gh.graph.numEqs
+                if gh.testPropertyExists(gh.reg.equIdArray(i),property)
                     switch operator
                         case '=='
                             if (gh.graph.equations(i).(property) == value)
@@ -835,8 +833,8 @@ classdef GraphInterface < matlab.mixin.Copyable
             
             id = [];
             
-            for i = 1:gh.numVars
-                if gh.testPropertyExists(gh.reg.variableIdArray(i),property)
+            for i = 1:gh.graph.numVars
+                if gh.testPropertyExists(gh.reg.varIdArray(i),property)
                     switch operator
                         case '=='
                             if (gh.graph.variables(i).(property) == value)
