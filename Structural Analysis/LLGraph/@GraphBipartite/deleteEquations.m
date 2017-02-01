@@ -1,4 +1,4 @@
-function [ resp ] = deleteEquations( this, ids )
+function [ resp ] = deleteEquations( this, indices )
 %DELETEEQUATION Delete equations from graph
 %   Detailed explanation goes here
 

@@ -9,10 +9,13 @@ if length(varIndices) ~= length(edgeIndices)
 end
 
 for i=1:length(varIndices)
-    varId = this.edges(edgeIndices(i)).varId;
+    equId = this.edges(edgeIndices(i)).equId;
     edgeId = this.edges(edgeIndices(i)).id;
+    if ismember(edgeId,this.variables(varIndices(i)).edgeIdArray)
+        warning('addEdgeToVar: Attempting to add an already existing edge to a variable');
+    end
     this.variables(varIndices(i)).edgeIdArray = [this.variables(varIndices(i)).edgeIdArray edgeId];
-    this.variables(varIndices(i)).neighbourIdArray = [this.variables(varIndices(i)).neighbourIdArray varId];
+    this.variables(varIndices(i)).neighbourIdArray = [this.variables(varIndices(i)).neighbourIdArray equId];
 end
 
 resp = true;

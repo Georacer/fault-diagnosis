@@ -11,7 +11,7 @@ if length(value)==1;
 end
 
 for i=1:length(index)
-    gh.variables(index(i))=value(i);
+    gh.variables(index(i)).isKnown=value(i);
 end
 
 end

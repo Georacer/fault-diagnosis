@@ -4,15 +4,19 @@ function resp = removeEdgeFromVar(this,varIndices,edgeIndices)
 
 resp = false;
 
+% debug = true;
+debug = false;
+
 if length(varIndices) ~= length(edgeIndices)
     error('variable/edge indices should come in pairs');
 end
 
 for i=1:length(varIndices)
     equId = this.edges(edgeIndices(i)).equId;
-    edgeId = this.edge(edgeIndices(i)).id;
-    this.equations(equIndices(i)).edgeIdArray = setdiff(this.equations(equIndices(i)).edgeIdArray,edgeId);
-    this.equations(equIndices(i)).neigbourIdArray = setdiff(this.equations(equIndices(i)).neigbourIdArray,equId);
+    edgeId = this.edges(edgeIndices(i)).id;
+    if debug; fprintf('removeEdgeFromVar: Removing edge %d and equation %d from variable %d\n',edgeId, equId, this.variables(varIndices(i)).id); end
+    this.variables(varIndices(i)).edgeIdArray = setdiff(this.variables(varIndices(i)).edgeIdArray,edgeId);
+    this.variables(varIndices(i)).neighbourIdArray = setdiff(this.variables(varIndices(i)).neighbourIdArray,equId);
 end
 
 resp = true;

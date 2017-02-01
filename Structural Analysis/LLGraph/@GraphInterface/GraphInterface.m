@@ -1,4 +1,4 @@
-classdef GraphInterface < matlab.mixin.Copyable
+classdef GraphInterface < handle
     %GRAPHINTERFACE Interface class for graph functionality
     %   Detailed explanation goes here
     
@@ -8,6 +8,7 @@ classdef GraphInterface < matlab.mixin.Copyable
         idProvider = IDProvider.empty % ID provider object
         adjacency = Adjacency.empty
         formulaList
+        name = '';
     end
     
     methods
@@ -57,9 +58,15 @@ classdef GraphInterface < matlab.mixin.Copyable
                 gi.graph.addEdgeToEqu(equIndex,edgeIndex);
                 if debug; fprintf('addEdge: calling graph.addEdgeToVar\n'); end
                 gi.graph.addEdgeToVar(varIndex,edgeIndex);
-                
-                gi.graph.equations(equIndex).edgeIdArray(end+1) = id;
-                gi.graph.variables(varIndex).edgeIdArray(end+1) = id;
+%                 
+%                 if ismember(id,gi.graph.equations(equIndex).edgeIdArray)
+%                     warning('Attempting to add an already existing edge (%d) to an equation (%d)',id,equId);
+%                 end
+%                 gi.graph.equations(equIndex).edgeIdArray(end+1) = id;
+%                 if ismember(id,gi.graph.variables(varIndex).edgeIdArray)
+%                     warning('Attempting to add an already existing edge (%d) to a variable (%d)',id,varId);
+%                 end
+%                 gi.graph.variables(varIndex).edgeIdArray(end+1) = id;
                 
                 respAdded = true;
                 if debug; fprintf('addEdge: Created new edge from (%d,%d) with ID %d\n',equId,varId,id); end
@@ -105,29 +112,36 @@ classdef GraphInterface < matlab.mixin.Copyable
             end
             
         end
-        function [ resp, id ] = addResidual( gi, equId )
-            %ADDRESIDUAL Summary of this function goes here
+        function [ resp, resIds ] = addResidual( gi, equIds )
+            %ADDRESIDUAL Add residual variables to equations
             %   Detailed explanation goes here
             
-            alias = sprintf('res_%d',equId);
-            varProps.isKnown = true;
-            varProps.isMeasured = false;
-            varProps.isInput = false;
-            varProps.isOutput = false;
-            varProps.isResidual = true;
-            varProps.isMatched = true;
-            [resp, id] = gi.addVariable([],alias,varProps);
+            resp = true;
             
-            equIndex = gi.getIndexById(equId);
+            resIds = zeros(size(equIds));
             
-            gi.setMatched(equId);
-            gi.graph.equations(equIndex).matchedTo = id;
-            
-            edgeProps.isMatched = true;
-            edgeProps.isDerivative = false;
-            edgeProps.isIntegral = false;
-            edgeProps.isNonSolvable = false;
-            gi.addEdge([],equId,id,edgeProps);
+            for i=1:length(equIds);
+                equId = equIds(i);
+                
+                alias = sprintf('res_%d',equId);
+                varProps.isKnown = true;
+                varProps.isMeasured = false;
+                varProps.isInput = false;
+                varProps.isOutput = false;
+                varProps.isResidual = true;
+                varProps.isMatched = true;
+                [respSingle, resId] = gi.addVariable([],alias,varProps);
+                
+                edgeProps.isMatched = true;
+                edgeProps.isDerivative = false;
+                edgeProps.isIntegral = false;
+                edgeProps.isNonSolvable = false;
+                [~, edgeId] = gi.addEdge([],equId,resId,edgeProps);
+                gi.setMatched(edgeId);
+                
+                resIds(i) = resId;
+                resp = resp && respSingle;
+            end
             
         end
         function [respAdded, id] = addVariable( this, id,alias,varProps,description )
@@ -192,7 +206,12 @@ classdef GraphInterface < matlab.mixin.Copyable
             
             resp = false;
             
-            if ~all(isEdge(ids))
+            debug = false;
+%             debug = true;
+            
+            if debug; fprintf('deleteEdges: Edges for deletion: '); fprintf('%d ',ids); fprintf('\n'); end
+            if debug; fprintf('deleteEdges: out of the edgelist: '); fprintf('%d ',this.reg.edgeIdArray); fprintf('\n'); end
+            if ~all(this.isEdge(ids))
                 error('Requested to delete an edge while passing non-edge Id');
             end
             
@@ -200,13 +219,13 @@ classdef GraphInterface < matlab.mixin.Copyable
             
             varIds = this.getVariables(ids);
             varIndices = this.getIndexById(varIds);
-            this.graph.removeEdgeFromVar(varIndices,edgeIndices)
+            this.graph.removeEdgeFromVar(varIndices,edgeIndices);
             
             equIds = this.getEquations(ids);
             equIndices = this.getIndexById(equIds);
-            this.graph.removeEdgeFromEqu(equIndices,edgeIndices)
+            this.graph.removeEdgeFromEqu(equIndices,edgeIndices);
             
-            this.graph.deleteEdges(ids);
+            this.graph.deleteEdges(edgeIndices);
             
             this.reg.update();
             
@@ -217,13 +236,13 @@ classdef GraphInterface < matlab.mixin.Copyable
             %DELETEEQUATION Delete equations from graph
             %   Detailed explanation goes here
             
-            % debug=true;
+%             debug=true;
             debug=false;
             
             resp = false;
             
-            if ~all(isEquation(ids))
-                error('Requested to delete an equation while passing non-equation Id');
+            if ~all(this.isEquation(ids));
+                error('deleteEquations: Requested to delete an equation while passing non-equation Id');
             end
             
             % Find related edges
@@ -232,13 +251,17 @@ classdef GraphInterface < matlab.mixin.Copyable
                 equIndex = this.getIndexById(id);
                 edgeIds = [edgeIds this.graph.equations(equIndex).edgeIdArray];
             end
+            edgeIds = unique(edgeIds);
+            if debug; fprintf('deleteEquations: Deleting from equations %d ',ids); fprintf('the edges '); fprintf(' %d ',edgeIds); fprintf('\n'); end
+            
             % Find related variables
             relVarIds = [];
             for id = ids
                 equIndex = this.getIndexById(id);
-                relVarIds = [relVarIds this.equations(equIndex).neighbourIdArray];
+                relVarIds = [relVarIds this.graph.equations(equIndex).neighbourIdArray];
             end
             relVarIds = unique(relVarIds);
+            if debug; fprintf('deleteEquations: Deleting from equations %d ',ids); fprintf('the variables '); fprintf(' %d ',relVarIds); fprintf('\n'); end
             
             this.deleteEdges(edgeIds);
             this.deleteVariables(relVarIds,true);
@@ -275,13 +298,13 @@ classdef GraphInterface < matlab.mixin.Copyable
             %DELETEVARIABLE Delete variable from graph
             %   Also delete related edges
             
-            % debug=true;
+%             debug=true;
             debug=false;
             
             resp = false;
             
-            if ~all(isVariable(ids))
-                error('Requested to delete an edge while passing non-edge Id');
+            if ~all(this.isVariable(ids))
+                error('Requested to delete a variable while passing non-variable Id');
             end
             
             if nargin<3
@@ -292,8 +315,10 @@ classdef GraphInterface < matlab.mixin.Copyable
             if safe
                 newIds = [];
                 for id=ids
+                    if debug; fprintf('deleteVariables: Attempting to delete variable %d with equations: ',id); fprintf('%d ',this.getEquations(id)); fprintf('\n'); end
                     if isempty(this.getEquations(id))
                         newIds = [newIds id];
+                        if debug; fprintf('deleteVarables: Variable is issued for deletion\n'); end
                     end
                 end
                 ids = newIds;
@@ -302,7 +327,9 @@ classdef GraphInterface < matlab.mixin.Copyable
             % Delete related edges first
             for id = ids
                 edgeIds = this.getEdgeIdByVertices([],id);
-                this.deleteEdges(edgeIds);
+                if ~isempty(edgeIds)
+                    this.deleteEdges(edgeIds);
+                end
             end
             
             % Delete variables
@@ -310,7 +337,7 @@ classdef GraphInterface < matlab.mixin.Copyable
             this.graph.deleteVariables(ind2Del);
             
             if debug
-                fprintf('*** %d variables left in graph\n',this.numVars);
+                fprintf('deleteVarables: %d variables left in graph\n',this.graph.numVars);
             end
             
             this.reg.update();
@@ -331,21 +358,21 @@ classdef GraphInterface < matlab.mixin.Copyable
             
             indices = gh.getIndexById(ids);
             
-            for i=1:length(id)
+            for i=1:length(ids)
                 
-                if gh.isVariable(id(i))
+                if gh.isVariable(ids(i));
                     tempVect = gh.graph.variables(indices(i)).neighbourIdArray;
                     equIds = [equIds tempVect];
                     
-                elseif gh.isEdge(id(i))
+                elseif gh.isEdge(ids(i))
                     equIds(end+1) = gh.graph.edges(indices(i)).equId;
                     
-                elseif gh.isEquation(id(i))
+                elseif gh.isEquation(ids(i))
                     warning('Requested getEquations from an equation');
-                    equIds(end+1) = id(i);
+                    equIds(end+1) = ids(i);
                     
                 else
-                    error('Unknown object of id %d\n',id(i));
+                    error('Unknown object of id %d\n',ids(i));
                 end
                 
             end
@@ -365,14 +392,14 @@ classdef GraphInterface < matlab.mixin.Copyable
             for i=1:length(ids)
                 
                 if gh.isEquation(ids(i))
-                    tempVect = gh.graph.variables(indices(i)).neighbourIdArray;
+                    tempVect = gh.graph.equations(indices(i)).neighbourIdArray;
                     varIds = [varIds tempVect];
                     
                 elseif gh.isEdge(ids(i))
-                    varIds(end+1) = gh.graph.edges(indices(i)).equId;
+                    varIds(end+1) = gh.graph.edges(indices(i)).varId;
                     
                 elseif gh.isVariable(ids(i))
-                    warning('Requested getEquations from a variable');
+                    warning('Requested getVariables from a variable');
                     varIds(end+1) = ids(i);
                     
                 else
@@ -536,6 +563,38 @@ classdef GraphInterface < matlab.mixin.Copyable
                 
             else
                 error('Unknown id %d\n',id);
+            end
+            
+        end
+        function [ edgeIds ] = getEdges( gh, ids)
+            %GETEDGES get edges related to an equation or variable
+            %   Detailed explanation goes here
+            
+            % debug = true;
+            debug = false;
+            
+            edgeIds = [];
+            
+            indices = gh.getIndexById(ids);
+            
+            for i=1:length(ids)
+                
+                if gh.isVariable(ids(i));
+                    tempVect = gh.graph.variables(indices(i)).edgeIdArray;
+                    edgeIds = [edgeIds tempVect];
+                    
+                elseif gh.isEquation(ids(i))
+                    tempVect = gh.graph.equations(indices(i)).edgeIdArray;
+                    edgeIds = [edgeIds tempVect];
+                    
+                elseif gh.isEdge(ids(i))
+                    warning('Requested getEdges from an edge');
+                    edgeIds(end+1) = ids(i);
+                    
+                else
+                    error('Unknown object of id %d\n',ids(i));
+                end
+                
             end
             
         end
@@ -734,6 +793,15 @@ classdef GraphInterface < matlab.mixin.Copyable
             end
             
         end
+        function [ ids ] = getMatchedEqus(gh)
+            ids = gh.getEquIdByProperty('isMatched',true);
+        end
+        function [ ids ] = getMatchedVars(gh)
+            ids = gh.getVarIdByProperty('isMatched',true);
+        end
+        function [ ids ] = getMatchedEdges(gh)
+            ids = gh.getEdgeIdByProperty('isMatched',true);
+        end
         function [ varId ] = getParentVars( gh, id )
             %GETPARENTVARS Return variables directly used for calculation
             %   Detailed explanation goes here
@@ -795,20 +863,19 @@ classdef GraphInterface < matlab.mixin.Copyable
             expr = gh.graph.equations(equIndex).expressionStructural;
             
         end
-        function [ id ] = getVariablesUnknown( gh, id )
+        function [ varIds ] = getVariablesUnknown( gh, id )
             %GETVARIABLESUNKNOWN Return the uknown variables of a constraint
             %   Detailed explanation goes here
+            varIds = gh.getVariables(id);
             
-            id = gh.getVariables(id);
-            
-            knownVars = zeros(size(id));
-            for index = 1:length(id)
-                if gh.isKnown(id(index))
+            knownVars = zeros(1,length(varIds));
+            for index = 1:length(knownVars)
+                if gh.isKnown(varIds(index))
                     knownVars(index) = 1;
                 end
             end
             
-            id(logical(knownVars)) = [];
+            varIds(logical(knownVars)) = [];
             
         end
         function [ id ] = getVarIdByAlias( this, alias )
@@ -876,6 +943,13 @@ classdef GraphInterface < matlab.mixin.Copyable
             %ISEDGE Summary of gh function goes here
             %   Detailed explanation goes here
             
+%             debug = true;
+            debug = false;
+            
+            if isempty(ids)
+                error('Requested parsing of empty ID array');
+            end
+            
             resp = zeros(size(ids));
             
             for i=1:length(resp)
@@ -898,6 +972,10 @@ classdef GraphInterface < matlab.mixin.Copyable
             %   Detailed explanation goes here
             
             resp = zeros(size(ids));
+            
+            if isempty(ids)
+                error('Requested parsing of empty ID array');
+            end
             
             for i=1:length(resp)
                 if ids(i)<=(length(gh.reg.equIdToIndexArray))
@@ -952,6 +1030,10 @@ classdef GraphInterface < matlab.mixin.Copyable
             %   Detailed explanation goes here
             
             resp = zeros(size(ids));
+            
+            if isempty(ids)
+                error('Requested parsing of empty ID array');
+            end
             
             for i=1:length(resp)
                 if ids(i)<=(length(gh.reg.varIdToIndexArray))
@@ -1037,9 +1119,40 @@ classdef GraphInterface < matlab.mixin.Copyable
             elseif gh.isEdge(id)
                 index = gh.getIndexById(id);
                 equId = gh.graph.edges(index).equId;
-                equIndex = gr.getIndexById(equId);
+                equIndex = gh.getIndexById(equId);
                 varId = gh.graph.edges(index).varId;
-                varIndex = gr.getIndexById(varId);
+                varIndex = gh.getIndexById(varId);
+                
+                gh.graph.setMatchedEdge(index,value);
+                gh.graph.setMatchedEqu(equIndex, value, varId);
+                gh.graph.setMatchedVar(varIndex, value, equId);
+            else
+                error('Unkown object type with id %d',id);
+            end
+            
+        end
+        function resp = setKnown(gh, id, value)
+            %SETKNOWN Set a variable as known
+            %   Detailed explanation goes here
+            
+            resp = false;
+            
+            if nargin<3
+                value = true;
+            end
+            
+            if gh.isEquation(id)
+                error('setKnown only applicable to variables, not equations');
+            elseif gh.isEdge(id)
+                error('setKnown only applicable to variables, not edges');
+            elseif gh.isVariable(id)
+                index = gh.getIndexById(id);
+                gh.graph.setKnownVar(index);
+                
+                equId = gh.graph.edges(index).equId;
+                equIndex = gh.getIndexById(equId);
+                varId = gh.graph.edges(index).varId;
+                varIndex = gh.getIndexById(varId);
                 
                 gh.graph.setMatchedEdge(index,value);
                 gh.graph.setMatchedEqu(equIndex, value, varId);
@@ -1307,7 +1420,7 @@ classdef GraphInterface < matlab.mixin.Copyable
             resp = true;
             
             this.reg.update();
-            
+            this.name = this.graph.name;
         end
         function resp = testPropertyExists( gh, ids, property )
             %TESTPROPTERTYEMPTY Summary of this function goes here

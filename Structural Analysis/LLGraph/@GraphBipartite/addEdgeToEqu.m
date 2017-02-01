@@ -11,6 +11,9 @@ end
 for i=1:length(equIndices)
     varId = this.edges(edgeIndices(i)).varId;
     edgeId = this.edges(edgeIndices(i)).id;
+    if ismember(edgeId,this.equations(equIndices(i)).edgeIdArray)
+        warning('addEdgeToEqu: Attempting to add an already existing edge to an equation');
+    end
     this.equations(equIndices(i)).edgeIdArray = [this.equations(equIndices(i)).edgeIdArray edgeId];
     this.equations(equIndices(i)).neighbourIdArray = [this.equations(equIndices(i)).neighbourIdArray varId];
 end

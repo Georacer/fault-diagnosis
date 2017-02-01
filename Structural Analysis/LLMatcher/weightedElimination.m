@@ -1,22 +1,23 @@
-function M = matchWeightedElimination( gh, varargin )
-%MATCHWEIGHTEDELIMINATION Summary of this function goes here
+function M = weightedElimination( mh, varargin )
+%WEIGHTEDELIMINATION Summary of this function goes here
 %   Detailed explanation goes here
 
 p = inputParser;
 
-p.addRequired('gh',@(x) true);
+p.addRequired('mh',@(x) true);
 p.addParameter('maxRank',inf,@(x) floor(x)==x);
 p.addParameter('maxMatchings',inf,@(x) floor(x)==x);
 
-p.parse(gh, varargin{:});
+p.parse(mh, varargin{:});
 opts = p.Results;
 
 maxRankAllowed = opts.maxRank; % The highest rank which matching is allowed to reach
 maxMatchingsAllowed = opts.maxMatchings; % Maximum number of matchings allowed to be performed
 
 debug = true;
+% debug = false;
 
-residualIdArray = [];
+rankArray = zeros(1,max(mh.gi.reg.varIdArray)); % We will need at most max(varId) ids
 
 % Build the matching set
 M = [];
@@ -28,22 +29,29 @@ overallRank = 0;
 % Find all unmatched constraints with 1 unknown variable
 Mstar = [];
 wstar = [];
-CU = gh.getEquIdByProperty('isMatched', false);
+CU = mh.gi.getEquIdByProperty('isMatched', false);
 
 if debug
     fprintf('*** Initially found %d unmatched constraints\n',length(CU));
 end
 
 for equId = CU
-    vars = gh.getVariablesUnknown(equId);
-    if length(vars)==1
-        edgeId = gh.getEdgeIdByVertices(equId,vars);
-        if gh.isMatchable(edgeId)
-            edgeIndex = gh.getIndexById(edgeId);
-            Mstar(end+1) = edgeId;
-            wstar(end+1) = gh.edges(edgeIndex).weight;
-        end
+    edgeIds = mh.gi.getEdges(equId);
+    if sum(~mh.gi.isMatched(edgeIds))==1 % Only one edge unmatched
+        Mstar(end+1) = edgeIds;
+        wstar(end+1) = mh.gi.getEdgeWeight(edgeIds);
     end
+    
+% %     DEPRECATED
+%     vars = mh.gi.getVariablesUnknown(equId);
+%     if length(vars)==1
+%         edgeId = mh.getEdgeIdByVertices(equId,vars);
+%         if mh.isMatchable(edgeId)
+%             edgeIndex = mh.getIndexById(edgeId);
+%             Mstar(end+1) = edgeId;
+%             wstar(end+1) = mh.edges(edgeIndex).weight;
+%         end
+%     end
 end
 
 % Sort in ascending order
@@ -65,19 +73,20 @@ while ~isempty(Mstar)
     
     % Add the cheapest edge to the matching set
     m = Mstar(1);
-    edgeInd = gh.getIndexById(m);
-    equId = gh.edges(edgeInd).equId;
-    varId = gh.edges(edgeInd).varId;
-    equInd = gh.getIndexById(equId);
-    varInd = gh.getIndexById(varId);
+    edgeInd = mh.gi.getIndexById(m);
+    equId = mh.gi.graph.edges(edgeInd).equId;
+    varId = mh.gi.graph.edges(edgeInd).varId;
+    equInd = mh.gi.getIndexById(equId);
+    varInd = mh.gi.getIndexById(varId);
         
     % Check if the matching does not exceed the maximum rank allowed
-    otherVarIds = setdiff(gh.getVariables(equId),varId);
+    otherVarIds = setdiff(mh.gi.getVariables(equId),varId);
     maxRank = 0;
     if ~isempty(otherVarIds)
         for id = otherVarIds
-            index = gh.getIndexById(id);
-            rank = gh.variables(index).rank;
+            rank = rankArray(id);
+%             index = mh.gi.getIndexById(id);
+%             rank = mh.gi.variables(index).rank;
             if rank>maxRank
                 maxRank=rank;
             end
@@ -87,18 +96,16 @@ while ~isempty(Mstar)
         fprintf('***Reached maximum allowed rank\n');
         break;
     end
-    gh.equations(equInd).rank = maxRank+1;
-    gh.variables(varInd).rank = maxRank+1; 
+    rankArray(equId) = maxRank+1;
+    rankArray(varId) = maxRank+1;
+%     mh.equations(equInd).rank = maxRank+1;
+%     mh.variables(varInd).rank = maxRank+1; 
     
     M(end+1) = m;
     w(end+1) = wstar(1);
-    gh.setMatched(m);
-    gh.setMatched(varId);
-    gh.variables(varInd).matchedTo = equId;
-    gh.setMatched(equId);
-    gh.equations(equInd).matchedTo = varId;
+    mh.gi.setMatched(m);
     CU = setdiff(CU, equId);
-    gh.setKnown(varId);
+    mh.gi.setKnown(varId);
     
     % Remove it from the candidate set
     Mstar(1) = [];
@@ -108,8 +115,8 @@ while ~isempty(Mstar)
     commonEdges = zeros(size(Mstar));
     k=1;
     for id = Mstar
-        edgeIndex = gh.getIndexById(id);
-        if gh.edges(edgeIndex).varId == varId
+        edgeIndex = mh.gi.getIndexById(id);
+        if mh.gi.graph.edges(edgeIndex).varId == varId
             commonEdges(k) = 1;
         end
         k = k+1;
@@ -119,13 +126,12 @@ while ~isempty(Mstar)
     
     % Add new candidate edges
     for equId = CU
-        vars = gh.getVariablesUnknown(equId);
+        vars = mh.gi.getVariablesUnknown(equId);
         if length(vars)==1
-            edgeId = gh.getEdgeIdByVertices(equId,vars);
-            if gh.isMatchable(edgeId)
-                edgeIndex = gh.getIndexById(edgeId);
+            edgeId = mh.gi.getEdgeIdByVertices(equId,vars);
+            if mh.isMatchable(edgeId)
                 Mstar(end+1) = edgeId;
-                wstar(end+1) = gh.edges(edgeIndex).weight;
+                wstar(end+1) = mh.gi.getEdgeWeight(edgeId);
             end
         end
     end
@@ -140,28 +146,21 @@ while ~isempty(Mstar)
     
 end
 
-%% Find residual generators
-for equId = CU
-    vars = gh.getVariablesUnknown(equId);
-    if isempty(vars)
-        residualIdArray(end+1) = equId;
-        gh.setMatched(equId);
-        eqIndex = gh.getIndexById(equId);
-        gh.equations(eqIndex).isResGenerator = true;
-        gh.addResidual(equId);
-    end
-end
+%% Add residuals where posible
+
+resGenIds = findResGenerators(mh.gi);
+mh.gi.addResidual(resGenIds);
 
 %% Check matching characteristics
 
-matchedEqs = length(gh.getEquIdByProperty('isMatched',true));
+matchedEqs = length(mh.gi.getEquIdByProperty('isMatched',true));
 
-matchedVars = length(gh.getVarIdByProperty('isMatched',true));
+matchedVars = length(mh.gi.getVarIdByProperty('isMatched',true));
 
-numResiduals = length(residualIdArray);
+numResiduals = length(resGenIds);
 
 fprintf('Matching results:\n');
-fprintf('%d/%d variables matched\n',matchedVars,gh.numVars);
+fprintf('%d/%d variables matched\n',matchedVars,mh.gi.graph.numVars);
 fprintf('%d residuals generated\n',numResiduals);
 fprintf('%d equations used\n',matchedEqs);
 fprintf('Maximum rank reached: %d\n',overallRank);

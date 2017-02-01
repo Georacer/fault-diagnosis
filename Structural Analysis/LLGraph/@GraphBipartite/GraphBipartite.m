@@ -72,8 +72,8 @@ classdef GraphBipartite < matlab.mixin.Copyable
         
         % Set methods
         setKnown(this,id, value)
-        setMatchedVar(this,index, value)
-        setMatchedEqu(this,index, value)
+        setMatchedVar(this,index, value, equId)
+        setMatchedEqu(this,index, value, varId)
         setMatchedEdge(this,index, value)
         resp = setPropertyOREqu(this,index,property,value)
         resp = setPropertyORVar(this,index,property,value)
