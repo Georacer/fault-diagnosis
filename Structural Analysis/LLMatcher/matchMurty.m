@@ -1,48 +1,59 @@
-function [ M ] = matchMurty( gh, eqIds, varIds )
+function [ M ] = matchMurty( matcher, numMatchings )
 %MATCHMURTY Summary of this function goes here
 %   Detailed explanation goes here
 
 debug = false;
+% debug = true;
 
-if nargin==1
-    eqIds = gh.equationIdArray;
-end
+gi = matcher.gi;
 
-if nargin<=2
-    [A, varIds, eqIndices, varIndices] = gh.getSubmodel(eqIds,'direction','V2E');
-end
+% if nargin==1
+%     eqIds = gi.equationIdArray;
+% end
+% 
+% if nargin<=2
+%     [A, varIds, eqIndices, varIndices] = gi.getSubmodel(eqIds,'direction','V2E');
+% end
+% 
+% if nargin==3
+%     [A, varIds, eqIndices, varIndices] = gi.getSubmodel(eqIds,varIds,'direction','V2E');
+% end
 
-if nargin==3
-    [A, varIds, eqIndices, varIndices] = gh.getSubmodel(eqIds,varIds,'direction','V2E');
-end
+A = gi.adjacency.V2E;
+equIds = gi.reg.equIdArray;
+varIds = gi.reg.varIdArray;
+
 
 if debug
     fprintf('*** Murty: Examining equations ');
-    disp(gh.equationAliasArray(eqIndices));
+    disp(gi.getAliasById(equIds));
     fprintf(' and variables ');
-    disp(gh.variableAliasArray(varIndices));
+    disp(gi.getAliasById(varIds));
 end
-
-% Get variable IDs
-varIds = gh.variableIdArray(varIndices);
-% Get equation IDs
-equIds = gh.equationIdArray(eqIndices);
 
 % Test if A is square
 if size(A,1)~=size(A,2)
-    error('Given submodel is not just-constrained');
+    error('Given submodel is not just-constrained (this needs more work, to actually verify that this is just-constrained)');
+end
+% Redundant test
+if (length(equIds)~=length(varIds))
+    error('Given submodel is not just-constrained (2)');
 end
 
 % Set impossible matchings
-nnzEls = nnz(A);
+if nargin<2
+    nnzEls = nnz(A);
+    numMatchings = factorial(nnzEls);
+end
+
 A(A==0) = inf;
 
-matching = murty(A,factorial(nnzEls));
+matching = murty(A,numMatchings);
 equIdsArray = zeros(size(matching));
 for i = 1:size(equIdsArray,1)
     equIdsArray(i,:) = equIds;
 end
 
-M = arrayfun(@(x,y) gh.getEdgeIdByVertices(x,y), equIdsArray, varIds(matching));
+M = arrayfun(@(x,y) gi.getEdgeIdByVertices(x,y), equIdsArray, varIds(matching));
 
 end

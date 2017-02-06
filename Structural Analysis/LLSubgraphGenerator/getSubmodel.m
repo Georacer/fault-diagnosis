@@ -1,4 +1,4 @@
-function [ A, varIds, eqIndices, varIndices ] = getSubmodel( gh, varargin )
+function [ A, varIds, eqIndices, varIndices ] = getSubmodel( gi, varargin )
 %GETSUBMODEL Return the unknown submodel given an equation subset
 %   Detailed explanation goes here
 
@@ -10,10 +10,10 @@ expectedDirection = {'V2E','E2V'};
 
 p.addRequired('gh',@(x) true);
 p.addRequired('eqIds',@isnumeric);
-p.addOptional('varIds', gh.variableIdArray,@isnumeric);
+p.addOptional('varIds', gi.graph.variableIdArray,@isnumeric);
 p.addParameter('direction','V2E',@(x) any(validatestring(x,expectedDirection)));
 
-p.parse(gh, varargin{:});
+p.parse(gi, varargin{:});
 opts = p.Results;
 
 eqIds = opts.eqIds;
@@ -22,14 +22,14 @@ varIds = opts.varIds;
 %     varIds = gh.variableIdArray;
 % end
 
-eqIndices = gh.getIndexById(eqIds);
-varIndices = gh.getIndexById(varIds);
+eqIndices = gi.getIndexById(eqIds);
+varIndices = gi.getIndexById(varIds);
 
 % Get submatrix
 if strcmp(opts.direction,'V2E');
-    A = gh.adjacency.V2E';
+    A = gi.adjacency.V2E';
 else
-    A = gh.adjacency.E2V;
+    A = gi.adjacency.E2V;
 end
 A = A(eqIndices,varIndices);
 
@@ -43,7 +43,7 @@ cols2Keep = zeros(size(A,2));
 
 k=1;
 for i = varIndices
-    if ~gh.variables(i).isKnown
+    if ~gi.graph.variables(i).isKnown
         cols2Keep(k) = 1;
     end  
     k = k+1;
@@ -52,7 +52,7 @@ cols2Keep = logical(cols2Keep);
 A = A(:,cols2Keep);
 varIndices = varIndices(cols2Keep);
 
-varIds = gh.variableIdArray(varIndices);
+varIds = gi.reg.variableIdArray(varIndices);
 
 end
 

@@ -303,6 +303,9 @@ classdef GraphInterface < handle
             
             resp = false;
             
+            if isempty(ids)
+                error('Requested to delete variables with empty ids argument');
+            end
             if ~all(this.isVariable(ids))
                 error('Requested to delete a variable while passing non-variable Id');
             end
@@ -863,9 +866,15 @@ classdef GraphInterface < handle
             expr = gh.graph.equations(equIndex).expressionStructural;
             
         end
-        function [ varIds ] = getVariablesUnknown( gh, id )
-            %GETVARIABLESUNKNOWN Return the uknown variables of a constraint
+        function [ varIds ] = getVariablesKnown( gh, id )
+            %GETVARIABLESKNOWN Return the known variables of a constraint
             %   Detailed explanation goes here
+            
+            if nargin<2
+                % Get unknown variables for the whole graph
+                id = gh.reg.equIdArray;
+            end
+            
             varIds = gh.getVariables(id);
             
             knownVars = zeros(1,length(varIds));
@@ -875,7 +884,30 @@ classdef GraphInterface < handle
                 end
             end
             
-            varIds(logical(knownVars)) = [];
+            varIds = varIds(logical(knownVars));
+            varIds = unique(varIds);
+            
+        end
+        function [ varIds ] = getVariablesUnknown( gh, id )
+            %GETVARIABLESUNKNOWN Return the uknown variables of a constraint
+            %   Detailed explanation goes here
+            
+            if nargin<2
+                % Get unknown variables for the whole graph
+                id = gh.reg.equIdArray;
+            end
+            
+            varIds = gh.getVariables(id);
+            
+            knownVars = zeros(1,length(varIds));
+            for index = 1:length(knownVars)
+                if gh.isKnown(varIds(index))
+                    knownVars(index) = 1;
+                end
+            end
+            
+            varIds(logical(knownVars)) = [];            
+            varIds = unique(varIds);
             
         end
         function [ id ] = getVarIdByAlias( this, alias )
@@ -1106,6 +1138,9 @@ classdef GraphInterface < handle
             %SETPROPERTYOR Summary of gh function goes here
             %   Detailed explanation goes here
             
+%             debug=true;
+            debug=false;
+            
             resp = false;
             
             if nargin<3
@@ -1126,6 +1161,9 @@ classdef GraphInterface < handle
                 gh.graph.setMatchedEdge(index,value);
                 gh.graph.setMatchedEqu(equIndex, value, varId);
                 gh.graph.setMatchedVar(varIndex, value, equId);
+                gh.graph.setKnownVar(varIndex);
+                
+                if debug; fprintf('GraphInterface/setMatched: setting as matched the edge %d\n',id); end
             else
                 error('Unkown object type with id %d',id);
             end
@@ -1225,11 +1263,8 @@ classdef GraphInterface < handle
             %   Detailed explanation goes here
             
             for i=1:length(M)
-                m = M(i);
-                varId = gh.getVariables(m);
-                
+                m = M(i);                
                 gh.setMatched(m);
-                gh.setKnown(varId);
             end
             
             resp = true;

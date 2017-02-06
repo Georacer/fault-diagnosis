@@ -36,7 +36,9 @@ classdef Matcher < matlab.mixin.Copyable
             end
             switch matcher
                 case 'Murty'
-                    warning('Murty matching not implemented yet');
+                    resp = matchMurty(this,varargin{:});
+                    this.gi.applyMatching(resp(1,:));
+                    this.matchingSet = resp;
                 case 'WeightedElimination'
                     resp = weightedElimination(this,varargin{:});
                     this.matchingSet = resp;

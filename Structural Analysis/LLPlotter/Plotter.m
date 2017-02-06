@@ -45,8 +45,12 @@ classdef Plotter < matlab.mixin.Copyable
             edgeDef = '';
             
             for i=1:this.gi.graph.numEqs
-                nodeDef = [nodeDef sprintf('node [shape = box, fillcolor = white, style = filled, label="%s\n%d"]; %s;\n'...
-                    ,this.gi.reg.equAliasArray{i},this.gi.reg.equIdArray(i),this.gi.reg.equAliasArray{i})];
+                color = 'white';                
+                if this.gi.graph.equations(i).isMatched
+                    color = 'lightskyblue';
+                end
+                nodeDef = [nodeDef sprintf('node [shape = box, fillcolor = %s, style = filled, label="%s\n%d"]; %s;\n'...
+                    ,color,this.gi.reg.equAliasArray{i},this.gi.reg.equIdArray(i),this.gi.reg.equAliasArray{i})];
             end
             
             for i=1:this.gi.graph.numVars
@@ -66,7 +70,7 @@ classdef Plotter < matlab.mixin.Copyable
                     shape = 'Mcircle';
                 end
                 if this.gi.graph.variables(i).isMatched
-                    % No operation
+                    color = 'lightskyblue';
                 end
                 nodeDef = [nodeDef sprintf('node [shape = %s, fillcolor = %s, style = filled, label="%s\n%d"]; %s;\n'...
                     ,shape,color,this.gi.reg.varAliasArray{i},this.gi.reg.varIdArray(i),this.gi.reg.varAliasArray{i})];
@@ -80,14 +84,14 @@ classdef Plotter < matlab.mixin.Copyable
                 if this.gi.isVariable(id1) % V2E edge
                     varIndex = this.gi.getIndexById(id1);
                     equIndex = this.gi.getIndexById(id2);
-                    edgeDef = [edgeDef sprintf('%s -> %s [penwidth = %g];\n',this.gi.reg.varAliasArray{varIndex},this.gi.graph.equations(equIndex).alias,penwidth)];
+                    edgeDef = [edgeDef sprintf('%s -> %s [penwidth = %g, label = "%d"];\n',this.gi.reg.varAliasArray{varIndex},this.gi.graph.equations(equIndex).alias,penwidth, this.gi.getEdgeIdByVertices(id2,id1))];
                 else% E2V edge
                     equIndex = this.gi.getIndexById(id1);
                     varIndex = this.gi.getIndexById(id2);
                     if this.gi.isMatched(id2)
                         penwidth = 1.5;
                     end
-                    edgeDef = [edgeDef sprintf('%s -> %s [penwidth = %g];\n',this.gi.graph.equations(equIndex).alias,this.gi.reg.varAliasArray{varIndex},penwidth)];
+                    edgeDef = [edgeDef sprintf('%s -> %s [penwidth = %g, label = "%d", color = red4 ];\n',this.gi.graph.equations(equIndex).alias,this.gi.reg.varAliasArray{varIndex},penwidth, this.gi.getEdgeIdByVertices(id1,id2))];
                 end
             end
             

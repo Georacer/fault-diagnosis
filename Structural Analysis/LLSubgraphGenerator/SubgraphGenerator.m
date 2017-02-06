@@ -55,16 +55,39 @@ classdef SubgraphGenerator < matlab.mixin.Copyable
             MTESs = this.MTESs;
             return            
         end
-        function gi = buildSubgraph(this,equIds,postfix)
-            if nargin<3
-                postfix = '_submodel';
-            end
+        function gi = buildSubgraph(this,varargin)
+            
+            p = inputParser;
+            
+            p.addRequired('this',@(x) true);
+            p.addRequired('equIds',@(x) all(isnumeric(x)));
+            p.addParameter('postfix', '_submodel' ,@isstr);
+            p.addParameter('pruneKnown',false,@islogical);
+            
+            p.parse(this, varargin{:});
+            opts = p.Results;
+
+            equIds = opts.equIds;
+            postfix = opts.postfix;
+            pruneKnown = opts.pruneKnown;
+            
             gi = copy(this.gi);
+            
+            % Delete equations
             allIds = this.gi.reg.equIdArray;
             ids2Del = setdiff(allIds,equIds);
             for i=1:length(ids2Del)
                 gi.deleteEquations(ids2Del(i));
             end
+            
+            if pruneKnown
+                % Delete known variables
+                ids2Del = gi.getVariablesKnown();
+                for i=1:length(ids2Del)
+                    gi.deleteVariables(ids2Del(i),false);
+                end
+            end
+            
             gi.createAdjacency();
             gi.name = [gi.name postfix];
         end
@@ -76,7 +99,7 @@ classdef SubgraphGenerator < matlab.mixin.Copyable
             dm = GetDMParts(this.liUSM.X);
             equInd2Keep = dm.Mp.row;
             ids = this.gi.reg.equIdArray(equInd2Keep);
-            gi = this.buildSubgraph(ids,'_overconstrained');
+            gi = this.buildSubgraph(ids,'postfix','_overconstrained');
 %             equInd2Del = setdiff(1:this.numEqs, equInd2Keep);
 %             equIds2Del = this.equationIdArray(equInd2Del);
 %             

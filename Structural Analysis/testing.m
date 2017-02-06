@@ -19,20 +19,22 @@ fprintf('Done creating LiUSM model\n');
 % TODO: Must get overconstrained graph first
 graphOver = sgInitial.getOver();
 graphOver.createAdjacency();
-% plotter2 = Plotter(graphInitial);
-% plotter.plotDM;
-% plotter.plotDot('overconstrained');
 
 matcher = Matcher(graphOver);
 matcher.setCausality('Realistic');
 M = matcher.match('WeightedElimination','maxRank',3);
+plotter = Plotter(graphOver);
+% plotter.plotDM;
+plotter.plotDot('graphOver_matchedWeighted');
+
+return
 
 %%
 
 clc
 
 sgOver = SubgraphGenerator(graphOver);
-graphRemaining = sgOver.buildSubgraph(graphOver.getEquIdByProperty('isMatched',false));
+graphRemaining = sgOver.buildSubgraph(graphOver.getEquIdByProperty('isMatched',false),'postfix','_weightMatched');
 graphRemaining.createAdjacency();
 fprintf('Done building submodel\n');
 
@@ -44,13 +46,11 @@ sgRemaining.buildMTESs();
 MTESs = sgRemaining.getMTESs();
 fprintf('Done finding MTESs\n');
 
-return
-
-subgraphs = GraphInterface.empty;
+MTESsubgraphs = GraphInterface.empty;
 plotters = Plotter.empty;
 for i=1:length(MTESs)
-    subgraphs(i) = sg.buildSubgraph(MTESs{i});
-    plotters(i) = Plotter(subgraphs(i));
+    MTESsubgraphs(i) = sgRemaining.buildSubgraph(MTESs{i},'pruneKnown',true,'postfix','_MTES');
+    plotters(i) = Plotter(MTESsubgraphs(i));
     plotters(i).plotDot(sprintf('subgraph_%d',i));
 end
 
@@ -59,26 +59,14 @@ end
 % MSOs{1}
 % subgraph = sg.buildSubgraph(MSOs{1});
 %%
-close all
-clear
 clc
 
-gi = GraphInterface();
-gi.graph = GraphBipartite('name',gi);
-gi.reg.setGraph(gi.graph);
-[temp, equId] = gi.addEquation([],'eq1','k')
-
-varProps.isKnown = true;
-varProps.isMeasured = true;
-varProps.isInput = false;
-varProps.isOutput = false;
-varProps.isResidual = false;
-varProps.isMatched = false;
-[temp, varId] = gi.addVariable([],'x1',varProps)
-
-
-edgeProps.isMatched = false;
-edgeProps.isDerivative = false;
-edgeProps.isIntegral = false;
-edgeProps.isNonSolvable = false;
-[temp,edgeId] = gi.addEdge([],equId,varId,edgeProps);
+i=1;
+tempSG = SubgraphGenerator(MTESsubgraphs(i));
+equIds = tempSG.gi.reg.equIdArray;
+equIds2Keep = equIds(1:end-1);
+tempGI = tempSG.buildSubgraph(equIds2Keep,'postfix','_MurtyTest'); % This should return a just-defined graph
+delete(matcher); matcher = Matcher(tempGI);
+M2 = matcher.match('Murty',1);
+tempPlotter = Plotter(tempGI);
+tempPlotter.plotDot('MurtyTest');
