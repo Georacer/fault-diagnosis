@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.2">
+  <zoom_level>10</zoom_level>
+  <element>
+    <type>com.baselet.element.old.allinone.ActivityDiagramText</type>
+    <coordinates>
+      <x>0</x>
+      <y>70</y>
+      <w>247</w>
+      <h>507</h>
+    </coordinates>
+    <panel_attributes>title:activity diagram
+Start
+Read graph from file
+construct graph object
+get overconstrained part
+do weighted elimination
+get MSOs
+iterate over MSOs to get\valid residual generators
+build fault signatures
+select residuals based on\isolability requirements
+End
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLSequenceAllInOne</id>
+    <coordinates>
+      <x>260</x>
+      <y>70</y>
+      <w>1290</w>
+      <h>740</h>
+    </coordinates>
+    <panel_attributes>title=sequence diagram
+obj=uility script~util
+obj=Model~mdl CREATED_LATER
+obj=graphObject~graph CREATED_LATER
+obj=matching~match
+obj=mso generator~mso
+
+util-&gt;mdl : create graph model
+mdl-&gt;graph : construct bipartite graph
+graph-&gt;graph +: create G+
+on=graph
+off=graph
+util-&gt;util+:weighted elimin.;
+on=util
+util-&gt;graph:query graphs structure; on=graph
+graph.&gt;util; off=graph
+util-&gt;util+: find residuals;
+off=util
+util-&gt;mso : get MSOs; on=mso
+mso-&gt;graph : get adjacency matrix; on=graph
+graph.&gt;mso; off=graph
+mso.&gt;util:return MSOs; off=mso;
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>
