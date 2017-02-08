@@ -61,6 +61,7 @@ classdef SubgraphGenerator < matlab.mixin.Copyable
             
             p.addRequired('this',@(x) true);
             p.addRequired('equIds',@(x) all(isnumeric(x)));
+            p.addOptional('varIds',[],@(x) all(isnumeric(x)));
             p.addParameter('postfix', '_submodel' ,@isstr);
             p.addParameter('pruneKnown',false,@islogical);
             
@@ -68,6 +69,7 @@ classdef SubgraphGenerator < matlab.mixin.Copyable
             opts = p.Results;
 
             equIds = opts.equIds;
+            varIds = opts.varIds;
             postfix = opts.postfix;
             pruneKnown = opts.pruneKnown;
             
@@ -78,6 +80,15 @@ classdef SubgraphGenerator < matlab.mixin.Copyable
             ids2Del = setdiff(allIds,equIds);
             for i=1:length(ids2Del)
                 gi.deleteEquations(ids2Del(i));
+            end
+            
+            % Keep only required variables
+            if ~isempty(varIds)
+                ids2Del = setdiff(gi.reg.varIdArray,varIds);
+                for i=1:length(ids2Del)
+                    gi.deleteVariables(ids2Del(i),false);
+                end
+                
             end
             
             if pruneKnown

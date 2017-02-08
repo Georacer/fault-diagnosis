@@ -676,6 +676,12 @@ classdef GraphInterface < handle
             
             id = [];
             
+            if gh.isEquation(varId) && gh.isVariable(equId) % Flip inputs
+                temp = equId;
+                equId = varId;
+                varId = temp;
+            end
+            
             for i=1:gh.graph.numEdges
                 if isempty(equId)
                     if (gh.graph.edges(i).varId == varId)
@@ -1086,6 +1092,11 @@ classdef GraphInterface < handle
             %   This should be of minimal use and functionality since
             %   this decision belongs to the LLMatcher module
             
+%             debug = true;
+            debug = false;
+            
+            if debug; fprintf('Called isMatchable of GraphInterface for edge %d\n',id); end
+
             if ~gh.isEdge(id)
                 error('Only edges can pass this test');
             end
@@ -1115,6 +1126,26 @@ classdef GraphInterface < handle
                 % No operation
             end
             
+        end
+        function [ resp ] = isIntegral(gh, id)
+            %ISINTEGRAL Decide if an edge represents an integration
+            
+            if ~gh.isEdge(id)
+                error('Only edges can pass this test');
+            end
+            
+            edgeIndex = gh.getIndexById(id);
+            resp = gh.graph.edges(edgeIndex).isIntegral;            
+        end
+        function [ resp ] = isDerivative(gh, id)
+            %ISDERIVATIVE Decide if an edge represents a differentiation
+            
+            if ~gh.isEdge(id)
+                error('Only edges can pass this test');
+            end
+            
+            edgeIndex = gh.getIndexById(id);
+            resp = gh.graph.edges(edgeIndex).isDerivative;            
         end
         
         %% Set methods

@@ -19,7 +19,7 @@ gi = matcher.gi;
 %     [A, varIds, eqIndices, varIndices] = gi.getSubmodel(eqIds,varIds,'direction','V2E');
 % end
 
-A = gi.adjacency.V2E;
+A = gi.adjacency.V2E; % Uses the V2E part and hence does not take any non-invertibilities into account
 equIds = gi.reg.equIdArray;
 varIds = gi.reg.varIdArray;
 
@@ -48,12 +48,12 @@ end
 
 A(A==0) = inf;
 
-matching = murty(A,numMatchings);
-equIdsArray = zeros(size(matching));
-for i = 1:size(equIdsArray,1)
-    equIdsArray(i,:) = equIds;
+matching = murty(A,numMatchings); % matching returned in the form variables->equations (because V2E is provided)
+varIdsArray = zeros(size(matching));
+for i = 1:size(varIdsArray,1)
+    varIdsArray(i,:) = varIds;
 end
 
-M = arrayfun(@(x,y) gi.getEdgeIdByVertices(x,y), equIdsArray, varIds(matching));
+M = arrayfun(@(x,y) gi.getEdgeIdByVertices(x,y), varIdsArray, equIds(matching));
 
 end

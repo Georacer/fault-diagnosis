@@ -1,4 +1,4 @@
-function [ KH ] = getKHComps( gh, A, equIds, varIds )
+function [ KH ] = getKHComps( gi, A, equIds, varIds )
 %GETKHCOMPS Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -14,7 +14,7 @@ for i=1:length(KH)
     edgegroup = []; % Improve by checking only nz elements in KH
     for j=1:length(KHrows)
         for k=1:length(KHcols)
-            id = gh.getEdgeIdByVertices(KH{i}.equIds(j),KH{i}.varIds(k));
+            id = gi.getEdgeIdByVertices(KH{i}.equIds(j),KH{i}.varIds(k));
             if ~isempty(id)
                 edgegroup(end+1) = id;
             end
@@ -22,7 +22,6 @@ for i=1:length(KH)
     end
     KH{i}.edgegroup = edgegroup; % and the edges corresponding to each one
 end
-
 
 end
 

@@ -2,6 +2,9 @@ function [ Mvalid ] = extractResiduals( graph, MSOs )
 %EXTRACTRESIDUALS Find valid residuals in provided MSOs
 %   Detailed explanation goes here
 
+% NOTE TO SELF: Most of this functionality has been migrated to
+% matchValid()
+
 debug = false;
 % Initialize valid matchings container
 Mvalid = {};

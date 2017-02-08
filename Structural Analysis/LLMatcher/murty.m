@@ -17,6 +17,10 @@ function [assignments, costs] = murty(C,k)
 %          costs - a [1,k] array, with the assignment costs 
 
 %% Input checks
+
+debug = false;
+% debug = true;
+
 if nargin<2
     k=1;
 end
@@ -83,7 +87,7 @@ for i=2:k
     costArray(index) = [];
     % Check if there are any nodes left
     if isempty(costArray)
-        warning('Possible matchings depleted');
+        if debug; fprintf('Possible matchings depleted'); end
         return;
     end
     % Find the new cheapest node
@@ -94,7 +98,7 @@ for i=2:k
     % If a matching with inf cost is met, then it is invalid and all next
     % matchings are invalid too
     if costs(end)==inf
-        warning('inf cost met, returning');
+        if debug; fprintf('inf cost met, returning'); end
         return;
     end
 end

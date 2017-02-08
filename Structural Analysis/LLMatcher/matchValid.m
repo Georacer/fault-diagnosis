@@ -1,102 +1,88 @@
-function [ M, exitcode] = matchValid( gh, equIds, varIds )
-%MATCHVALID Summary of this function goes here
+function [ Mvalid ] = matchValid( matcher )
+%MATCHVALID Find valid residuals in provided MSO
 %   Detailed explanation goes here
-% exitcode:  0 - No warning
-%           -1 - Integral edge in path
-%           -2 - Differential edge in closed lopp
-%           -3 - No valid matching found in one of the KH components
-%            1 - Integral edge in closed loop
 
 debug = false;
+% debug = true;
 
-% Get the corresponding adjacency matrices
-[AV2E, varIds, eqIndices, varIndices] = gh.getSubmodel(equIds,'direction','V2E');
-[AE2V, varIds, eqIndices, varIndices] = gh.getSubmodel(equIds,'direction','E2V');
+gi = matcher.gi;
+numEqs = gi.graph.numEqs;
 
-assert(size(AE2V,1)==size(AE2V,2),'Provided model is not just-constrained');
+% Initialize valid matchings container
+Mvalid = [];
 
-% Get the K-H components
-KH = gh.getKHComps(AV2E, equIds, varIds);
+% Loop over available just-constrained submodels
+M0weights = ones(1,numEqs)*inf;
+M0pool = cell(1,numEqs);
 
-% sort K-H blocks to deal with singular ones first
-KHsizes = zeros(1,length(KH));
-for i=1:length(KH)
-    KHsizes(i) = length(KH{i}.equIds);
-end
-[~,pivot] = sort(KHsizes);
-
-M = {};
-exitcode = 0;
-
-% For each K-H
-for i=pivot
-    KHedges = KH{i}.edgegroup;
+for i=1:numEqs
     
-    % if |K-H|=1
-    if length(KHedges)==1
-        edgeIndex = gh.getIndexById(KHedges);
-        if gh.edges(edgeIndex).isNonSolvable
-            if debug fprintf('matchValid: Failure: Found non-invertible edge in path\n'); end
-            exitcode = -3;
-            M = {};
-            break % It's impossible not to match this invalid edge
-        elseif gh.edges(edgeIndex).isIntegral
-            if debug fprintf('matchValid: Failure: Found integral edge in path\n'); end
-            exitcode = -1;
-            M = {};
-            break % It's impossible not to match this invalid edge
-        end
-%         fprintf('*** Adding a single edge\n');
-        M(end+1) = {KHedges}; % Add the singular SCC to the matching
-        
-    else % Run Murty to deal with loops
-        foundValid = false;
-        Mmurty = gh.matchMurty(KH{i}.equIds,KH{i}.varIds); % Find all possible matchings in increasing cost
-        
-        % For every matching sequence
-        for j=1:size(Mmurty,1)
-            hasIntegral = false;
-            hasDifferential = false;
-            edgeIndices = gh.getIndexById(Mmurty(j,:));
-            
-            % Check if all edges comply to restrictions
-            for k=1:length(edgeIndices)
-                if gh.edges(edgeIndices(k)).isIntegral;
-                    %                             fprintf('*** Note: Found integral edge in CL component\n');
-                    hasIntegral = true;
-                end
-                if gh.edges(edgeIndices(k)).isDerivative;
-                    %                             fprintf('*** Failure: Found differential edge in CL component\n');
-                    hasDifferential = true;
-                    break % This matching candidate is invalid, it includes a differential edge
-                end
-            end
-            
-            if ~hasDifferential % Found the first valid matching
-%                 fprintf('*** Adding multiple edges\n');
-                M(end+1) = {Mmurty(j,:)};
-                foundValid = true;
-                if hasIntegral
-                    exitcode = 1;
-                end
-                break
-            end
-        end
-        
-        % Murty found no matching without a differential edge
-        if hasDifferential
-            exitcode = -2;
-            M = {};
-            return
-        end
-        % If Murty found no valid matching in this KH component
-        if ~foundValid
-            exitcode = -3;
-            M = {};
-            return
+    if debug fprintf('*** Examining new M0\n'); end
+    
+    % Choose the equations of the M0 submodel
+    equIdsJust = gi.reg.equIdArray(setdiff(1:numEqs,i));
+    if debug fprintf('with equation ids: ');  fprintf('%d, ',equIdsJust); fprintf('\n'); end
+    aliases = gi.getAliasById(equIdsJust);
+    if debug fprintf('and aliases: ');  fprintf('%s, ',aliases{:}); fprintf('\n'); end
+    
+    % Create a temporary M0 submodel
+    tempGI = copy(gi);
+    tempSG = SubgraphGenerator(tempGI);
+    tempGI = tempSG.buildSubgraph(equIdsJust,'postfix','temp');
+    
+    % Check if all equations can be matched to at least one variable
+    A = tempGI.adjacency.E2V;
+    if ~all(sum(A,2))
+        if debug warning('Tried to match a non-square system'); end
+        Mcurr = [];
+    else
+        tempMatcher = Matcher(tempGI);
+        Mcurr = tempMatcher.match('ValidJust');
+        % Keep only the cheapest matching
+        if ~isempty(Mcurr)
+            Mcurr = Mcurr(1,:);
         end
     end
+    
+    % Count matching length
+    counter = length(Mcurr);
+    
+    % TODO: compare weights from all MCurrs
+    if counter==length(equIdsJust)
+        if debug fprintf('A valid matching for that M0 is (edgeIds): ');  fprintf('%d, ',Mcurr(:)); fprintf('\n'); end
+        M0pool(i) = {Mcurr};
+        M0weights(i) = sum(gi.getEdgeWeight(Mcurr));
+        
+        %             % Select for existence of integral edge
+        %             edgeIndices = graph.getIndexById(scc);
+        %             foundIntegralEdge = false;
+        %             for j=edgeIndices
+        %                 if graph.edges(j).isIntegral
+        %                     foundIntegralEdge = true;
+        %                     fprintf('Found integral edge!\n');
+        %                     break;
+        %                 end
+        %             end        
+        
+    elseif counter>0
+        if debug fprintf('Only partial matching found\n'); end
+    else
+        if debug fprintf('No valid matching found\n'); end
+    end
 end
+
+if any(isfinite(M0weights)) %Process matching of this MS0    
+    % Search for cheapest matching weight
+    [~, pivot] = sort(M0weights);
+    i = pivot(1);
+    Mvalid = M0pool{i};
+    
+    if debug fprintf('The selected matching for this MSO is (edgeIds): ');  fprintf('%d, ',Mvalid); fprintf('\nPlease extend with a residual\n'); end
+else
+    warning('No valid matching could be found for this MSO\n');
+end
+
+
 
 end
 

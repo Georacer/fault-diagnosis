@@ -18,30 +18,28 @@ fprintf('Done creating LiUSM model\n');
 
 % TODO: Must get overconstrained graph first
 graphOver = sgInitial.getOver();
-graphOver.createAdjacency();
 
 matcher = Matcher(graphOver);
 matcher.setCausality('Realistic');
 M = matcher.match('WeightedElimination','maxRank',3);
 plotter = Plotter(graphOver);
 % plotter.plotDM;
-plotter.plotDot('graphOver_matchedWeighted');
-
-return
+% plotter.plotDot('graphOver_matchedWeighted');
 
 %%
 
 clc
 
+% Generate the remaining graph
 sgOver = SubgraphGenerator(graphOver);
 graphRemaining = sgOver.buildSubgraph(graphOver.getEquIdByProperty('isMatched',false),'postfix','_weightMatched');
-graphRemaining.createAdjacency();
 fprintf('Done building submodel\n');
 
 sgRemaining = SubgraphGenerator(graphRemaining);
 sgRemaining.buildLiUSM();
 fprintf('Done creating LiUSM model\n');
 
+% Generate the subgraphs corresponding to the MTESs
 sgRemaining.buildMTESs();
 MTESs = sgRemaining.getMTESs();
 fprintf('Done finding MTESs\n');
@@ -51,7 +49,7 @@ plotters = Plotter.empty;
 for i=1:length(MTESs)
     MTESsubgraphs(i) = sgRemaining.buildSubgraph(MTESs{i},'pruneKnown',true,'postfix','_MTES');
     plotters(i) = Plotter(MTESsubgraphs(i));
-    plotters(i).plotDot(sprintf('subgraph_%d',i));
+%     plotters(i).plotDot(sprintf('subgraph_%d',i));
 end
 
 % sg.buildMSOs();
@@ -61,12 +59,41 @@ end
 %%
 clc
 
+% Extract all MSOs for each MTES subgraph
 i=1;
-tempSG = SubgraphGenerator(MTESsubgraphs(i));
-equIds = tempSG.gi.reg.equIdArray;
-equIds2Keep = equIds(1:end-1);
-tempGI = tempSG.buildSubgraph(equIds2Keep,'postfix','_MurtyTest'); % This should return a just-defined graph
-delete(matcher); matcher = Matcher(tempGI);
-M2 = matcher.match('Murty',1);
-tempPlotter = Plotter(tempGI);
-tempPlotter.plotDot('MurtyTest');
+
+MSOs = GraphInterface.empty;
+plotters = Plotter.empty;
+for i=1:length(MTESsubgraphs)
+    gi = MTESsubgraphs(i);
+    sg = SubgraphGenerator(gi);
+    sg.buildLiUSM();
+    sg.buildMSOs();
+    tempMSOs = sg.getMSOs();
+    for j=1:length(tempMSOs)
+        MSOs(end+1) = sg.buildSubgraph(tempMSOs{j},'pruneKnown',true,'postfix',sprintf('MSO_%d',i));
+        plotter = Plotter(MSOs(end));
+        plotter.plotDot(sprintf('MSO_%d',i));
+        i=i+1;
+    end
+end
+
+MSOContainer = MSOs;
+
+%% Get a valid matching for each MSO
+
+clc
+
+MSOs = copy(MSOContainer);
+
+for i=1:length(MSOs)
+    delete(matcher); matcher = Matcher(MSOs(i));
+    edgeList = matcher.match('Valid');
+    delete(tempPlotter); tempPlotter = Plotter(MSOs(i));
+    tempPlotter.plotDot(sprintf('MSO_%d_matched',i));
+end
+
+%% Verify matching validity by size
+for i=1:length(MSOs)
+    
+end
