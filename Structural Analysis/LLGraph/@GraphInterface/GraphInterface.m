@@ -1087,7 +1087,7 @@ classdef GraphInterface < handle
             end
             
         end
-        function [ resp ] = isMatchable( gh, id )
+        function [ resp ] = isMatchable( gh, ids )
             %ISMATCHABLE Decide if an edge can be matched
             %   This should be of minimal use and functionality since
             %   this decision belongs to the LLMatcher module
@@ -1097,65 +1097,95 @@ classdef GraphInterface < handle
             
             if debug; fprintf('Called isMatchable of GraphInterface for edge %d\n',id); end
 
-            if ~gh.isEdge(id)
+            if isempty(ids)
+                error('Requested parsing of empty ID array');
+            end
+            
+            if ~gh.isEdge(ids)
                 error('Only edges can pass this test');
             end
             
-            resp = true;
+            resp = ones(size(ids));
             
-            edgeIndex = gh.getIndexById(id);
-            
-            if gh.graph.edges(edgeIndex).isNonSolvable
-                resp = false;
-            end
-            
-            varId = gh.graph.edges(edgeIndex).varId;
-            varIndex = gh.getIndexById(varId);
-            
-            if gh.isKnown(varId);
-                % No operation
-            end
-            
-            if gh.graph.variables(varIndex).isMeasured
-                resp = false;
-            end
-            if gh.graph.variables(varIndex).isInput
-                resp = false;
-            end
-            if gh.graph.variables(varIndex).isOutput
-                % No operation
+            for i=1:length(resp)
+                edgeIndex = gh.getIndexById(ids(i));
+                
+                if gh.graph.edges(edgeIndex).isNonSolvable
+                    resp(i) = false;
+                end
+                
+                varId = gh.graph.edges(edgeIndex).varId;
+                varIndex = gh.getIndexById(varId);
+                
+                if gh.isKnown(varId);
+                    % No operation
+                end
+                
+                if gh.graph.variables(varIndex).isMeasured
+                    resp(i) = false;
+                end
+                if gh.graph.variables(varIndex).isInput
+                    resp(i) = false;
+                end
+                if gh.graph.variables(varIndex).isOutput
+                    % No operation
+                end
             end
             
         end
-        function [ resp ] = isIntegral(gh, id)
+        function [ resp ] = isIntegral(gh, ids)
             %ISINTEGRAL Decide if an edge represents an integration
             
-            if ~gh.isEdge(id)
+            resp = zeros(size(ids));
+            
+            if isempty(ids)
+                error('Requested parsing of empty ID array');
+            end
+            
+            if ~gh.isEdge(ids)
                 error('Only edges can pass this test');
             end
             
-            edgeIndex = gh.getIndexById(id);
-            resp = gh.graph.edges(edgeIndex).isIntegral;            
+            for i=1:length(resp)
+                edgeIndex = gh.getIndexById(ids(i));
+                resp(i) = gh.graph.edges(edgeIndex).isIntegral;            
+            end               
         end
-        function [ resp ] = isDerivative(gh, id)
+        function [ resp ] = isDerivative(gh, ids)
             %ISDERIVATIVE Decide if an edge represents a differentiation
             
-            if ~gh.isEdge(id)
+            resp = zeros(size(ids));
+            
+            if isempty(ids)
+                error('Requested parsing of empty ID array');
+            end
+            
+            if ~gh.isEdge(ids)
                 error('Only edges can pass this test');
             end
             
-            edgeIndex = gh.getIndexById(id);
-            resp = gh.graph.edges(edgeIndex).isDerivative;            
+            for i=1:length(resp)
+                edgeIndex = gh.getIndexById(ids(i));
+                resp(i) = gh.graph.edges(edgeIndex).isDerivative;            
+            end       
         end
-        function [ resp ] = isNonSolvable(gh, id)
-            %ISDERIVATIVE Decide if an edge represents a non-invertibility
+        function [ resp ] = isNonSolvable(gh, ids)
+            %ISNONSOLVABLE Decide if an edge represents a non-invertibility
             
-            if ~gh.isEdge(id)
+            resp = zeros(size(ids));
+            
+            if isempty(ids)
+                error('Requested parsing of empty ID array');
+            end
+            
+            if ~gh.isEdge(ids)
                 error('Only edges can pass this test');
             end
             
-            edgeIndex = gh.getIndexById(id);
-            resp = gh.graph.edges(edgeIndex).isNonSolvable;            
+            for i=1:length(resp)
+                edgeIndex = gh.getIndexById(ids(i));
+                resp(i) = gh.graph.edges(edgeIndex).isNonSolvable;            
+            end
         end
         
         %% Set methods
@@ -1562,4 +1592,4 @@ classdef GraphInterface < handle
         end
     
     end
-end
+    end

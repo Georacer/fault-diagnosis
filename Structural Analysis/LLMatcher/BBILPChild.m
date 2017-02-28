@@ -24,11 +24,11 @@ classdef BBILPChild < matlab.mixin.Copyable
             obj.varIdArray = gi.getVariablesUnknown;
             obj.equIdArray = gi.reg.equIdArray;
             obj.numVars = length(obj.varIdArray);
-            obj.numEqs = length(equIdArray);
+            obj.numEqs = length(obj.equIdArray);
             % BD array specification: First variables, then equations
-            obj.BD = inf*ones(numVars+numEqs,numVars+numEqs);
+            obj.BD = inf*ones(obj.numVars+obj.numEqs,obj.numVars+obj.numEqs);
             obj.BD_type = obj.BD;
-            obj.E2V = inf*ones(numEqs,numVars);
+            obj.E2V = inf*ones(obj.numEqs,obj.numVars);
             
             % Assertions
             assert(obj.numVars<=obj.numEqs,'Cannot match underconstrained graph');
@@ -95,18 +95,18 @@ classdef BBILPChild < matlab.mixin.Copyable
             [permutations, cost] = munkres(obj.E2V);
             matching = [];
             iCounter = 1;
-            for i=1:length(permumations)
+            for i=1:length(permutations)
                 equId = obj.equIdArray(i);
                 if ~permutations(i)
                     continue
                 end
-                varId = obj.varIdArray(permuations(i));
+                varId = obj.varIdArray(permutations(i));
                 edgeId = obj.gi.getEdgeIdByVertices(equId,varId);
                 matching(iCounter) = edgeId;
                 iCounter = iCounter+1;
             end
             obj.setMatching(matching);
-            obj.setCost = cost;
+            obj.setCost(cost);
         end
         
         function resp = isMatchingValid(obj)

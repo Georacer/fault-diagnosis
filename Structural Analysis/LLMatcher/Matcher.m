@@ -9,7 +9,7 @@ classdef Matcher < matlab.mixin.Copyable
         matchedEdgeArray = [];
         causality = 'None'; % None, Integral, Differential, Mixed, Realistic
         causalitySet = {'None', 'Integral', 'Differential', 'Mixed', 'Realistic'}
-        matcherSet = {'Murty', 'WeightedElimination', 'ValidJust', 'Valid'};
+        matcherSet = {'Murty', 'WeightedElimination', 'ValidJust', 'Valid', 'BBILP'};
         matchingSet = []; % Set of edge IDs
     end
     
@@ -50,6 +50,10 @@ classdef Matcher < matlab.mixin.Copyable
                     resp = matchValid(this,varargin{:});
                     this.gi.applyMatching(resp);
                     this.matchingSet = resp;
+                case 'BBILP'
+                    resp = matchBBILP(this);
+%                     this.gi.applyMatching(resp(1,:));
+%                     this.matchingSet = resp;
                 otherwise
                     error('Unhandled matcher case');
             end
