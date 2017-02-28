@@ -1147,6 +1147,16 @@ classdef GraphInterface < handle
             edgeIndex = gh.getIndexById(id);
             resp = gh.graph.edges(edgeIndex).isDerivative;            
         end
+        function [ resp ] = isNonSolvable(gh, id)
+            %ISDERIVATIVE Decide if an edge represents a non-invertibility
+            
+            if ~gh.isEdge(id)
+                error('Only edges can pass this test');
+            end
+            
+            edgeIndex = gh.getIndexById(id);
+            resp = gh.graph.edges(edgeIndex).isNonSolvable;            
+        end
         
         %% Set methods
         function [ resp ] = setEdgeWeight( gh, ids, weights )
