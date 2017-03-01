@@ -45,8 +45,8 @@ while (~isempty(activeSet))
             U = lb;
             Mvalid = subprob.matching;
         else % Break into children and go on
-            cycles = findCycles(subprob);
-            edgeCandidates = getCycleEdges(cycles);
+            cycles = subprob.findCycles();
+            edgeCandidates = getCycleEdges(cycles) % SCREEN
             if debug; fprintf('matchBBILP: Producing %d children\n',length(edgeCandidates)); end
             for i=1:length(edgeCandidates)
                 childProb = subProb;
@@ -70,4 +70,12 @@ end
 
 function index = chooseProblem(costlist)
     [~, index] = min(costlist);
+end
+
+function edgeIds = getCycleEdges(cycles)
+    edgeIds = [];
+    for i=1:length(cycles)
+        edgeIds = [edgeIds cycles{i}];
+    end
+    edgeIds = unique(edgeIds);
 end

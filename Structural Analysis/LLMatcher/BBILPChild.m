@@ -123,9 +123,38 @@ classdef BBILPChild < matlab.mixin.Copyable
             childObj.depth = obj.depth+1;
         end
         
-        function cycles = findCycles(obj)
+        function [cycles] = findCycles(obj)
+            [~, vertexSequence] = find_elem_circuits(obj.BD);
             
+            cycles = cell(length(vertexSequence),1);
+            
+            for i=1:length(vertexSequence)
+                sequence = vertexSequence{i};
+                edgeList = zeros(1,length(sequence)-1);
+                equFirst = sequence(1)>obj.numVars;
+                
+                eCount = 1;
+                for j=1:2:(length(edgeList)-1)
+                    if equFirst
+                        equId = obj.equIdArray(sequence(j)-obj.numVars);
+                        varId = obj.varIdArray(sequence(j+1));
+                    else                        
+                        varId = obj.varIdArray(sequence(j));
+                        equId = obj.equIdArray(sequence(j+1)-obj.numVars);
+                    end
+                    edgeList(eCount) = obj.gi.getEdgeIdByVertices(equId,varId);
+                    eCount = eCount + 1;
+                end
+                
+                cycles(i) = {edgeList};
+            end
+            
+            % strip final vertex, which is the same as the first
+%             for i=1:length(cycles)
+%                 cycles{i} = cycles{i}(1:end-1);
+%             end
         end
     end
     
 end
+
