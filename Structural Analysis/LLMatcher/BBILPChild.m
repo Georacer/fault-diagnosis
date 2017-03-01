@@ -4,10 +4,12 @@ classdef BBILPChild < matlab.mixin.Copyable
     
     properties
         BD = [];
+        BDMatched = [];
         E2V = [];
         BD_type = [];
         cost = inf;
         matching = [];
+        edgesInhibited = [];
         equIdArray = [];
         varIdArray = [];
         numVars = 0;
@@ -51,14 +53,14 @@ classdef BBILPChild < matlab.mixin.Copyable
                     edgeId = gi.getEdgeIdByVertices(equId,varId);
                     if ~isempty(edgeId)
                         if gi.isIntegral(edgeId)
-                            obj.BD(iCount,jCount) = integrationCost;
-                            obj.BD_type(iCount,jCount) = 2;
+                            obj.BD(iCount+obj.numVars,jCount) = integrationCost;
+                            obj.BD_type(iCount+obj.numVars,jCount) = 2;
                         elseif gi.isDerivative(edgeId)
-                            obj.BD(iCount,jCount) = differentiationCost;
-                            obj.BD_type(iCount,jCount) = 3;
+                            obj.BD(iCount+obj.numVars,jCount) = differentiationCost;
+                            obj.BD_type(iCount+obj.numVars,jCount) = 3;
                         elseif gi.isNonSolvable(edgeId)
-                            obj.BD(iCount,jCount) = nonInvertibleCost;
-                            obj.BD_type(iCount,jCount) = 4;
+                            obj.BD(iCount+obj.numVars,jCount) = nonInvertibleCost;
+                            obj.BD_type(iCount+obj.numVars,jCount) = 4;
                         else
                             % This is a normal edge
                         end
@@ -81,6 +83,7 @@ classdef BBILPChild < matlab.mixin.Copyable
             if (~isempty(varIndex))&&(~isempty(equIndex))
                 obj.E2V(equIndex,varIndex) = inf;
             end
+            obj.edgesInhibited = [obj.edgesInhibited edgeId];
         end
         
         function setCost(obj,cost)
@@ -92,21 +95,34 @@ classdef BBILPChild < matlab.mixin.Copyable
         end
         
         function findMatching(obj)
+            
+            obj.BDMatched = obj.BD;
+            obj.BDMatched(:,1:obj.numVars) = inf;
+            
             [permutations, cost] = munkres(obj.E2V);
             matching = [];
             iCounter = 1;
             for i=1:length(permutations)
-                equId = obj.equIdArray(i);
-                if ~permutations(i)
-                    continue
+                if permutations(i) % Enter only if this equation is matched
+                    % Disable the V2E direction for matched edges
+                    obj.BDMatched(permutations(i),i+obj.numVars)=inf;
+                    % Enable the E2V direction for matched edges
+                    obj.BDMatched(i+obj.numVars,permutations(i))=1;
+                    
+                    % Find and store the matching edge id
+                    equId = obj.equIdArray(i);
+                    if ~permutations(i)
+                        continue
+                    end
+                    varId = obj.varIdArray(permutations(i));
+                    edgeId = obj.gi.getEdgeIdByVertices(equId,varId);
+                    matching(iCounter) = edgeId;
+                    iCounter = iCounter+1;
                 end
-                varId = obj.varIdArray(permutations(i));
-                edgeId = obj.gi.getEdgeIdByVertices(equId,varId);
-                matching(iCounter) = edgeId;
-                iCounter = iCounter+1;
             end
             obj.setMatching(matching);
             obj.setCost(cost);
+            
         end
         
         function resp = isMatchingValid(obj)
@@ -124,7 +140,9 @@ classdef BBILPChild < matlab.mixin.Copyable
         end
         
         function [cycles] = findCycles(obj)
-            [~, vertexSequence] = find_elem_circuits(obj.BD);
+            % Find cycles on the matched subproblem
+            BD = obj.BDMatched~=inf;
+            [~, vertexSequence] = find_elem_circuits(BD);
             
             cycles = cell(length(vertexSequence),1);
             
@@ -138,12 +156,17 @@ classdef BBILPChild < matlab.mixin.Copyable
                     if equFirst
                         equId = obj.equIdArray(sequence(j)-obj.numVars);
                         varId = obj.varIdArray(sequence(j+1));
+                        equId2 = obj.equIdArray(sequence(j+2)-obj.numVars);
+                        edgeList(eCount) = obj.gi.getEdgeIdByVertices(equId,varId);
+                        edgeList(eCount+1) = obj.gi.getEdgeIdByVertices(equId2,varId);
                     else                        
                         varId = obj.varIdArray(sequence(j));
                         equId = obj.equIdArray(sequence(j+1)-obj.numVars);
+                        varId2 = obj.varIdArray(sequence(j+2));
+                        edgeList(eCount) = obj.gi.getEdgeIdByVertices(equId,varId);
+                        edgeList(eCount+1) = obj.gi.getEdgeIdByVertices(equId,varId2);
                     end
-                    edgeList(eCount) = obj.gi.getEdgeIdByVertices(equId,varId);
-                    eCount = eCount + 1;
+                    eCount = eCount + 2;
                 end
                 
                 cycles(i) = {edgeList};

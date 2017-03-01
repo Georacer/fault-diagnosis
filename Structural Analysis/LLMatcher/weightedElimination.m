@@ -2,6 +2,8 @@ function M = weightedElimination( mh, varargin )
 %WEIGHTEDELIMINATION Summary of this function goes here
 %   Detailed explanation goes here
 
+obeyCausality = true;
+
 p = inputParser;
 
 p.addRequired('mh',@(x) true);
@@ -38,8 +40,10 @@ end
 for equId = CU
     edgeIds = mh.gi.getEdges(equId);
     if sum(~mh.gi.isMatched(edgeIds))==1 % Only one edge unmatched
-        Mstar(end+1) = edgeIds;
-        wstar(end+1) = mh.gi.getEdgeWeight(edgeIds);
+        if mh.isMatchable(edgeIds)
+            Mstar(end+1) = edgeIds;
+            wstar(end+1) = mh.gi.getEdgeWeight(edgeIds);
+        end
     end
     
 % %     DEPRECATED

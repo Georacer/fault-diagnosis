@@ -40,7 +40,7 @@ while (~isempty(activeSet))
     if lb>U % Kill the child
     if debug; fprintf('matchBBILP: Child cost was higher than current upper bound\n'); end
     else
-        if subprob.isMatcingValid() % Test if solution is complete
+        if subprob.isMatchingValid() % Test if solution is complete
             if debug; fprintf('matchBBILP: Found a valid solution, setting upper bound\n'); end
             U = lb;
             Mvalid = subprob.matching;
@@ -49,7 +49,7 @@ while (~isempty(activeSet))
             edgeCandidates = getCycleEdges(cycles) % SCREEN
             if debug; fprintf('matchBBILP: Producing %d children\n',length(edgeCandidates)); end
             for i=1:length(edgeCandidates)
-                childProb = subProb;
+                childProb = subprob.createChild;
                 childProb.prohibitEdge(edgeCandidates(i));
                 childProb.findMatching();
                 activeSet{end+1} = childProb;

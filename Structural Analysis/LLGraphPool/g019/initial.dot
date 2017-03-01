@@ -1,0 +1,21 @@
+digraph G {
+rankdir = LR;
+size ="8.5"
+node [shape = box, fillcolor = white, style = filled, label="ceq1
+1"]; ceq1;
+node [shape = box, fillcolor = white, style = filled, label="ceq2
+6"]; ceq2;
+node [shape = box, fillcolor = white, style = filled, label="ceq3
+9"]; ceq3;
+node [shape = circle, fillcolor = white, style = filled, label="x1
+2"]; x1;
+node [shape = circle, fillcolor = white, style = filled, label="x2
+4"]; x2;
+x1 -> ceq1 [penwidth = 1, label = "3"];
+x2 -> ceq1 [penwidth = 1, label = "5"];
+ceq2 -> x1 [penwidth = 1, label = "7", color = red4 ];
+x1 -> ceq2 [penwidth = 1, label = "7"];
+ceq2 -> x2 [penwidth = 1, label = "8", color = red4 ];
+x2 -> ceq2 [penwidth = 1, label = "8"];
+x2 -> ceq3 [penwidth = 1, label = "10"];
+}
