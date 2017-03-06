@@ -45,8 +45,7 @@ while (~isempty(activeSet))
             U = lb;
             Mvalid = subprob.matching;
         else % Break into children and go on
-            cycles = subprob.findCycles();
-            edgeCandidates = getCycleEdges(cycles) % SCREEN
+            edgeCandidates = subproblem.getOffendingEdges % SCREEN
             if debug; fprintf('matchBBILP: Producing %d children\n',length(edgeCandidates)); end
             for i=1:length(edgeCandidates)
                 childProb = subprob.createChild;

@@ -9,6 +9,7 @@ classdef BBILPChild < matlab.mixin.Copyable
         BD_type = [];
         cost = inf;
         matching = [];
+        offendingEdges = [];
         edgesInhibited = [];
         equIdArray = [];
         varIdArray = [];
@@ -65,7 +66,7 @@ classdef BBILPChild < matlab.mixin.Copyable
                             % This is a normal edge
                         end
                     end
-                                        
+                    
                     jCount = jCount + 1;
                 end
                 iCount = iCount + 1;
@@ -121,62 +122,34 @@ classdef BBILPChild < matlab.mixin.Copyable
                 end
             end
             obj.setMatching(matching);
-            obj.setCost(cost);
+            if length(matching)<obj.numVars % Matching is not complete on variables
+                obj.setCost(inf);
+            else
+                obj.setCost(cost);
+            end
             
         end
         
         function resp = isMatchingValid(obj)
-            % TODO: Change validity conditions
-            if all(obj.gi.isMatchable(obj.matching))
-                resp = true;
-            else
-                resp = false;
-            end
+            %             % Simplistic validity conditions
+            %             if all(obj.gi.isMatchable(obj.matching))
+            %                 resp = true;
+            %             else
+            %                 resp = false;
+            %             end
+            
+            cycles = obj.findCycles();
+        end
+        
+        function edgeIds = getOffendingEdges(obj)
+            edgeIds = obj.offendingEdges;
         end
         
         function childObj = createChild(obj)
             childObj = copy(obj);
             childObj.depth = obj.depth+1;
         end
-        
-        function [cycles] = findCycles(obj)
-            % Find cycles on the matched subproblem
-            BD = obj.BDMatched~=inf;
-            [~, vertexSequence] = find_elem_circuits(BD);
-            
-            cycles = cell(length(vertexSequence),1);
-            
-            for i=1:length(vertexSequence)
-                sequence = vertexSequence{i};
-                edgeList = zeros(1,length(sequence)-1);
-                equFirst = sequence(1)>obj.numVars;
-                
-                eCount = 1;
-                for j=1:2:(length(edgeList)-1)
-                    if equFirst
-                        equId = obj.equIdArray(sequence(j)-obj.numVars);
-                        varId = obj.varIdArray(sequence(j+1));
-                        equId2 = obj.equIdArray(sequence(j+2)-obj.numVars);
-                        edgeList(eCount) = obj.gi.getEdgeIdByVertices(equId,varId);
-                        edgeList(eCount+1) = obj.gi.getEdgeIdByVertices(equId2,varId);
-                    else                        
-                        varId = obj.varIdArray(sequence(j));
-                        equId = obj.equIdArray(sequence(j+1)-obj.numVars);
-                        varId2 = obj.varIdArray(sequence(j+2));
-                        edgeList(eCount) = obj.gi.getEdgeIdByVertices(equId,varId);
-                        edgeList(eCount+1) = obj.gi.getEdgeIdByVertices(equId,varId2);
-                    end
-                    eCount = eCount + 2;
-                end
-                
-                cycles(i) = {edgeList};
-            end
-            
-            % strip final vertex, which is the same as the first
-%             for i=1:length(cycles)
-%                 cycles{i} = cycles{i}(1:end-1);
-%             end
-        end
+
     end
     
 end
