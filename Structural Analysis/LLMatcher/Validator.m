@@ -94,8 +94,10 @@ classdef Validator
             if obj.debug; fprintf('Validator/isValid: Checking for derivative edges in dynamic loops\n'); end
             for i=1:length(SCCs)
                 SCC=SCCs{i};
-                tempTypes = types_NoAE(SCC,SCC);
-                if find(tempTypes==obj.DEF_DER)
+                varIdx = SCC(SCC<=newNumVars);
+                equIdx = SCC(SCC>newNumVars);
+                E2V = types_NoAE(equIdx,varIdx);
+                if find(E2V==obj.DEF_DER)
                     error('Found matched derivative edge in dynamic loop');
                 end
             end
@@ -108,7 +110,7 @@ classdef Validator
             if obj.debug; fprintf('Validator/isValid: Checking for SCCs\n'); end
             adjList = createAdjList(graph_NoSCC); % Convert to adjacency list
             SCCs = tarjan(adjList); % Find all Strongly Connected Components
-            if ~isempty(SCCs)
+            if any(find(cellfun(@(x) length(x)>1,SCCs)))
                 error('This graph should not contain any loops');
             end            
             
@@ -188,6 +190,12 @@ classdef Validator
             % Convert old V2E edges to new V2E            
             [rowIdx, colIdx] = find(oldV2E);
             for i=1:length(rowIdx)
+                varGroupIdx = find(cellfun(@(x) ismember(rowIdx(i),x),SCCVarGroups));
+                equGroupIdx = find(cellfun(@(x) ismember(colIdx(i),x),SCCEquGroups));
+                if varGroupIdx == equGroupIdx % Found an edge looping inside the same SCC
+                    continue % Do not add this, because we inted to eliminate this SCC
+                end
+                
                 newV2E(varIdxMap(rowIdx(i)),equIdxMap(colIdx(i))) = 1;
                 newV2E_types(varIdxMap(rowIdx(i)),equIdxMap(colIdx(i))) = oldV2E_types(rowIdx(i),colIdx(i));
 %                 assert(ismember(oldV2E_types(rowIdx(i),colIdx(i)),[1 obj.DEF_NI]),'Algebraic SCCs should not have derivative/integral connections');
