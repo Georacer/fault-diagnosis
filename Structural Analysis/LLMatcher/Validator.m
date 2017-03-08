@@ -75,6 +75,9 @@ classdef Validator
             % Assert that all SCCs are dynamic
             if obj.debug; fprintf('Validator/isValid: Asserting all SCCs are dynamic\n'); end
             for i=1:length(SCCs)
+                if size(SCCs{i})==1 % Skip unit-size trivial SCCs
+                    continue
+                end
                 SCC = SCCs{i};
                 if ~find(types_NoAE(SCC,SCC)==obj.DEF_INT)
                     error('This SCC should be dynamic but no integral edge found');
@@ -85,14 +88,27 @@ classdef Validator
             % If NI in SCC -> NOT OK, because they do pure back-substitution
             % (FLAG offending edges)
             if obj.debug; fprintf('Validator/isValid: Checking for NI edges in dynamic loops\n'); end
-            if find(types_NoAE==obj.DEF_NI)
-                error('Found Non-Invertible edge in a dynamic loop');
+            for i=1:length(SCCs)
+                if size(SCCs{i})==1 % Skip unit-size trivial SCCs
+                    continue
+                end
+                SCC = SCCs{i};
+                % Isolate E2V part
+                varIndices = SCC(SCC<=newNumVars);
+                equIndices = SCC(SCC>newNumVars);
+                if find(types_NoAE(equIndices,varIndices)==obj.DEF_NI)
+                    error('Found Non-Invertible edge in a dynamic loop');
+                end
+                
             end
             
             % If Integral->Derivative -> NOT OK, because derivative
             % causality in loop (FLAG offending edges)
             if obj.debug; fprintf('Validator/isValid: Checking for derivative edges in dynamic loops\n'); end
             for i=1:length(SCCs)
+                if size(SCCs{i})==1 % Skip unit-size trivial SCCs
+                    continue
+                end
                 SCC=SCCs{i};
                 varIdx = SCC(SCC<=newNumVars);
                 equIdx = SCC(SCC>newNumVars);
@@ -197,7 +213,15 @@ classdef Validator
                 end
                 
                 newV2E(varIdxMap(rowIdx(i)),equIdxMap(colIdx(i))) = 1;
-                newV2E_types(varIdxMap(rowIdx(i)),equIdxMap(colIdx(i))) = oldV2E_types(rowIdx(i),colIdx(i));
+                
+                % Check if this edge refers to a compacted component
+                if (varIdMap(rowIdx(i))==rowIdx(i)) && (equIdMap(colIdx(i))==colIdx(i))
+                    assigned_type = oldV2E_types(rowIdx(i),colIdx(i)); % The same edge from old IDs to new IDs is preserved
+                else
+                    assigned_type = 1;
+                end
+                
+                newV2E_types(varIdxMap(rowIdx(i)),equIdxMap(colIdx(i))) = assigned_type;
 %                 assert(ismember(oldV2E_types(rowIdx(i),colIdx(i)),[1 obj.DEF_NI]),'Algebraic SCCs should not have derivative/integral connections');
             end
             
@@ -205,7 +229,15 @@ classdef Validator
             [rowIdx, colIdx] = find(oldE2V);
             for i=1:length(rowIdx)
                 newE2V(equIdxMap(rowIdx(i)),varIdxMap(colIdx(i))) = 1;
-                newE2V_types(equIdxMap(rowIdx(i)),varIdxMap(colIdx(i))) = oldE2V_types(rowIdx(i),colIdx(i));
+                
+                % Check if this edge refers to a compacted component
+                if (equIdMap(rowIdx(i))==rowIdx(i)) && (varIdMap(colIdx(i))==colIdx(i)) % The same edge from old IDs to new IDs is preserved
+                    assigned_type = oldE2V_types(rowIdx(i),colIdx(i));
+                else
+                    assigned_type = 1;
+                end
+                
+                newE2V_types(equIdxMap(rowIdx(i)),varIdxMap(colIdx(i))) = assigned_type;
 %                 assert(ismember(oldE2V_types(rowIdx(i),colIdx(i)),[1 obj.DEF_NI]),'Algebraic SCCs should not have derivative/integral connections');
             end
             
