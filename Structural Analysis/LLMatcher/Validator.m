@@ -25,13 +25,17 @@ classdef Validator
             obj.numEqs = numEqs;
         end
         
-        function resp = isValid(obj)
+        function offendingEdges = isValid(obj)
+            
+            offendingEdges = []; % Container for edges invalidating the matching
+            
+            
             % Break all integrations and differentiations
             if obj.debug; fprintf('Validator/isValid: Breaking derivations\n'); end
             graphDir_NoDynamics = obj.graphDir;
             graphTypes = obj.graphTypes;
-            [intEdges_rows intEdges_cols] = find(graphTypes==obj.DEF_INT); % Find integral edges
-            [derEdges_rows derEdges_cols] = find(graphTypes==obj.DEF_DER); % Find derivative edges
+            [intEdges_rows, intEdges_cols] = find(graphTypes==obj.DEF_INT); % Find integral edges
+            [derEdges_rows, derEdges_cols] = find(graphTypes==obj.DEF_DER); % Find derivative edges
             for i=1:length(intEdges_rows) % Delete integral edges
                 graphDir_NoDynamics(intEdges_rows(i),intEdges_cols(i)) = 0;
             end
@@ -65,8 +69,12 @@ classdef Validator
             
             % Reduce the SCCs to single E-V pairs and re-connect integrations
             if obj.debug; fprintf('Validator/isValid: Reducing AEs in original graph\n'); end
-            [graph_NoAE, types_NoAE, newNumVars, newNumEqs] = obj.reduceSCCs(obj.graphDir, obj.graphTypes, obj.numVars, obj.numEqs, SCCs);
-
+            originalVarIds = 1:length(obj.numVars);
+            originalEquIds = 1:length(obj.numEqs);
+            [graph_NoAE, types_NoAE, varIds_NoAE, equIds_NoAE, varIdMap_NoAE, equIdMap_NoAE] = obj.reduceSCCs(obj.graphDir, obj.graphTypes, originalVarIds, originalEquIds, SCCs);
+            numVars_NoAE = length(varIds_NoAE);
+            numEqs_NoAE = length(equIds_NoAE);            
+            
             % Find all SCCs (These should be strictly dynamic)
             if obj.debug; fprintf('Validator/isValid: Finding SCCs\n'); end
             adjList = createAdjList(graph_NoAE); % Convert to adjacency list
@@ -94,10 +102,14 @@ classdef Validator
                 end
                 SCC = SCCs{i};
                 % Isolate E2V part
-                varIndices = SCC(SCC<=newNumVars);
-                equIndices = SCC(SCC>newNumVars);
-                if find(types_NoAE(equIndices,varIndices)==obj.DEF_NI)
-                    error('Found Non-Invertible edge in a dynamic loop');
+                varIndices = SCC(SCC<=numVars_NoAE);
+                equIndices = SCC(SCC>numVars_NoAE)-numVars_NoAE; % Rebase equation indices to 1
+                [row, col] = find(types_NoAE(equIndices,varIndices)==obj.DEF_NI);
+                for i=1:length(row)
+                    equId = equIds_NoAE(row(i));
+                    varId = varIds_NoAE(col(i));
+                    offendingEdges(end+1,:) = [equId varId];
+                    if obj.debug; fprintf('Validator/isValid: INVALID - found NI edge in dynamic loop\n'); end
                 end
                 
             end
@@ -110,17 +122,23 @@ classdef Validator
                     continue
                 end
                 SCC=SCCs{i};
-                varIdx = SCC(SCC<=newNumVars);
-                equIdx = SCC(SCC>newNumVars);
+                varIdx = SCC(SCC<=numVars_NoAE);
+                equIdx = SCC(SCC>numVars_NoAE)-numVars_NoAE; % Rebase equation indices to 1
                 E2V = types_NoAE(equIdx,varIdx);
-                if find(E2V==obj.DEF_DER)
-                    error('Found matched derivative edge in dynamic loop');
+                [row, col] = find(E2V==obj.DEF_DER);
+                for i=1:length(row)
+                    equId = equIds_NoAE(row(i));
+                    varId = varIds_NoAE(col(i));
+                    offendingEdges(end+1,:) = [equId varId];
+                    if obj.debug; fprintf('Validator/isValid: INVALID - found matched derivative edge in dynamic loop\n'); end
                 end
             end
             
             % Reduce SCCs
             if obj.debug; fprintf('Validator/isValid: Reducing graph\n'); end
-            [graph_NoSCC, types_NoSCC, newNumVars, newNumEqs] = obj.reduceSCCs(graph_NoAE, types_NoAE, newNumVars, newNumEqs, SCCs);
+            [graph_NoSCC, types_NoSCC, varIds_NoSCC, equIds_NoSCC, varIdMap_NoSCC, equIdMap_NoSCC] = obj.reduceSCCs(graph_NoAE, types_NoAE, varIds_NoAE, equIds_NoAE, SCCs);
+            numVars_NoSCC = length(varIds_NoSCC);
+            numEqs_NoSCC = length(equIds_NoSCC);            
             
             % Find all paths
             if obj.debug; fprintf('Validator/isValid: Checking for SCCs\n'); end
@@ -130,21 +148,35 @@ classdef Validator
                 error('This graph should not contain any loops');
             end            
             
-            % If NI in path -> NOT OK (FLAG offending edges)
+            % If matched NI in path -> NOT OK (FLAG offending edges)
             if obj.debug; fprintf('Validator/isValid: Checking for NI edges in paths\n'); end
-            if find(types_NoSCC==obj.DEF_NI)
-                error('This graph should not contain any Non-Invertible edges');
+            E2V = types_NoSCC(numVars_NoSCC+1:end,1:numVars_NoSCC);
+            [row, col] = find(E2V==obj.DEF_NI);
+            for i=1:length(row)
+                equId = equIds_NoSCC(row(i));
+                varId = varIds_NoSCC(col(i));
+                offendingEdges(end+1,:) = [equId varId];
+                if obj.debug; fprintf('Validator/isValid: INVALID - found matched NI edge in path\n'); end
             end
             
             % If Derivative->Integral, NOT OK (FlAG offending edges)
             if obj.debug; fprintf('Validator/isValid: Checking for integral edges in paths\n'); end
-            if find(types_NoSCC==obj.DEF_INT)
-                error('This graph should not contain any Integral edges');
+            E2V = types_NoSCC(numVars_NoSCC+1:end,1:numVars_NoSCC);
+            [row, col] = find(E2V==obj.DEF_INT);
+            for i=1:length(row)
+                equId = equIds_NoSCC(row(i));
+                varId = varIds_NoSCC(col(i));
+                offendingEdges(end+1,:) = [equId varId];
+                if obj.debug; fprintf('Validator/isValid: INVALID - found matched integral edge in path\n'); end
             end
+            
+            Assert that all offending edges belong to the original graph
+%             if any(cellfun(@(x) find(x(1)>obj.numEqs),offendingEdges))
+%                 error('The offending edge is adjacent 
             
         end
         
-        function [graphReduced, typesReduced, newNumVars, newNumEqs] = reduceSCCs(obj, graph, types, numVars, numEqs, SCCs)
+        function [graphReduced, typesReduced, newVarIds, newEquIds, varIdMap, equIdMap] = reduceSCCs(obj, graph, types, oldVarIds, oldEquIds, SCCs)
             % Delete trivial single-sized SCCs
             for i=length(SCCs):-1:1
                 if length(SCCs{i})==1
@@ -152,20 +184,23 @@ classdef Validator
                 end
             end
             
-            oldVarIds = 1:numVars; % Assign ids for clarity when adding/deleting vertices
-            oldEquIds = 1:numEqs;
+            numVars = length(oldVarIds);
+            numEqs = length(oldEquIds);
             
             oldV2E = graph(1:numVars,numVars+1:end);
             oldE2V = graph(numVars+1:end,1:numVars);            
             oldV2E_types = types(1:numVars,numVars+1:end);
             oldE2V_types = types(numVars+1:end,1:numVars);
             
-            varIdMap = 1:length(oldVarIds);
-            equIdMap = 1:length(oldEquIds);
+            varIdMap = oldVarIds;
+            equIdMap = oldEquIds;
             SCCVarGroups = {};
             SCCEquGroups = {};
             vars2Keep = oldVarIds;
             eqs2Keep = oldEquIds;
+            
+            varPivot = max(oldVarIds);
+            equPivot = max(oldEquIds);
             
             for i=1:length(SCCs) % Separate variable and equation IDs for each group;
                 SCC = SCCs{i};
@@ -173,8 +208,8 @@ classdef Validator
                 SCCEqs = SCC(SCC>numVars)-numVars;
                 
                 % Create id mappings
-                varIdMap(SCCVars) = numVars + i;
-                equIdMap(SCCEqs) = numEqs + i;
+                varIdMap(SCCVars) = varPivot + i;
+                equIdMap(SCCEqs) = equPivot + i;
                 
                 SCCVarGroups{i} = SCCVars;
                 SCCEquGroups{i} = SCCEqs;
@@ -182,8 +217,8 @@ classdef Validator
                 vars2Keep = setdiff(vars2Keep,SCCVarGroups{i});
                 eqs2Keep = setdiff(eqs2Keep,SCCEquGroups{i});
             end
-            newVarIds = [vars2Keep (1:length(SCCs))+numVars]; % Extend id arrays with new, reduced vertices
-            newEquIds = [eqs2Keep (1:length(SCCs))+numEqs];
+            newVarIds = [vars2Keep (1:length(SCCs))+varPivot]; % Extend id arrays with new, reduced vertices
+            newEquIds = [eqs2Keep (1:length(SCCs))+equPivot];
             newNumVars = length(newVarIds);
             newNumEqs = length(newEquIds);
             
