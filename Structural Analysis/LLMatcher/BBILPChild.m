@@ -131,14 +131,24 @@ classdef BBILPChild < matlab.mixin.Copyable
         end
         
         function resp = isMatchingValid(obj)
-            %             % Simplistic validity conditions
-            %             if all(obj.gi.isMatchable(obj.matching))
-            %                 resp = true;
-            %             else
-            %                 resp = false;
-            %             end
+            % Convert inf edges to 0
+            graphDir = obj.BDMatched;
+            graphDir(graphDir==inf) = 0;
+            graphTypes = obj.BD_type;
+            graphTypes(graphTypes==inf) = 0;
             
-            cycles = obj.findCycles();
+            validator = Validator(graphDir, graphTypes, obj.numVars, obj.numEqs);
+            offendingEdges = validator.isValid();
+            if isempty(offendingEdges)
+                resp = true;
+            else
+                equInidces = offendingEdges(:,1);
+                varIndices = offendingEdges(:,2);
+                equIds = obj.equIdArray(equIndices);
+                varIds = obj.varIdArray(varIndices);
+                edgeIds = obj.gi.getEdgeIdByVertices(equIds,varIds);
+                obj.offendingEdges = edgeIds;
+            end
         end
         
         function edgeIds = getOffendingEdges(obj)

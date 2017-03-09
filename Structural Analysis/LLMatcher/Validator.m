@@ -12,8 +12,8 @@ classdef Validator
         DEF_NI = 4;
         DEF_AE = 5;
         
-        debug = true;
-%         debug = false;
+%         debug = true;
+        debug = false;
         
     end
     
@@ -47,21 +47,22 @@ classdef Validator
             if obj.debug; fprintf('Validator/isValid: Finding SCCs\n'); end
             adjList = createAdjList(graphDir_NoDynamics); % Convert to adjacency list
             SCCs = tarjan(adjList); % Find all Strongly Connected Components
+            % Remove trivial SCCs of uniti size
+            for i=length(SCCs):-1:1
+                if length(SCCs{i})==1
+                    SCCs(i) = [];
+                end
+            end
             
             % If NI in SCC -> OK, nlsolver needed
             if obj.debug; fprintf('Validator/isValid: Checking for NIs in AEs\n'); end
             if ~isempty(SCCs) % If there are algebraic loops
-                for i=1:length(SCCs) % For each one
-                    if size(SCCs{i})==1 % Skip unit-size trivial SCCs
-                        continue
-                    end
-                    AE = graphDir_NoDynamics;
-                    vertices2Del = setdiff(1:size(AE,1),SCCs{i});
-                    AE(vertices2Del,:) = []; % Delete unrelated vertices
-                    AE(:,vertices2Del) = [];
-                    if ~isempty(find(AE==obj.DEF_NI))
-                        fprintf('Found a matched NI edge in an algebraic loop - NL solver required\n');
-                    end
+                AE = graphDir_NoDynamics;
+                vertices2Del = setdiff(1:size(AE,1),SCCs{i});
+                AE(vertices2Del,:) = []; % Delete unrelated vertices
+                AE(:,vertices2Del) = [];
+                if ~isempty(find(AE==obj.DEF_NI))
+                    fprintf('Found a matched NI edge in an algebraic loop - NL solver required\n');
                 end
             else
                 fprintf('No algebraic SCCs found\n');
@@ -79,13 +80,16 @@ classdef Validator
             if obj.debug; fprintf('Validator/isValid: Finding SCCs\n'); end
             adjList = createAdjList(graph_NoAE); % Convert to adjacency list
             SCCs = tarjan(adjList); % Find all Strongly Connected Components
+            % Remove trivial SCCs of uniti size
+            for i=length(SCCs):-1:1
+                if length(SCCs{i})==1
+                    SCCs(i) = [];
+                end
+            end
             
             % Assert that all SCCs are dynamic
             if obj.debug; fprintf('Validator/isValid: Asserting all SCCs are dynamic\n'); end
             for i=1:length(SCCs)
-                if size(SCCs{i})==1 % Skip unit-size trivial SCCs
-                    continue
-                end
                 SCC = SCCs{i};
                 if ~find(types_NoAE(SCC,SCC)==obj.DEF_INT)
                     error('This SCC should be dynamic but no integral edge found');
@@ -97,14 +101,12 @@ classdef Validator
             % (FLAG offending edges)
             if obj.debug; fprintf('Validator/isValid: Checking for NI edges in dynamic loops\n'); end
             for i=1:length(SCCs)
-                if size(SCCs{i})==1 % Skip unit-size trivial SCCs
-                    continue
-                end
                 SCC = SCCs{i};
                 % Isolate E2V part
-                varIndices = SCC(SCC<=numVars_NoAE);
-                equIndices = SCC(SCC>numVars_NoAE);
-                [row, col] = find(types_NoAE(equIndices,varIndices)==obj.DEF_NI);
+                varIdx = SCC(SCC<=numVars_NoAE);
+                equIdx = SCC(SCC>numVars_NoAE);
+                E2V = types_NoAE(equIdx,varIdx);
+                [row, col] = find(E2V==obj.DEF_NI);
                 for i=1:length(row)
                     equId = equIds_NoAE(row(i));
                     varId = varIds_NoAE(col(i));
@@ -118,9 +120,6 @@ classdef Validator
             % causality in loop (FLAG offending edges)
             if obj.debug; fprintf('Validator/isValid: Checking for derivative edges in dynamic loops\n'); end
             for i=1:length(SCCs)
-                if size(SCCs{i})==1 % Skip unit-size trivial SCCs
-                    continue
-                end
                 SCC=SCCs{i};
                 varIdx = SCC(SCC<=numVars_NoAE);
                 equIdx = SCC(SCC>numVars_NoAE);
@@ -177,6 +176,17 @@ classdef Validator
         end
         
         function [graphReduced, typesReduced, newVarIds, newEquIds, varIdMap, equIdMap] = reduceSCCs(obj, graph, types, oldVarIds, oldEquIds, SCCs)
+            
+            if isempty(SCCs) % Nothing to do here
+                graphReduced = graph;
+                typesReduced = types;
+                newVarIds = oldVarIds;
+                newEquIds = oldEquIds;
+                varIdMap(oldVarIds) = oldVarIds;
+                equIdMap(oldEquIds) = oldEquIds;
+                return
+            end
+            
             % Delete trivial single-sized SCCs
             for i=length(SCCs):-1:1
                 if length(SCCs{i})==1
@@ -297,23 +307,6 @@ classdef Validator
             graphReduced = [zeros(size(newV2E,1)) newV2E; newE2V zeros(size(newE2V,1))];
             typesReduced = [zeros(size(newV2E_types,1)) newV2E_types; newE2V_types zeros(size(newE2V_types,1))];
             
-        end
-                
-        function [cycles,cycleTypes] = findCycles(obj)
-            % Find cycles on the matched subproblem
-            graph = obj.graphDir~=inf;
-            [~, cycles] = find_elem_circuits(graph);
-            
-            cycleTypes = cell(size(cycles));
-            
-            for i=1:length(cycles)
-                sequence = cycles{i};
-                types = zeros(1,length(sequence-1));
-                for j=1:(length(sequence)-1)
-                    types(j) = obj.graphTypes(sequence(j),sequence(j+1));
-                end
-                cycleTypes{j} = types;
-            end            
         end
         
     end
