@@ -132,6 +132,13 @@ classdef BBILPChild < matlab.mixin.Copyable
         end
         
         function resp = isMatchingValid(obj)
+            
+            if length(obj.matching)<obj.numVars % No complete matching found]
+                resp = false;
+                obj.offendingEdges = [];
+                return;
+            end
+            
             % Convert inf edges to 0
             graphDir = obj.BDMatched;
             graphDir(graphDir==inf) = 0;
