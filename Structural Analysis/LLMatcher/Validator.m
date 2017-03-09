@@ -69,8 +69,8 @@ classdef Validator
             
             % Reduce the SCCs to single E-V pairs and re-connect integrations
             if obj.debug; fprintf('Validator/isValid: Reducing AEs in original graph\n'); end
-            originalVarIds = 1:length(obj.numVars);
-            originalEquIds = 1:length(obj.numEqs);
+            originalVarIds = 1:obj.numVars;
+            originalEquIds = 1:obj.numEqs;
             [graph_NoAE, types_NoAE, varIds_NoAE, equIds_NoAE, varIdMap_NoAE, equIdMap_NoAE] = obj.reduceSCCs(obj.graphDir, obj.graphTypes, originalVarIds, originalEquIds, SCCs);
             numVars_NoAE = length(varIds_NoAE);
             numEqs_NoAE = length(equIds_NoAE);            
@@ -103,7 +103,7 @@ classdef Validator
                 SCC = SCCs{i};
                 % Isolate E2V part
                 varIndices = SCC(SCC<=numVars_NoAE);
-                equIndices = SCC(SCC>numVars_NoAE)-numVars_NoAE; % Rebase equation indices to 1
+                equIndices = SCC(SCC>numVars_NoAE);
                 [row, col] = find(types_NoAE(equIndices,varIndices)==obj.DEF_NI);
                 for i=1:length(row)
                     equId = equIds_NoAE(row(i));
@@ -123,7 +123,7 @@ classdef Validator
                 end
                 SCC=SCCs{i};
                 varIdx = SCC(SCC<=numVars_NoAE);
-                equIdx = SCC(SCC>numVars_NoAE)-numVars_NoAE; % Rebase equation indices to 1
+                equIdx = SCC(SCC>numVars_NoAE);
                 E2V = types_NoAE(equIdx,varIdx);
                 [row, col] = find(E2V==obj.DEF_DER);
                 for i=1:length(row)
@@ -170,7 +170,7 @@ classdef Validator
                 if obj.debug; fprintf('Validator/isValid: INVALID - found matched integral edge in path\n'); end
             end
             
-            Assert that all offending edges belong to the original graph
+            % Assert that all offending edges belong to the original graph
 %             if any(cellfun(@(x) find(x(1)>obj.numEqs),offendingEdges))
 %                 error('The offending edge is adjacent 
             
@@ -192,8 +192,8 @@ classdef Validator
             oldV2E_types = types(1:numVars,numVars+1:end);
             oldE2V_types = types(numVars+1:end,1:numVars);
             
-            varIdMap = oldVarIds;
-            equIdMap = oldEquIds;
+            varIdMap = 1:max(oldVarIds);
+            equIdMap = 1:max(oldEquIds);
             SCCVarGroups = {};
             SCCEquGroups = {};
             vars2Keep = oldVarIds;
@@ -204,15 +204,15 @@ classdef Validator
             
             for i=1:length(SCCs) % Separate variable and equation IDs for each group;
                 SCC = SCCs{i};
-                SCCVars = SCC(SCC<=numVars);
-                SCCEqs = SCC(SCC>numVars)-numVars;
+                SCCVarIds = oldVarIds(SCC(SCC<=numVars));
+                SCCEquIds = oldEquIds(SCC(SCC>numVars)-numVars);
                 
                 % Create id mappings
-                varIdMap(SCCVars) = varPivot + i;
-                equIdMap(SCCEqs) = equPivot + i;
+                varIdMap(SCCVarIds) = varPivot + i;
+                equIdMap(SCCEquIds) = equPivot + i;
                 
-                SCCVarGroups{i} = SCCVars;
-                SCCEquGroups{i} = SCCEqs;
+                SCCVarGroups{i} = SCCVarIds;
+                SCCEquGroups{i} = SCCEquIds;
                 
                 vars2Keep = setdiff(vars2Keep,SCCVarGroups{i});
                 eqs2Keep = setdiff(eqs2Keep,SCCEquGroups{i});
@@ -223,13 +223,19 @@ classdef Validator
             newNumEqs = length(newEquIds);
             
             % Create old->new index mappings
-            varIdxMap = zeros(size(varIdMap));
+            varIdxMap = zeros(size(oldVarIds));
             for i=1:length(varIdxMap)
-                varIdxMap(i) = find(newVarIds==varIdMap(i));
+                oldVarId = oldVarIds(i); % Find the old variable id
+                newVarId = varIdMap(oldVarId); % Find the new corresponding id
+                newVarIdx = find(newVarIds==newVarId); % Look it up in the new id array
+                varIdxMap(i) = newVarIdx; % Store its location
             end
-            equIdxMap = zeros(size(equIdMap));
+            equIdxMap = zeros(size(oldEquIds));
             for i=1:length(equIdxMap)
-                equIdxMap(i) = find(newEquIds==equIdMap(i));
+                oldEquId = oldEquIds(i); % Find the old equation id
+                newEquId = equIdMap(oldEquId); % Find the new corresponding id
+                newEquIdx = find(newEquIds==newEquId); % Look it up in the new id array
+                equIdxMap(i) = newEquIdx; % Store its location
             end
             
             % Allocate the new reduced array
@@ -241,18 +247,24 @@ classdef Validator
             % Convert old V2E edges to new V2E            
             [rowIdx, colIdx] = find(oldV2E);
             for i=1:length(rowIdx)
-                varGroupIdx = find(cellfun(@(x) ismember(rowIdx(i),x),SCCVarGroups));
-                equGroupIdx = find(cellfun(@(x) ismember(colIdx(i),x),SCCEquGroups));
+                varId = oldVarIds(rowIdx(i));
+                equId = oldEquIds(colIdx(i));
+                varGroupIdx = find(cellfun(@(x) ismember(varId,x),SCCVarGroups));
+                equGroupIdx = find(cellfun(@(x) ismember(equId,x),SCCEquGroups));
                 if varGroupIdx == equGroupIdx % Found an edge looping inside the same SCC
                     continue % Do not add this, because we inted to eliminate this SCC
                 end
                 
-                newV2E(varIdxMap(rowIdx(i)),equIdxMap(colIdx(i))) = 1;
+                newV2E(varIdxMap(rowIdx(i)),equIdxMap(colIdx(i))) = 1; % Set the corresponding variable-equation edge
                 
-                % Check if this edge refers to a compacted component
-                if (varIdMap(rowIdx(i))==rowIdx(i)) && (equIdMap(colIdx(i))==colIdx(i))
-                    assigned_type = oldV2E_types(rowIdx(i),colIdx(i)); % The same edge from old IDs to new IDs is preserved
-                else
+                % Check if the edge was pre-existing or is a new one
+                oldVarId = oldVarIds(rowIdx(i));
+                oldEquId = oldEquIds(colIdx(i));
+                newVarId = varIdMap(oldVarId);
+                newEquId = equIdMap(oldEquId);
+                if (newVarId == oldVarId) % This is a preexistng edge which comes from a preexisting variable (coverss v->e and v->SCC cases)
+                    assigned_type = oldV2E_types(rowIdx(i),colIdx(i)); % Preserve it as it was
+                else % This edge goes from one SCC to another SCC
                     assigned_type = 1;
                 end
                 
@@ -263,12 +275,17 @@ classdef Validator
             % Convert old E2V edges to new E2V
             [rowIdx, colIdx] = find(oldE2V);
             for i=1:length(rowIdx)
+                
                 newE2V(equIdxMap(rowIdx(i)),varIdxMap(colIdx(i))) = 1;
                 
                 % Check if this edge refers to a compacted component
-                if (equIdMap(rowIdx(i))==rowIdx(i)) && (varIdMap(colIdx(i))==colIdx(i)) % The same edge from old IDs to new IDs is preserved
+                oldVarId = oldVarIds(rowIdx(i));
+                oldEquId = oldEquIds(colIdx(i));
+                newVarId = varIdMap(oldVarId);
+                newEquId = equIdMap(oldEquId);
+                if (newEquId == oldEquId) && (newVarId == oldVarId) % The same edge from old IDs to new IDs is preserved
                     assigned_type = oldE2V_types(rowIdx(i),colIdx(i));
-                else
+                else % This is the matching edge inside a reduced SCC
                     assigned_type = 1;
                 end
                 
