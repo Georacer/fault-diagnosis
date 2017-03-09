@@ -12,8 +12,8 @@ classdef Validator
         DEF_NI = 4;
         DEF_AE = 5;
         
-%         debug = true;
-        debug = false;
+        debug = true;
+%         debug = false;
         
     end
     
@@ -62,10 +62,10 @@ classdef Validator
                 AE(vertices2Del,:) = []; % Delete unrelated vertices
                 AE(:,vertices2Del) = [];
                 if ~isempty(find(AE==obj.DEF_NI))
-                    fprintf('Found a matched NI edge in an algebraic loop - NL solver required\n');
+                    if obj.debug; fprintf('Validator/isValid: Found a matched NI edge in an algebraic loop - NL solver required\n'); end
                 end
             else
-                fprintf('No algebraic SCCs found\n');
+                if obj.debug; fprintf('Validator/isValid: No algebraic SCCs found\n'); end
             end
             
             % Reduce the SCCs to single E-V pairs and re-connect integrations
@@ -79,18 +79,18 @@ classdef Validator
             % Find all SCCs (These should be strictly dynamic)
             if obj.debug; fprintf('Validator/isValid: Finding SCCs\n'); end
             adjList = createAdjList(graph_NoAE); % Convert to adjacency list
-            SCCs = tarjan(adjList); % Find all Strongly Connected Components
-            % Remove trivial SCCs of uniti size
-            for i=length(SCCs):-1:1
-                if length(SCCs{i})==1
-                    SCCs(i) = [];
+            SCCs_dynamic = tarjan(adjList); % Find all Strongly Connected Components
+            % Remove trivial SCCs_dynamic_dynamic of uniti size
+            for i=length(SCCs_dynamic):-1:1
+                if length(SCCs_dynamic{i})==1
+                    SCCs_dynamic(i) = [];
                 end
             end
             
             % Assert that all SCCs are dynamic
             if obj.debug; fprintf('Validator/isValid: Asserting all SCCs are dynamic\n'); end
-            for i=1:length(SCCs)
-                SCC = SCCs{i};
+            for i=1:length(SCCs_dynamic)
+                SCC = SCCs_dynamic{i};
                 if ~find(types_NoAE(SCC,SCC)==obj.DEF_INT)
                     error('This SCC should be dynamic but no integral edge found');
                 end
@@ -100,16 +100,20 @@ classdef Validator
             % If NI in SCC -> NOT OK, because they do pure back-substitution
             % (FLAG offending edges)
             if obj.debug; fprintf('Validator/isValid: Checking for NI edges in dynamic loops\n'); end
-            for i=1:length(SCCs)
-                SCC = SCCs{i};
+            for i=1:length(SCCs_dynamic)
+                SCC = SCCs_dynamic{i};
                 % Isolate E2V part
-                varIdx = SCC(SCC<=numVars_NoAE);
-                equIdx = SCC(SCC>numVars_NoAE);
-                E2V = types_NoAE(equIdx,varIdx);
+                varIndices = SCC(SCC<=numVars_NoAE);
+                equIndices = SCC(SCC>numVars_NoAE);
+                relGraph = types_NoAE.*graph_NoAE; % Keep only the directed part
+                E2V = relGraph(equIndices,varIndices);
                 [row, col] = find(E2V==obj.DEF_NI);
                 for i=1:length(row)
-                    equId = equIds_NoAE(row(i));
-                    varId = varIds_NoAE(col(i));
+                    IDs = [varIds_NoAE equIds_NoAE];
+                    equId = IDs(equIndices(row(i)));
+                    varId = IDs(varIndices(col(i)));
+%                     equId = equIds_NoAE(row(i));
+%                     varId = varIds_NoAE(col(i));
                     offendingEdges(end+1,:) = [equId varId];
                     if obj.debug; fprintf('Validator/isValid: INVALID - found NI edge in dynamic loop\n'); end
                 end
@@ -119,15 +123,19 @@ classdef Validator
             % If Integral->Derivative -> NOT OK, because derivative
             % causality in loop (FLAG offending edges)
             if obj.debug; fprintf('Validator/isValid: Checking for derivative edges in dynamic loops\n'); end
-            for i=1:length(SCCs)
-                SCC=SCCs{i};
-                varIdx = SCC(SCC<=numVars_NoAE);
-                equIdx = SCC(SCC>numVars_NoAE);
-                E2V = types_NoAE(equIdx,varIdx);
+            for i=1:length(SCCs_dynamic)
+                SCC=SCCs_dynamic{i};
+                varIndices = SCC(SCC<=numVars_NoAE);
+                equIndices = SCC(SCC>numVars_NoAE);
+                relGraph = types_NoAE.*graph_NoAE; % Keep only the directed part
+                E2V = relGraph(equIndices,varIndices);
                 [row, col] = find(E2V==obj.DEF_DER);
                 for i=1:length(row)
-                    equId = equIds_NoAE(row(i));
-                    varId = varIds_NoAE(col(i));
+                    IDs = [varIds_NoAE equIds_NoAE];
+                    equId = IDs(equIndices(row(i)));
+                    varId = IDs(varIndices(col(i)));
+%                     equId = equIds_NoAE(row(i));
+%                     varId = varIds_NoAE(col(i));
                     offendingEdges(end+1,:) = [equId varId];
                     if obj.debug; fprintf('Validator/isValid: INVALID - found matched derivative edge in dynamic loop\n'); end
                 end
@@ -135,7 +143,7 @@ classdef Validator
             
             % Reduce SCCs
             if obj.debug; fprintf('Validator/isValid: Reducing graph\n'); end
-            [graph_NoSCC, types_NoSCC, varIds_NoSCC, equIds_NoSCC, varIdMap_NoSCC, equIdMap_NoSCC] = obj.reduceSCCs(graph_NoAE, types_NoAE, varIds_NoAE, equIds_NoAE, SCCs);
+            [graph_NoSCC, types_NoSCC, varIds_NoSCC, equIds_NoSCC, varIdMap_NoSCC, equIdMap_NoSCC] = obj.reduceSCCs(graph_NoAE, types_NoAE, varIds_NoAE, equIds_NoAE, SCCs_dynamic);
             numVars_NoSCC = length(varIds_NoSCC);
             numEqs_NoSCC = length(equIds_NoSCC);            
             
@@ -149,7 +157,8 @@ classdef Validator
             
             % If matched NI in path -> NOT OK (FLAG offending edges)
             if obj.debug; fprintf('Validator/isValid: Checking for NI edges in paths\n'); end
-            E2V = types_NoSCC(numVars_NoSCC+1:end,1:numVars_NoSCC);
+            relGraph = types_NoSCC.*graph_NoSCC; % Keep only the directed part
+            E2V = relGraph(numVars_NoSCC+1:end,1:numVars_NoSCC);
             [row, col] = find(E2V==obj.DEF_NI);
             for i=1:length(row)
                 equId = equIds_NoSCC(row(i));
@@ -160,7 +169,8 @@ classdef Validator
             
             % If Derivative->Integral, NOT OK (FlAG offending edges)
             if obj.debug; fprintf('Validator/isValid: Checking for integral edges in paths\n'); end
-            E2V = types_NoSCC(numVars_NoSCC+1:end,1:numVars_NoSCC);
+            relGraph = types_NoSCC.*graph_NoSCC; % Keep only the directed part
+            E2V = relGraph(numVars_NoSCC+1:end,1:numVars_NoSCC);
             [row, col] = find(E2V==obj.DEF_INT);
             for i=1:length(row)
                 equId = equIds_NoSCC(row(i));
@@ -289,8 +299,8 @@ classdef Validator
                 newE2V(equIdxMap(rowIdx(i)),varIdxMap(colIdx(i))) = 1;
                 
                 % Check if this edge refers to a compacted component
-                oldVarId = oldVarIds(rowIdx(i));
-                oldEquId = oldEquIds(colIdx(i));
+                oldEquId = oldEquIds(rowIdx(i));
+                oldVarId = oldVarIds(colIdx(i));
                 newVarId = varIdMap(oldVarId);
                 newEquId = equIdMap(oldEquId);
                 if (newEquId == oldEquId) && (newVarId == oldVarId) % The same edge from old IDs to new IDs is preserved

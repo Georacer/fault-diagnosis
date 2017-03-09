@@ -42,7 +42,7 @@ classdef BBILPChild < matlab.mixin.Copyable
             
             integrationCost = 100;
             differentiationCost = 100;
-            nonInvertibleCost = 500;
+            nonInvertibleCost = 1;
             
             iCount = 1;
             for i=(obj.numVars+1):(obj.numVars+obj.numEqs)
@@ -83,6 +83,7 @@ classdef BBILPChild < matlab.mixin.Copyable
             equIndex = find(obj.equIdArray==equId);
             if (~isempty(varIndex))&&(~isempty(equIndex))
                 obj.E2V(equIndex,varIndex) = inf;
+                obj.BD(obj.numVars+equIndex,varIndex) = inf;
             end
             obj.edgesInhibited = [obj.edgesInhibited edgeId];
         end
@@ -142,12 +143,16 @@ classdef BBILPChild < matlab.mixin.Copyable
             if isempty(offendingEdges)
                 resp = true;
             else
-                equInidces = offendingEdges(:,1);
+                equIndices = offendingEdges(:,1);
                 varIndices = offendingEdges(:,2);
                 equIds = obj.equIdArray(equIndices);
                 varIds = obj.varIdArray(varIndices);
-                edgeIds = obj.gi.getEdgeIdByVertices(equIds,varIds);
+                edgeIds = zeros(1,length(equIds));
+                for i=1:length(edgeIds)
+                    edgeIds(i) = obj.gi.getEdgeIdByVertices(equIds(i),varIds(i));
+                end
                 obj.offendingEdges = edgeIds;
+                resp = false;
             end
         end
         
