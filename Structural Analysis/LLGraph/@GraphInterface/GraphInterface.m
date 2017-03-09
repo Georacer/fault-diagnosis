@@ -676,10 +676,21 @@ classdef GraphInterface < handle
             
             id = [];
             
-            if gh.isEquation(varId) && gh.isVariable(equId) % Flip inputs
-                temp = equId;
-                equId = varId;
-                varId = temp;
+            if ~isempty(equId) && ~isempty(varId)
+                
+                if ~all(gh.isEquation(equId)) && ~all(gh.isVariable(equId))
+                    error('First argument contains mixed indices');
+                end
+                if ~all(gh.isEquation(varId)) && ~all(gh.isVariable(varId))
+                    error('Second argument contains mixed indices');
+                end
+                
+                if all(gh.isEquation(varId)) && all(gh.isVariable(equId)) % Flip inputs
+                    temp = equId;
+                    equId = varId;
+                    varId = temp;
+                end
+            
             end
             
             for i=1:gh.graph.numEdges

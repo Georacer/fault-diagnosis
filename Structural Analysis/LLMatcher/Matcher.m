@@ -52,8 +52,8 @@ classdef Matcher < matlab.mixin.Copyable
                     this.matchingSet = resp;
                 case 'BBILP'
                     resp = matchBBILP(this);
-%                     this.gi.applyMatching(resp(1,:));
-%                     this.matchingSet = resp;
+                    this.gi.applyMatching(resp(1,:));
+                    this.matchingSet = resp;
                 otherwise
                     error('Unhandled matcher case');
             end

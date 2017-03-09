@@ -10,6 +10,7 @@ gi = matcher.gi;
 C = BBILPChild(gi);
 
 C.findMatching();
+% C.matching
 if C.isMatchingValid() %
     if debug; fprintf('matchBBILP: initial relaxed solution was valid; ending\n'); end
     Mvalid = C.matching;
@@ -37,20 +38,21 @@ while (~isempty(activeSet))
     subprob = activeSet{probIndex}; % Pop the subproblem
     activeSet(probIndex) = []; % 
     
-    if lb>U % Kill the child
-    if debug; fprintf('matchBBILP: Child cost was higher than current upper bound\n'); end
+    if lb>=U % Kill the child
+    if debug; fprintf('matchBBILP: Child cost not lower than current upper bound\n'); end
     else
         if subprob.isMatchingValid() % Test if solution is complete
             if debug; fprintf('matchBBILP: Found a valid solution, setting upper bound\n'); end
             U = lb;
             Mvalid = subprob.matching;
         else % Break into children and go on
-            edgeCandidates = subprob.getOffendingEdges % SCREEN
+            edgeCandidates = subprob.getOffendingEdges;
             if debug; fprintf('matchBBILP: Producing %d children\n',length(edgeCandidates)); end
             for i=1:length(edgeCandidates)
                 childProb = subprob.createChild;
                 childProb.prohibitEdge(edgeCandidates(i));
                 childProb.findMatching();
+%                 childProb.matching
                 activeSet{end+1} = childProb;
                 setCosts(end+1) = childProb.cost;
             end
