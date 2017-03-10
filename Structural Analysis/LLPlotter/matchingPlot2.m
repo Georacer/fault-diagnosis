@@ -1,5 +1,5 @@
 function [ g, coords, GraphM ] = matchingPlot2( Graph, matching )
-%MATCHINGPLOT Plot the matching of Graph
+%MATCHINGPLOT DEPRECATED - Plot the matching of Graph
 %   Variables are positioned in the units of x-axis
 %   Constraints are positioned in the half-space between
 %   A unit and the half-space on its right represent one rank

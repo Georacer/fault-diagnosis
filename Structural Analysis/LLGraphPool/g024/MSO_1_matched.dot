@@ -1,0 +1,82 @@
+digraph G {
+rankdir = LR;
+size ="8.5"
+node [shape = box, fillcolor = lightskyblue, style = filled, label="ceq1
+1"]; ceq1;
+node [shape = box, fillcolor = lightskyblue, style = filled, label="ceq2
+8"]; ceq2;
+node [shape = box, fillcolor = lightskyblue, style = filled, label="ceq3
+14"]; ceq3;
+node [shape = box, fillcolor = lightskyblue, style = filled, label="ceq4
+23"]; ceq4;
+node [shape = box, fillcolor = lightskyblue, style = filled, label="ceq5
+32"]; ceq5;
+node [shape = box, fillcolor = lightskyblue, style = filled, label="ceq6
+38"]; ceq6;
+node [shape = box, fillcolor = lightskyblue, style = filled, label="deq1
+54"]; deq1;
+node [shape = box, fillcolor = lightskyblue, style = filled, label="deq2
+57"]; deq2;
+node [shape = box, fillcolor = lightskyblue, style = filled, label="deq3
+60"]; deq3;
+node [shape = box, fillcolor = white, style = filled, label="deq4
+63"]; deq4;
+node [shape = box, fillcolor = lightskyblue, style = filled, label="seq2
+70"]; seq2;
+node [shape = box, fillcolor = lightskyblue, style = filled, label="seq3
+74"]; seq3;
+node [shape = circle, fillcolor = lightskyblue, style = filled, label="q_a
+2"]; q_a;
+node [shape = circle, fillcolor = lightskyblue, style = filled, label="w
+4"]; w;
+node [shape = circle, fillcolor = lightskyblue, style = filled, label="lambda_a
+6"]; lambda_a;
+node [shape = circle, fillcolor = lightskyblue, style = filled, label="q_b
+9"]; q_b;
+node [shape = circle, fillcolor = lightskyblue, style = filled, label="lambda_b
+12"]; lambda_b;
+node [shape = circle, fillcolor = lightskyblue, style = filled, label="di_a
+15"]; di_a;
+node [shape = circle, fillcolor = lightskyblue, style = filled, label="i_a
+17"]; i_a;
+node [shape = circle, fillcolor = lightskyblue, style = filled, label="di_b
+24"]; di_b;
+node [shape = circle, fillcolor = lightskyblue, style = filled, label="i_b
+26"]; i_b;
+node [shape = circle, fillcolor = lightskyblue, style = filled, label="dlambda_a
+33"]; dlambda_a;
+node [shape = circle, fillcolor = lightskyblue, style = filled, label="dlambda_b
+39"]; dlambda_b;
+ceq1 -> q_a [penwidth = 1.5, label = "3", color = red4 ];
+w -> ceq1 [penwidth = 1, label = "5"];
+lambda_a -> ceq1 [penwidth = 1, label = "7"];
+ceq2 -> q_b [penwidth = 1.5, label = "10", color = red4 ];
+w -> ceq2 [penwidth = 1, label = "11"];
+lambda_b -> ceq2 [penwidth = 1, label = "13"];
+ceq3 -> di_a [penwidth = 1.5, label = "16", color = red4 ];
+i_a -> ceq3 [penwidth = 1, label = "18"];
+lambda_a -> ceq3 [penwidth = 1, label = "19"];
+q_b -> ceq3 [penwidth = 1, label = "20"];
+di_b -> ceq4 [penwidth = 1, label = "25"];
+i_b -> ceq4 [penwidth = 1, label = "27"];
+ceq4 -> lambda_b [penwidth = 1.5, label = "28", color = red4 ];
+q_a -> ceq4 [penwidth = 1, label = "29"];
+ceq5 -> dlambda_a [penwidth = 1.5, label = "34", color = red4 ];
+i_a -> ceq5 [penwidth = 1, label = "35"];
+lambda_a -> ceq5 [penwidth = 1, label = "36"];
+q_b -> ceq5 [penwidth = 1, label = "37"];
+ceq6 -> dlambda_b [penwidth = 1.5, label = "40", color = red4 ];
+i_b -> ceq6 [penwidth = 1, label = "41"];
+lambda_b -> ceq6 [penwidth = 1, label = "42"];
+q_a -> ceq6 [penwidth = 1, label = "43"];
+di_a -> deq1 [penwidth = 1, label = "55"];
+deq1 -> i_a [penwidth = 1.5, label = "56", color = red4 ];
+deq2 -> di_b [penwidth = 1.5, label = "58", color = red4 ];
+i_b -> deq2 [penwidth = 1, label = "59"];
+dlambda_a -> deq3 [penwidth = 1, label = "61"];
+deq3 -> lambda_a [penwidth = 1.5, label = "62", color = red4 ];
+dlambda_b -> deq4 [penwidth = 1, label = "64"];
+lambda_b -> deq4 [penwidth = 1, label = "65"];
+seq2 -> i_b [penwidth = 1.5, label = "73", color = red4 ];
+seq3 -> w [penwidth = 1.5, label = "77", color = red4 ];
+}

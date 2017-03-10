@@ -1,0 +1,25 @@
+digraph G {
+rankdir = LR;
+size ="8.5"
+node [shape = box, fillcolor = lightskyblue, style = filled, label="ceq3
+14"]; ceq3;
+node [shape = box, fillcolor = white, style = filled, label="deq2
+36"]; deq2;
+node [shape = box, fillcolor = lightskyblue, style = filled, label="seq2
+47"]; seq2;
+node [shape = box, fillcolor = lightskyblue, style = filled, label="seq3
+51"]; seq3;
+node [shape = circle, fillcolor = lightskyblue, style = filled, label="w
+8"]; w;
+node [shape = circle, fillcolor = lightskyblue, style = filled, label="dw
+15"]; dw;
+node [shape = circle, fillcolor = lightskyblue, style = filled, label="DT
+17"]; DT;
+ceq3 -> dw [penwidth = 1.5, label = "16", color = red4 ];
+DT -> ceq3 [penwidth = 1, label = "18"];
+w -> ceq3 [penwidth = 1, label = "19"];
+dw -> deq2 [penwidth = 1, label = "37"];
+w -> deq2 [penwidth = 1, label = "38"];
+seq2 -> w [penwidth = 1.5, label = "50", color = red4 ];
+seq3 -> DT [penwidth = 1.5, label = "54", color = red4 ];
+}
