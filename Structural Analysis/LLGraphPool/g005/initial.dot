@@ -1,0 +1,360 @@
+digraph G {
+rankdir = LR;
+size ="8.5"
+node [shape = box, fillcolor = white, style = filled, label="keq1
+1"]; keq1;
+node [shape = box, fillcolor = white, style = filled, label="keq2
+14"]; keq2;
+node [shape = box, fillcolor = white, style = filled, label="keq3
+26"]; keq3;
+node [shape = box, fillcolor = white, style = filled, label="keq4
+35"]; keq4;
+node [shape = box, fillcolor = white, style = filled, label="keq5
+43"]; keq5;
+node [shape = box, fillcolor = white, style = filled, label="keq6
+49"]; keq6;
+node [shape = box, fillcolor = white, style = filled, label="keq7
+55"]; keq7;
+node [shape = box, fillcolor = white, style = filled, label="keq8
+64"]; keq8;
+node [shape = box, fillcolor = white, style = filled, label="keq9
+69"]; keq9;
+node [shape = box, fillcolor = white, style = filled, label="keq10
+74"]; keq10;
+node [shape = box, fillcolor = white, style = filled, label="feq1
+85"]; feq1;
+node [shape = box, fillcolor = white, style = filled, label="feq2
+94"]; feq2;
+node [shape = box, fillcolor = white, style = filled, label="feq3
+106"]; feq3;
+node [shape = box, fillcolor = white, style = filled, label="feq4
+114"]; feq4;
+node [shape = box, fillcolor = white, style = filled, label="feq5
+121"]; feq5;
+node [shape = box, fillcolor = white, style = filled, label="feq6
+127"]; feq6;
+node [shape = box, fillcolor = white, style = filled, label="feq7
+135"]; feq7;
+node [shape = box, fillcolor = white, style = filled, label="feq8
+140"]; feq8;
+node [shape = box, fillcolor = white, style = filled, label="feq9
+144"]; feq9;
+node [shape = box, fillcolor = white, style = filled, label="seq1
+149"]; seq1;
+node [shape = box, fillcolor = white, style = filled, label="seq2
+153"]; seq2;
+node [shape = box, fillcolor = white, style = filled, label="seq3
+157"]; seq3;
+node [shape = box, fillcolor = white, style = filled, label="seq4
+161"]; seq4;
+node [shape = box, fillcolor = white, style = filled, label="seq5
+165"]; seq5;
+node [shape = box, fillcolor = white, style = filled, label="seq6
+169"]; seq6;
+node [shape = box, fillcolor = white, style = filled, label="seq7
+173"]; seq7;
+node [shape = box, fillcolor = white, style = filled, label="seq8
+177"]; seq8;
+node [shape = box, fillcolor = white, style = filled, label="seq9
+181"]; seq9;
+node [shape = box, fillcolor = white, style = filled, label="seq10
+185"]; seq10;
+node [shape = circle, fillcolor = white, style = filled, label="V
+2"]; V;
+node [shape = circle, fillcolor = white, style = filled, label="a
+4"]; a;
+node [shape = circle, fillcolor = white, style = filled, label="b
+6"]; b;
+node [shape = circle, fillcolor = white, style = filled, label="Fx
+8"]; Fx;
+node [shape = circle, fillcolor = white, style = filled, label="Fy
+10"]; Fy;
+node [shape = circle, fillcolor = white, style = filled, label="Fz
+12"]; Fz;
+node [shape = circle, fillcolor = white, style = filled, label="q
+17"]; q;
+node [shape = circle, fillcolor = white, style = filled, label="p
+19"]; p;
+node [shape = circle, fillcolor = white, style = filled, label="r
+21"]; r;
+node [shape = circle, fillcolor = white, style = filled, label="L
+39"]; L;
+node [shape = circle, fillcolor = white, style = filled, label="N
+41"]; N;
+node [shape = circle, fillcolor = white, style = filled, label="M
+47"]; M;
+node [shape = circle, fillcolor = white, style = filled, label="psi
+56"]; psi;
+node [shape = circle, fillcolor = white, style = filled, label="phi
+58"]; phi;
+node [shape = circle, fillcolor = white, style = filled, label="theta
+62"]; theta;
+node [shape = circle, fillcolor = white, style = filled, label="h
+75"]; h;
+node [shape = circle, fillcolor = white, style = filled, label="u
+77"]; u;
+node [shape = circle, fillcolor = white, style = filled, label="v
+80"]; v;
+node [shape = circle, fillcolor = white, style = filled, label="w
+83"]; w;
+node [shape = doublecircle, fillcolor = green, style = filled, label="de
+89"]; de;
+node [shape = doublecircle, fillcolor = green, style = filled, label="Xt
+92"]; Xt;
+node [shape = doublecircle, fillcolor = green, style = filled, label="da
+100"]; da;
+node [shape = doublecircle, fillcolor = green, style = filled, label="dr
+102"]; dr;
+node [shape = circle, fillcolor = yellow, style = filled, label="Vm
+151"]; Vm;
+node [shape = circle, fillcolor = yellow, style = filled, label="am
+155"]; am;
+node [shape = circle, fillcolor = yellow, style = filled, label="bm
+159"]; bm;
+node [shape = circle, fillcolor = yellow, style = filled, label="pm
+163"]; pm;
+node [shape = circle, fillcolor = yellow, style = filled, label="qm
+167"]; qm;
+node [shape = circle, fillcolor = yellow, style = filled, label="rm
+171"]; rm;
+node [shape = circle, fillcolor = yellow, style = filled, label="psim
+175"]; psim;
+node [shape = circle, fillcolor = yellow, style = filled, label="thetam
+179"]; thetam;
+node [shape = circle, fillcolor = yellow, style = filled, label="phim
+183"]; phim;
+node [shape = circle, fillcolor = yellow, style = filled, label="hm
+187"]; hm;
+keq1 -> V [penwidth = 1, label = "3", color = red4 ];
+V -> keq1 [penwidth = 1, label = "3"];
+keq1 -> a [penwidth = 1, label = "5", color = red4 ];
+a -> keq1 [penwidth = 1, label = "5"];
+keq1 -> b [penwidth = 1, label = "7", color = red4 ];
+b -> keq1 [penwidth = 1, label = "7"];
+keq1 -> Fx [penwidth = 1, label = "9", color = red4 ];
+Fx -> keq1 [penwidth = 1, label = "9"];
+keq1 -> Fy [penwidth = 1, label = "11", color = red4 ];
+Fy -> keq1 [penwidth = 1, label = "11"];
+keq1 -> Fz [penwidth = 1, label = "13", color = red4 ];
+Fz -> keq1 [penwidth = 1, label = "13"];
+keq2 -> a [penwidth = 1, label = "15", color = red4 ];
+a -> keq2 [penwidth = 1, label = "15"];
+keq2 -> V [penwidth = 1, label = "16", color = red4 ];
+V -> keq2 [penwidth = 1, label = "16"];
+keq2 -> q [penwidth = 1, label = "18", color = red4 ];
+q -> keq2 [penwidth = 1, label = "18"];
+keq2 -> p [penwidth = 1, label = "20", color = red4 ];
+p -> keq2 [penwidth = 1, label = "20"];
+keq2 -> r [penwidth = 1, label = "22", color = red4 ];
+r -> keq2 [penwidth = 1, label = "22"];
+keq2 -> b [penwidth = 1, label = "23", color = red4 ];
+b -> keq2 [penwidth = 1, label = "23"];
+keq2 -> Fx [penwidth = 1, label = "24", color = red4 ];
+Fx -> keq2 [penwidth = 1, label = "24"];
+keq2 -> Fz [penwidth = 1, label = "25", color = red4 ];
+Fz -> keq2 [penwidth = 1, label = "25"];
+keq3 -> b [penwidth = 1, label = "27", color = red4 ];
+b -> keq3 [penwidth = 1, label = "27"];
+keq3 -> a [penwidth = 1, label = "28", color = red4 ];
+a -> keq3 [penwidth = 1, label = "28"];
+keq3 -> V [penwidth = 1, label = "29", color = red4 ];
+V -> keq3 [penwidth = 1, label = "29"];
+keq3 -> p [penwidth = 1, label = "30", color = red4 ];
+p -> keq3 [penwidth = 1, label = "30"];
+keq3 -> r [penwidth = 1, label = "31", color = red4 ];
+r -> keq3 [penwidth = 1, label = "31"];
+keq3 -> Fx [penwidth = 1, label = "32", color = red4 ];
+Fx -> keq3 [penwidth = 1, label = "32"];
+keq3 -> Fy [penwidth = 1, label = "33", color = red4 ];
+Fy -> keq3 [penwidth = 1, label = "33"];
+keq3 -> Fz [penwidth = 1, label = "34", color = red4 ];
+Fz -> keq3 [penwidth = 1, label = "34"];
+keq4 -> p [penwidth = 1, label = "36", color = red4 ];
+p -> keq4 [penwidth = 1, label = "36"];
+keq4 -> q [penwidth = 1, label = "37", color = red4 ];
+q -> keq4 [penwidth = 1, label = "37"];
+keq4 -> r [penwidth = 1, label = "38", color = red4 ];
+r -> keq4 [penwidth = 1, label = "38"];
+keq4 -> L [penwidth = 1, label = "40", color = red4 ];
+L -> keq4 [penwidth = 1, label = "40"];
+keq4 -> N [penwidth = 1, label = "42", color = red4 ];
+N -> keq4 [penwidth = 1, label = "42"];
+keq5 -> p [penwidth = 1, label = "44", color = red4 ];
+p -> keq5 [penwidth = 1, label = "44"];
+keq5 -> q [penwidth = 1, label = "45", color = red4 ];
+q -> keq5 [penwidth = 1, label = "45"];
+keq5 -> r [penwidth = 1, label = "46", color = red4 ];
+r -> keq5 [penwidth = 1, label = "46"];
+keq5 -> M [penwidth = 1, label = "48", color = red4 ];
+M -> keq5 [penwidth = 1, label = "48"];
+keq6 -> p [penwidth = 1, label = "50", color = red4 ];
+p -> keq6 [penwidth = 1, label = "50"];
+keq6 -> q [penwidth = 1, label = "51", color = red4 ];
+q -> keq6 [penwidth = 1, label = "51"];
+keq6 -> r [penwidth = 1, label = "52", color = red4 ];
+r -> keq6 [penwidth = 1, label = "52"];
+keq6 -> L [penwidth = 1, label = "53", color = red4 ];
+L -> keq6 [penwidth = 1, label = "53"];
+keq6 -> N [penwidth = 1, label = "54", color = red4 ];
+N -> keq6 [penwidth = 1, label = "54"];
+keq7 -> psi [penwidth = 1, label = "57", color = red4 ];
+psi -> keq7 [penwidth = 1, label = "57"];
+keq7 -> phi [penwidth = 1, label = "59", color = red4 ];
+phi -> keq7 [penwidth = 1, label = "59"];
+keq7 -> q [penwidth = 1, label = "60", color = red4 ];
+q -> keq7 [penwidth = 1, label = "60"];
+keq7 -> r [penwidth = 1, label = "61", color = red4 ];
+r -> keq7 [penwidth = 1, label = "61"];
+keq7 -> theta [penwidth = 1, label = "63", color = red4 ];
+theta -> keq7 [penwidth = 1, label = "63"];
+keq8 -> theta [penwidth = 1, label = "65", color = red4 ];
+theta -> keq8 [penwidth = 1, label = "65"];
+keq8 -> q [penwidth = 1, label = "66", color = red4 ];
+q -> keq8 [penwidth = 1, label = "66"];
+keq8 -> phi [penwidth = 1, label = "67", color = red4 ];
+phi -> keq8 [penwidth = 1, label = "67"];
+keq8 -> r [penwidth = 1, label = "68", color = red4 ];
+r -> keq8 [penwidth = 1, label = "68"];
+keq9 -> phi [penwidth = 1, label = "70", color = red4 ];
+phi -> keq9 [penwidth = 1, label = "70"];
+keq9 -> p [penwidth = 1, label = "71", color = red4 ];
+p -> keq9 [penwidth = 1, label = "71"];
+keq9 -> psi [penwidth = 1, label = "72", color = red4 ];
+psi -> keq9 [penwidth = 1, label = "72"];
+keq9 -> theta [penwidth = 1, label = "73", color = red4 ];
+theta -> keq9 [penwidth = 1, label = "73"];
+keq10 -> h [penwidth = 1, label = "76", color = red4 ];
+h -> keq10 [penwidth = 1, label = "76"];
+keq10 -> u [penwidth = 1, label = "78", color = red4 ];
+u -> keq10 [penwidth = 1, label = "78"];
+keq10 -> theta [penwidth = 1, label = "79", color = red4 ];
+theta -> keq10 [penwidth = 1, label = "79"];
+keq10 -> v [penwidth = 1, label = "81", color = red4 ];
+v -> keq10 [penwidth = 1, label = "81"];
+keq10 -> phi [penwidth = 1, label = "82", color = red4 ];
+phi -> keq10 [penwidth = 1, label = "82"];
+keq10 -> w [penwidth = 1, label = "84", color = red4 ];
+w -> keq10 [penwidth = 1, label = "84"];
+feq1 -> Fx [penwidth = 1, label = "86", color = red4 ];
+Fx -> feq1 [penwidth = 1, label = "86"];
+feq1 -> V [penwidth = 1, label = "87", color = red4 ];
+V -> feq1 [penwidth = 1, label = "87"];
+feq1 -> a [penwidth = 1, label = "88", color = red4 ];
+a -> feq1 [penwidth = 1, label = "88"];
+de -> feq1 [penwidth = 1, label = "90"];
+feq1 -> theta [penwidth = 1, label = "91", color = red4 ];
+theta -> feq1 [penwidth = 1, label = "91"];
+Xt -> feq1 [penwidth = 1, label = "93"];
+feq2 -> Fy [penwidth = 1, label = "95", color = red4 ];
+Fy -> feq2 [penwidth = 1, label = "95"];
+feq2 -> V [penwidth = 1, label = "96", color = red4 ];
+V -> feq2 [penwidth = 1, label = "96"];
+feq2 -> b [penwidth = 1, label = "97", color = red4 ];
+b -> feq2 [penwidth = 1, label = "97"];
+feq2 -> p [penwidth = 1, label = "98", color = red4 ];
+p -> feq2 [penwidth = 1, label = "98"];
+feq2 -> r [penwidth = 1, label = "99", color = red4 ];
+r -> feq2 [penwidth = 1, label = "99"];
+da -> feq2 [penwidth = 1, label = "101"];
+dr -> feq2 [penwidth = 1, label = "103"];
+feq2 -> theta [penwidth = 1, label = "104", color = red4 ];
+theta -> feq2 [penwidth = 1, label = "104"];
+feq2 -> phi [penwidth = 1, label = "105", color = red4 ];
+phi -> feq2 [penwidth = 1, label = "105"];
+feq3 -> Fz [penwidth = 1, label = "107", color = red4 ];
+Fz -> feq3 [penwidth = 1, label = "107"];
+feq3 -> V [penwidth = 1, label = "108", color = red4 ];
+V -> feq3 [penwidth = 1, label = "108"];
+feq3 -> a [penwidth = 1, label = "109", color = red4 ];
+a -> feq3 [penwidth = 1, label = "109"];
+feq3 -> q [penwidth = 1, label = "110", color = red4 ];
+q -> feq3 [penwidth = 1, label = "110"];
+de -> feq3 [penwidth = 1, label = "111"];
+feq3 -> theta [penwidth = 1, label = "112", color = red4 ];
+theta -> feq3 [penwidth = 1, label = "112"];
+feq3 -> phi [penwidth = 1, label = "113", color = red4 ];
+phi -> feq3 [penwidth = 1, label = "113"];
+feq4 -> L [penwidth = 1, label = "115", color = red4 ];
+L -> feq4 [penwidth = 1, label = "115"];
+feq4 -> V [penwidth = 1, label = "116", color = red4 ];
+V -> feq4 [penwidth = 1, label = "116"];
+feq4 -> b [penwidth = 1, label = "117", color = red4 ];
+b -> feq4 [penwidth = 1, label = "117"];
+feq4 -> r [penwidth = 1, label = "118", color = red4 ];
+r -> feq4 [penwidth = 1, label = "118"];
+da -> feq4 [penwidth = 1, label = "119"];
+dr -> feq4 [penwidth = 1, label = "120"];
+feq5 -> M [penwidth = 1, label = "122", color = red4 ];
+M -> feq5 [penwidth = 1, label = "122"];
+feq5 -> V [penwidth = 1, label = "123", color = red4 ];
+V -> feq5 [penwidth = 1, label = "123"];
+feq5 -> a [penwidth = 1, label = "124", color = red4 ];
+a -> feq5 [penwidth = 1, label = "124"];
+feq5 -> q [penwidth = 1, label = "125", color = red4 ];
+q -> feq5 [penwidth = 1, label = "125"];
+de -> feq5 [penwidth = 1, label = "126"];
+feq6 -> N [penwidth = 1, label = "128", color = red4 ];
+N -> feq6 [penwidth = 1, label = "128"];
+feq6 -> V [penwidth = 1, label = "129", color = red4 ];
+V -> feq6 [penwidth = 1, label = "129"];
+feq6 -> b [penwidth = 1, label = "130", color = red4 ];
+b -> feq6 [penwidth = 1, label = "130"];
+feq6 -> p [penwidth = 1, label = "131", color = red4 ];
+p -> feq6 [penwidth = 1, label = "131"];
+feq6 -> r [penwidth = 1, label = "132", color = red4 ];
+r -> feq6 [penwidth = 1, label = "132"];
+da -> feq6 [penwidth = 1, label = "133"];
+dr -> feq6 [penwidth = 1, label = "134"];
+feq7 -> V [penwidth = 1, label = "136", color = red4 ];
+V -> feq7 [penwidth = 1, label = "136"];
+feq7 -> u [penwidth = 1, label = "137", color = red4 ];
+u -> feq7 [penwidth = 1, label = "137"];
+feq7 -> a [penwidth = 1, label = "138", color = red4 ];
+a -> feq7 [penwidth = 1, label = "138"];
+feq7 -> b [penwidth = 1, label = "139", color = red4 ];
+b -> feq7 [penwidth = 1, label = "139"];
+feq8 -> V [penwidth = 1, label = "141", color = red4 ];
+V -> feq8 [penwidth = 1, label = "141"];
+feq8 -> v [penwidth = 1, label = "142", color = red4 ];
+v -> feq8 [penwidth = 1, label = "142"];
+feq8 -> a [penwidth = 1, label = "143", color = red4 ];
+a -> feq8 [penwidth = 1, label = "143"];
+feq9 -> V [penwidth = 1, label = "145", color = red4 ];
+V -> feq9 [penwidth = 1, label = "145"];
+feq9 -> w [penwidth = 1, label = "146", color = red4 ];
+w -> feq9 [penwidth = 1, label = "146"];
+feq9 -> a [penwidth = 1, label = "147", color = red4 ];
+a -> feq9 [penwidth = 1, label = "147"];
+feq9 -> b [penwidth = 1, label = "148", color = red4 ];
+b -> feq9 [penwidth = 1, label = "148"];
+seq1 -> V [penwidth = 1, label = "150", color = red4 ];
+V -> seq1 [penwidth = 1, label = "150"];
+Vm -> seq1 [penwidth = 1, label = "152"];
+seq2 -> a [penwidth = 1, label = "154", color = red4 ];
+a -> seq2 [penwidth = 1, label = "154"];
+am -> seq2 [penwidth = 1, label = "156"];
+seq3 -> b [penwidth = 1, label = "158", color = red4 ];
+b -> seq3 [penwidth = 1, label = "158"];
+bm -> seq3 [penwidth = 1, label = "160"];
+seq4 -> p [penwidth = 1, label = "162", color = red4 ];
+p -> seq4 [penwidth = 1, label = "162"];
+pm -> seq4 [penwidth = 1, label = "164"];
+seq5 -> q [penwidth = 1, label = "166", color = red4 ];
+q -> seq5 [penwidth = 1, label = "166"];
+qm -> seq5 [penwidth = 1, label = "168"];
+seq6 -> r [penwidth = 1, label = "170", color = red4 ];
+r -> seq6 [penwidth = 1, label = "170"];
+rm -> seq6 [penwidth = 1, label = "172"];
+seq7 -> psi [penwidth = 1, label = "174", color = red4 ];
+psi -> seq7 [penwidth = 1, label = "174"];
+psim -> seq7 [penwidth = 1, label = "176"];
+seq8 -> theta [penwidth = 1, label = "178", color = red4 ];
+theta -> seq8 [penwidth = 1, label = "178"];
+thetam -> seq8 [penwidth = 1, label = "180"];
+seq9 -> phi [penwidth = 1, label = "182", color = red4 ];
+phi -> seq9 [penwidth = 1, label = "182"];
+phim -> seq9 [penwidth = 1, label = "184"];
+seq10 -> h [penwidth = 1, label = "186", color = red4 ];
+h -> seq10 [penwidth = 1, label = "186"];
+hm -> seq10 [penwidth = 1, label = "188"];
+}

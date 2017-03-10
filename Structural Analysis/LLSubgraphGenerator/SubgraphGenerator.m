@@ -110,6 +110,11 @@ classdef SubgraphGenerator < matlab.mixin.Copyable
             dm = GetDMParts(this.liUSM.X);
             equInd2Keep = dm.Mp.row;
             ids = this.gi.reg.equIdArray(equInd2Keep);
+            
+            if isempty(ids)
+                error('Tried to produce overconstrained part, but it was empty');
+            end
+            
             gi = this.buildSubgraph(ids,'postfix','_overconstrained');
 %             equInd2Del = setdiff(1:this.numEqs, equInd2Keep);
 %             equIds2Del = this.equationIdArray(equInd2Del);
