@@ -1243,7 +1243,7 @@ classdef GraphInterface < handle
                 gh.graph.setMatchedEdge(index,value);
                 gh.graph.setMatchedEqu(equIndex, value, varId);
                 gh.graph.setMatchedVar(varIndex, value, equId);
-                gh.graph.setKnownVar(varIndex);
+                gh.graph.setKnownVar(varIndex); % TODO: Debatable
                 
                 if debug; fprintf('GraphInterface/setMatched: setting as matched the edge %d\n',id); end
             else
@@ -1267,16 +1267,10 @@ classdef GraphInterface < handle
                 error('setKnown only applicable to variables, not edges');
             elseif gh.isVariable(id)
                 index = gh.getIndexById(id);
-                gh.graph.setKnownVar(index);
+                gh.graph.setKnownVar(index, value);
                 
-                equId = gh.graph.edges(index).equId;
-                equIndex = gh.getIndexById(equId);
-                varId = gh.graph.edges(index).varId;
-                varIndex = gh.getIndexById(varId);
-                
-                gh.graph.setMatchedEdge(index,value);
-                gh.graph.setMatchedEqu(equIndex, value, varId);
-                gh.graph.setMatchedVar(varIndex, value, equId);
+            % TODO: Direct edges outwards to non-matched equations
+
             else
                 error('Unkown object type with id %d',id);
             end

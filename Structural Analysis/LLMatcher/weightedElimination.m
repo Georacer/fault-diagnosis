@@ -107,9 +107,10 @@ while ~isempty(Mstar)
     
     M(end+1) = m;
     w(end+1) = wstar(1);
+    if debug; fprintf('WeightedElimination: Matching edge %d\n',m); end
     mh.gi.setMatched(m);
     CU = setdiff(CU, equId);
-    mh.gi.setKnown(varId);
+%     mh.gi.setKnown(varId);
     
     % Remove it from the candidate set
     Mstar(1) = [];
@@ -158,15 +159,17 @@ mh.gi.addResidual(resGenIds);
 %% Check matching characteristics
 
 matchedEqs = length(mh.gi.getEquIdByProperty('isMatched',true));
-
 matchedVars = length(mh.gi.getVarIdByProperty('isMatched',true));
+matchedEdges = length(mh.gi.getEdgeIdByProperty('isMatched',true));
 
 numResiduals = length(resGenIds);
 
 fprintf('Matching results:\n');
+fprintf('Length of returned matching set: %d\n',length(M));
 fprintf('%d/%d variables matched\n',matchedVars,mh.gi.graph.numVars);
 fprintf('%d residuals generated\n',numResiduals);
-fprintf('%d equations used\n',matchedEqs);
+fprintf('%d/%d equations matched\n',matchedEqs,mh.gi.graph.numEqs);
+fprintf('%d/%d edges matched\n',matchedEdges,mh.gi.graph.numEdges);
 fprintf('Maximum rank reached: %d\n',overallRank);
 
 
