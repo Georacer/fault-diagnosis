@@ -1,0 +1,52 @@
+digraph G {
+rankdir = LR;
+size ="8.5"
+node [shape = box, fillcolor = lightskyblue, style = filled, label="keq8
+74"]; keq8;
+node [shape = box, fillcolor = lightskyblue, style = filled, label="keq9
+80"]; keq9;
+node [shape = box, fillcolor = lightskyblue, style = filled, label="deq7
+117"]; deq7;
+node [shape = box, fillcolor = white, style = filled, label="deq8
+120"]; deq8;
+node [shape = box, fillcolor = lightskyblue, style = filled, label="seq8
+260"]; seq8;
+node [shape = box, fillcolor = lightskyblue, style = filled, label="seq9
+264"]; seq9;
+node [shape = box, fillcolor = lightskyblue, style = filled, label="seq10
+268"]; seq10;
+node [shape = box, fillcolor = lightskyblue, style = filled, label="seq12
+276"]; seq12;
+node [shape = circle, fillcolor = lightskyblue, style = filled, label="q
+21"]; q;
+node [shape = circle, fillcolor = lightskyblue, style = filled, label="p
+23"]; p;
+node [shape = circle, fillcolor = lightskyblue, style = filled, label="r
+25"]; r;
+node [shape = circle, fillcolor = lightskyblue, style = filled, label="phi
+68"]; phi;
+node [shape = circle, fillcolor = lightskyblue, style = filled, label="theta
+72"]; theta;
+node [shape = circle, fillcolor = lightskyblue, style = filled, label="dot_theta
+75"]; dot_theta;
+node [shape = circle, fillcolor = lightskyblue, style = filled, label="dot_phi
+81"]; dot_phi;
+keq8 -> dot_theta [penwidth = 1.5, label = "76", color = red4 ];
+q -> keq8 [penwidth = 1, label = "77"];
+phi -> keq8 [penwidth = 1, label = "78"];
+r -> keq8 [penwidth = 1, label = "79"];
+keq9 -> dot_phi [penwidth = 1.5, label = "82", color = red4 ];
+p -> keq9 [penwidth = 1, label = "83"];
+phi -> keq9 [penwidth = 1, label = "84"];
+theta -> keq9 [penwidth = 1, label = "85"];
+r -> keq9 [penwidth = 1, label = "86"];
+q -> keq9 [penwidth = 1, label = "87"];
+dot_phi -> deq7 [penwidth = 1, label = "118"];
+deq7 -> phi [penwidth = 1.5, label = "119", color = red4 ];
+dot_theta -> deq8 [penwidth = 1, label = "121"];
+theta -> deq8 [penwidth = 1, label = "122"];
+seq8 -> p [penwidth = 1.5, label = "261", color = red4 ];
+seq9 -> q [penwidth = 1.5, label = "265", color = red4 ];
+seq10 -> r [penwidth = 1.5, label = "269", color = red4 ];
+seq12 -> theta [penwidth = 1.5, label = "277", color = red4 ];
+}

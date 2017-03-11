@@ -2,8 +2,8 @@ function [ Mvalid ] = matchBBILP( matcher )
 %MATCHVALID Find valid residuals in provided MTES
 %   Uses Branch-and-Bound Integer Linear Programming
 
-% debug = false;
-debug = true;
+debug = false;
+% debug = true;
 
 gi = matcher.gi;
 
@@ -19,6 +19,11 @@ if C.isMatchingValid() %
         fprintf('%d ',Mvalid);
         fprintf('], with cost %d\n',C.cost);
     end
+    return;
+end
+if C.cost==inf % Even the relaxed problem does not have a solution    
+    if debug; fprintf('matchBBILP: initial relaxed problem does not have an solution; ending\n'); end
+    Mvalid = [];
     return;
 end
 

@@ -12,8 +12,8 @@ classdef Validator
         DEF_NI = 4;
         DEF_AE = 5;
         
-        debug = true;
-%         debug = false;
+%         debug = true;
+        debug = false;
         
     end
     
