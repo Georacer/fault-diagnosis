@@ -1,9 +1,18 @@
-function [ Mvalid ] = matchBBILP( matcher )
+function [ Mvalid ] = matchBBILP( matcher, varargin )
 %MATCHVALID Find valid residuals in provided MTES
 %   Uses Branch-and-Bound Integer Linear Programming
 
-debug = false;
-% debug = true;
+% debug = false;
+debug = true;
+
+p = inputParser;
+
+p.addRequired('matcher',@(x) true);
+p.addParameter('branchMethod','cheap',@isstr);
+
+p.parse(matcher, varargin{:});
+opts = p.Results;
+branchMethod = opts.branchMethod;
 
 gi = matcher.gi;
 
@@ -33,9 +42,12 @@ U = inf;
 L = -inf;
 Mvalid = [];
 
+examinations = 0;
+
 while (~isempty(activeSet))
     
-    probIndex = chooseProblem(setCosts); % Choose a subproblem
+    
+    probIndex = chooseProblem(setCosts,branchMethod); % Choose a subproblem
     lb = setCosts(probIndex); % Pop the cost
     if debug; fprintf('matchBBILP: Popping child with cost %d\n',lb); end
     setCosts(probIndex) = [];
@@ -46,6 +58,7 @@ while (~isempty(activeSet))
     if lb>=U % Kill the child
     if debug; fprintf('matchBBILP: Child cost not lower than current upper bound\n'); end
     else
+        examinations = examinations+1;
         if subprob.isMatchingValid() % Test if solution is complete
             if debug; fprintf('matchBBILP: Found a valid solution, setting upper bound\n'); end
             U = lb;
@@ -70,12 +83,20 @@ if debug;
     fprintf('matchBBILP: Final solution: [');
     fprintf('%d ',Mvalid);
     fprintf('], with cost %d\n',U);
+    fprintf('Found after %d examinations\n',examinations);
 end
 
 end
 
-function index = chooseProblem(costlist)
-    [~, index] = min(costlist);
+function index = chooseProblem(costlist,branchMethod)
+    switch branchMethod
+        case 'cheap'
+            [~, index] = min(costlist);
+        case 'BFS'
+            index = 1;
+        case 'DFS'
+            index = length(costlist);
+    end
 end
 
 % function edgeIds = getCycleEdges(cycles)

@@ -1198,6 +1198,22 @@ classdef GraphInterface < handle
                 resp(i) = gh.graph.edges(edgeIndex).isNonSolvable;            
             end
         end
+        function [ resp ] = isFaultable( gh, ids )
+            %ISMATCHED Summary of this function goes here
+            %   Detailed explanation goes here
+            
+            if ~gh.isEquation(ids)
+                error('Only equations can pass this test');
+            end
+            
+            index = gh.getIndexById(ids);
+            
+            resp = zeros(size(index));
+            
+            for i=1:length(resp)
+                resp(i) = gh.graph.equations(index(i)).isFaultable;
+            end            
+        end
         
         %% Set methods
         function [ resp ] = setEdgeWeight( gh, ids, weights )

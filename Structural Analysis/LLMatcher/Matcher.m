@@ -51,7 +51,7 @@ classdef Matcher < matlab.mixin.Copyable
                     this.gi.applyMatching(resp);
                     this.matchingSet = resp;
                 case 'BBILP'
-                    resp = matchBBILP(this);
+                    resp = matchBBILP(this,varargin{:});
                     if ~isempty(resp)
                         this.gi.applyMatching(resp(1,:));
                         this.matchingSet = resp;
