@@ -9,7 +9,7 @@ classdef Matcher < matlab.mixin.Copyable
         matchedEdgeArray = [];
         causality = 'None'; % None, Integral, Differential, Mixed, Realistic
         causalitySet = {'None', 'Integral', 'Differential', 'Mixed', 'Realistic'}
-        matcherSet = {'Murty', 'WeightedElimination', 'ValidJust', 'Valid', 'BBILP'};
+        matcherSet = {'Murty', 'WeightedElimination', 'ValidJust', 'Valid', 'Valid2', 'BBILP'};
         matchingSet = []; % Set of edge IDs
     end
     
@@ -48,6 +48,10 @@ classdef Matcher < matlab.mixin.Copyable
                     this.matchingSet = resp;
                 case 'Valid'
                     resp = matchValid(this,varargin{:});
+                    this.gi.applyMatching(resp);
+                    this.matchingSet = resp;
+                case 'Valid2'
+                    resp = matchValid2(this,varargin{:});
                     this.gi.applyMatching(resp);
                     this.matchingSet = resp;
                 case 'BBILP'

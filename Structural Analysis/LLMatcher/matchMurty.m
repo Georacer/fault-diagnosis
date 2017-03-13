@@ -19,7 +19,8 @@ gi = matcher.gi;
 %     [A, varIds, eqIndices, varIndices] = gi.getSubmodel(eqIds,varIds,'direction','V2E');
 % end
 
-A = gi.adjacency.V2E; % Uses the V2E part and hence does not take any non-invertibilities into account
+V2E = gi.adjacency.V2E; % Use the V2E part to allow non-invertibilitities. This is filled with 1s and 0s
+A = gi.adjacency.E2V'.*V2E; % Multiply with E2V to take into account the edge costs.
 equIds = gi.reg.equIdArray;
 varIds = gi.reg.varIdArray;
 

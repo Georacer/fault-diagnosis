@@ -2,8 +2,8 @@ function [ Mvalid ] = matchValid( matcher )
 %MATCHVALID Find valid residuals in provided MSO
 %   Detailed explanation goes here
 
-debug = false;
-% debug = true;
+% debug = false;
+debug = true;
 
 gi = matcher.gi;
 numEqs = gi.graph.numEqs;
@@ -14,6 +14,8 @@ Mvalid = [];
 % Loop over available just-constrained submodels
 M0weights = ones(1,numEqs)*inf;
 M0pool = cell(1,numEqs);
+
+examinations = 0;
 
 for i=1:numEqs
     
@@ -69,6 +71,9 @@ for i=1:numEqs
     else
         if debug fprintf('No valid matching found\n'); end
     end
+    
+    examinations = examinations + 1;
+    
 end
 
 if any(isfinite(M0weights)) %Process matching of this MS0    
@@ -82,7 +87,7 @@ else
     warning('No valid matching could be found for this MSO\n');
 end
 
-
+if debug; fprintf('MSO processed in %d examinations\n',examinations); end
 
 end
 
