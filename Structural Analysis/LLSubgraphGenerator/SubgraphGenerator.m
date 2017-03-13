@@ -29,7 +29,8 @@ classdef SubgraphGenerator < matlab.mixin.Copyable
             this.MSOs = cell(size(liUMSOs));
             for i=1:length(this.MSOs)
                 this.MSOs{i} = this.gi.reg.equIdArray(liUMSOs{i});
-            end            
+            end
+            resp = true;
         end
         function MSOs = getMSOs(this)
             % Return the set of MSOs containing equation IDs

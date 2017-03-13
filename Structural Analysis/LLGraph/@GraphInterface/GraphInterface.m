@@ -357,6 +357,11 @@ classdef GraphInterface < handle
             % debug = true;
             debug = false;
             
+            if isempty(ids) % Return all of the equations
+                equIds = gh.reg.equIdArray;
+                return
+            end            
+            
             equIds = [];
             
             indices = gh.getIndexById(ids);
@@ -1434,6 +1439,7 @@ classdef GraphInterface < handle
                     isIntegral = false;
                     isNonSolvable = false;
                     initProperties = false;
+                    edgeWeight = 1;
                 end
                 word = words{i};
                 opIndex = find(strcmp(operators, word));
@@ -1445,11 +1451,11 @@ classdef GraphInterface < handle
                 
                 switch opIndex % Test if the word is an operator
                     case 1
-                        %             isDerivative = true;
                         isIntegral = true;
+                        edgeWeight = 100;
                     case 2
-                        %             isIntegral = true;
                         isDerivative = true;
+                        edgeWeight = 100;
                     case 3
                         isNonSolvable = true;
                     case 4
@@ -1476,6 +1482,7 @@ classdef GraphInterface < handle
                         edgeProps.isDerivative = isDerivative;
                         edgeProps.isIntegral = isIntegral;
                         edgeProps.isNonSolvable = isNonSolvable;
+                        edgeProps.weight = edgeWeight;
                         this.addEdge([],equId,varId,edgeProps);
                         
                         initProperties = true;
