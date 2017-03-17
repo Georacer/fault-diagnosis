@@ -87,6 +87,9 @@ for i=1:length(x2)
 end
 
 legend({names{:}});
+set(ah,'xgrid','on')
+ah.GridColor = [0.2, 0.2, 0.2];  % [R, G, B]
+ah.GridAlpha = 0.9;
 
 %% Comparison among branchingMethods
 
@@ -153,6 +156,10 @@ for i=1:length(x1)
 end
 
 legend({names{:}});
+set(ah,'xgrid','on')
+ah.GridColor = [0.2, 0.2, 0.2];  % [R, G, B]
+ah.GridAlpha = 0.9;
+
 
 %% Benchmark comparisons between BBILP and exhaustive search
 % Excluding 1st and 9th (last) experiment, because they do not finish
@@ -224,7 +231,7 @@ ah = fh.Children;
 ah.YLim = [0 7];
 ah.XLim = [ah.XLim(1) ah.XLim(2)+2];
 ah.YTick = 0:7;
-ah.YTickLabel = {'','','BBILP','','','Exhaustive','''',};
+ah.YTickLabel = {'','','BBILP','','','Exhaustive','','',};
 ah.YLabel.String = 'Matching Method';
 ah.XLabel.String = 'Cumulative Solution Time (s)';
 
@@ -239,3 +246,6 @@ for i=1:length(x2)
 end
 
 legend({names{:}},'Location','SE');
+set(ah,'xgrid','on')
+ah.GridColor = [0.2, 0.2, 0.2];  % [R, G, B]
+ah.GridAlpha = 0.9;

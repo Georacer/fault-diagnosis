@@ -11,18 +11,30 @@ clc
 modelArray = {};
 stats = [];
 
-% modelArray{end+1} = g014e();
-modelArray{end+1} = g008();
-modelArray{end+1} = g021();
-modelArray{end+1} = g022();
-modelArray{end+1} = g023();
-modelArray{end+1} = g024();
-modelArray{end+1} = g025();
-modelArray{end+1} = g026();
+% Benchmarks:
+% ---------------------
+% * g014e(weR1)
+% * ThreeTankAnalysis(FDT)(g008)
+% * Commault(FDT)(g021)
+% * Damadics(FDT)(g022)
+% * ElectricMotor(FDT)(g023)
+% * InductionMotor(FDT)(g024)
+% * Raghuraj(FDT)(g025)
+% * SmallLinear(FDT)(g026)
+% * Fravolini(g005a)
+
+modelArray{end+1} = g014e();
+% modelArray{end+1} = g008();
+% modelArray{end+1} = g021();
+% modelArray{end+1} = g022();
+% modelArray{end+1} = g023();
+% modelArray{end+1} = g024();
+% modelArray{end+1} = g025();
+% modelArray{end+1} = g026();
 % modelArray{end+1} = g005a();
 
-% matchMethod = 'BBILP';
-matchMethod = 'Exhaustive';
+matchMethod = 'BBILP';
+% matchMethod = 'Exhaustive';
 
 SOType = 'MTES';
 % SOType = 'MSO';
@@ -136,7 +148,9 @@ matchers = Matcher.empty;
 plotters = Plotter.empty;
 % For each subgraph
 h = waitbar(0,'Examining SOs');
+
 tic
+profile on
 for i=1:length(SOSubgraphs)
     fprintf('\n');
     disp('Examining another SOs')
@@ -157,6 +171,7 @@ end
 timeSolveILP = toc
 stats.(name).timeSolveILP = timeSolveILP;
 close(h)
+profile off
 
 fprintf('\nResulting valid matchings:\n');
 for i=1:length(matchers)
@@ -171,7 +186,7 @@ end
 
 end
 
-% return
+return
 
 %% Process statistics and save
 fileName = sprintf('%s_%s_%s.mat',matchMethod, branchMethod,SOType);
@@ -207,7 +222,9 @@ end
 stats = oldStats;
 save(fileName,'stats');
 
-stats.g008
+% stats.g008
+stats.g005a
+stats.g014e
 
 return
 

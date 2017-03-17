@@ -675,46 +675,71 @@ classdef GraphInterface < handle
             end
             
         end
-        function [ id ] = getEdgeIdByVertices( gh, equId, varId )
+        function [ ids ] = getEdgeIdByVertices( gh, equIds, varIds )
             %GETEDGEIDBYVERTICES Find edge ids by vertices
             %   Detailed explanation goes here
             
+%             debug = true;
+            debug = false;
+            
             id = [];
             
-            if ~isempty(equId) && ~isempty(varId)
+            if ~isempty(equIds) && ~isempty(varIds)
                 
-                if ~all(gh.isEquation(equId)) && ~all(gh.isVariable(equId))
+                if ~all(gh.isEquation(equIds)) && ~all(gh.isVariable(equIds))
                     error('First argument contains mixed indices');
                 end
-                if ~all(gh.isEquation(varId)) && ~all(gh.isVariable(varId))
+                if ~all(gh.isEquation(varIds)) && ~all(gh.isVariable(varIds))
                     error('Second argument contains mixed indices');
                 end
                 
-                if all(gh.isEquation(varId)) && all(gh.isVariable(equId)) % Flip inputs
-                    temp = equId;
-                    equId = varId;
-                    varId = temp;
+                if all(gh.isEquation(varIds)) && all(gh.isVariable(equIds)) % Flip inputs
+                    temp = equIds;
+                    equIds = varIds;
+                    varIds = temp;
                 end
             
             end
             
-            for i=1:gh.graph.numEdges
-                if isempty(equId)
-                    if (gh.graph.edges(i).varId == varId)
-                        id = [id gh.graph.edges(i).id];
-                    end
-                elseif isempty(varId)
-                    if (gh.graph.edges(i).equId == equId)
-                        id = [id gh.graph.edges(i).id];
-                    end
-                    
-                else
-                    if (gh.graph.edges(i).equId==equId) && (gh.graph.edges(i).varId==varId)
-                        id = gh.graph.edges(i).id;
-                        return
+            % New implementation
+            if isempty(equIds) % Return all edges connected to varIds
+                ids = gh.getEdges(varIds);
+            elseif isempty(varIds) % Return all edges connected to equIds
+                ids = gh.getEdges(equIds);
+            else % Find matching equId-varId pairs
+                ids = zeros(1,length(equIds));
+                for i=1:length(equIds) % Iterate over all equation ids
+                    equEdges = gh.getEdges(equIds(i)); % Find edges connected to equId
+                    varEdges = gh.getEdges(varIds(i)); % Find edges connected to varId
+                    index = find(ismember(equEdges,varEdges)); % Search for common edges
+                    if ~isempty(index)
+                        ids(i) = equEdges(index); % Assing the result
+                    else
+                        if debug; fprintf('Provided equId-varId pair (%d,%d) does not have a common edge',equIds(i),varIds(i)); end
                     end
                 end
+                ids(ids==0) = []; % Delete empty placeholders
             end
+            
+            
+%             % Old implementation
+%             for i=1:gh.graph.numEdges
+%                 if isempty(equId)
+%                     if (gh.graph.edges(i).varId == varId)
+%                         id = [id gh.graph.edges(i).id];
+%                     end
+%                 elseif isempty(varId)
+%                     if (gh.graph.edges(i).equId == equId)
+%                         id = [id gh.graph.edges(i).id];
+%                     end
+%                     
+%                 else
+%                     if (gh.graph.edges(i).equId==equId) && (gh.graph.edges(i).varId==varId)
+%                         id = gh.graph.edges(i).id;
+%                         return
+%                     end
+%                 end
+%             end
             
         end
         function [ w ] = getEdgeWeight( gh, id )
