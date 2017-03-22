@@ -15,6 +15,7 @@ tempEdge.isMatched = edgeProps.isMatched;
 tempEdge.isDerivative = edgeProps.isDerivative;
 tempEdge.isIntegral = edgeProps.isIntegral;
 tempEdge.isNonSolvable = edgeProps.isNonSolvable;
+tempEdge.weight = edgeProps.weight;
 
 if debug; fprintf('addEdge: Assigning the edge object to the graph\n'); end
 gh.edges(end+1) = tempEdge;

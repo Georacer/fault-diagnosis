@@ -1,0 +1,12 @@
+digraph G {
+rankdir = LR;
+size ="8.5"
+node [shape = box, fillcolor = lightskyblue, style = filled, label="seq1
+49"]; seq1;
+node [shape = box, fillcolor = white, style = filled, label="seq2
+53"]; seq2;
+node [shape = circle, fillcolor = lightskyblue, style = filled, label="x1
+4"]; x1;
+seq1 -> x1 [penwidth = 1.5, label = "52", color = red4 ];
+x1 -> seq2 [penwidth = 1, label = "56"];
+}

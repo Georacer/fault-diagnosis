@@ -29,7 +29,8 @@ classdef SubgraphGenerator < matlab.mixin.Copyable
             this.MSOs = cell(size(liUMSOs));
             for i=1:length(this.MSOs)
                 this.MSOs{i} = this.gi.reg.equIdArray(liUMSOs{i});
-            end            
+            end
+            resp = true;
         end
         function MSOs = getMSOs(this)
             % Return the set of MSOs containing equation IDs
@@ -110,6 +111,11 @@ classdef SubgraphGenerator < matlab.mixin.Copyable
             dm = GetDMParts(this.liUSM.X);
             equInd2Keep = dm.Mp.row;
             ids = this.gi.reg.equIdArray(equInd2Keep);
+            
+            if isempty(ids)
+                error('Tried to produce overconstrained part, but it was empty');
+            end
+            
             gi = this.buildSubgraph(ids,'postfix','_overconstrained');
 %             equInd2Del = setdiff(1:this.numEqs, equInd2Keep);
 %             equIds2Del = this.equationIdArray(equInd2Del);

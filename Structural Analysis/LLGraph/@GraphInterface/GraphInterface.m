@@ -357,6 +357,11 @@ classdef GraphInterface < handle
             % debug = true;
             debug = false;
             
+            if isempty(ids) % Return all of the equations
+                equIds = gh.reg.equIdArray;
+                return
+            end            
+            
             equIds = [];
             
             indices = gh.getIndexById(ids);
@@ -670,35 +675,71 @@ classdef GraphInterface < handle
             end
             
         end
-        function [ id ] = getEdgeIdByVertices( gh, equId, varId )
+        function [ ids ] = getEdgeIdByVertices( gh, equIds, varIds )
             %GETEDGEIDBYVERTICES Find edge ids by vertices
             %   Detailed explanation goes here
             
+%             debug = true;
+            debug = false;
+            
             id = [];
             
-            if gh.isEquation(varId) && gh.isVariable(equId) % Flip inputs
-                temp = equId;
-                equId = varId;
-                varId = temp;
+            if ~isempty(equIds) && ~isempty(varIds)
+                
+                if ~all(gh.isEquation(equIds)) && ~all(gh.isVariable(equIds))
+                    error('First argument contains mixed indices');
+                end
+                if ~all(gh.isEquation(varIds)) && ~all(gh.isVariable(varIds))
+                    error('Second argument contains mixed indices');
+                end
+                
+                if all(gh.isEquation(varIds)) && all(gh.isVariable(equIds)) % Flip inputs
+                    temp = equIds;
+                    equIds = varIds;
+                    varIds = temp;
+                end
+            
             end
             
-            for i=1:gh.graph.numEdges
-                if isempty(equId)
-                    if (gh.graph.edges(i).varId == varId)
-                        id = [id gh.graph.edges(i).id];
-                    end
-                elseif isempty(varId)
-                    if (gh.graph.edges(i).equId == equId)
-                        id = [id gh.graph.edges(i).id];
-                    end
-                    
-                else
-                    if (gh.graph.edges(i).equId==equId) && (gh.graph.edges(i).varId==varId)
-                        id = gh.graph.edges(i).id;
-                        return
+            % New implementation
+            if isempty(equIds) % Return all edges connected to varIds
+                ids = gh.getEdges(varIds);
+            elseif isempty(varIds) % Return all edges connected to equIds
+                ids = gh.getEdges(equIds);
+            else % Find matching equId-varId pairs
+                ids = zeros(1,length(equIds));
+                for i=1:length(equIds) % Iterate over all equation ids
+                    equEdges = gh.getEdges(equIds(i)); % Find edges connected to equId
+                    varEdges = gh.getEdges(varIds(i)); % Find edges connected to varId
+                    index = find(ismember(equEdges,varEdges)); % Search for common edges
+                    if ~isempty(index)
+                        ids(i) = equEdges(index); % Assing the result
+                    else
+                        if debug; fprintf('Provided equId-varId pair (%d,%d) does not have a common edge',equIds(i),varIds(i)); end
                     end
                 end
+                ids(ids==0) = []; % Delete empty placeholders
             end
+            
+            
+%             % Old implementation
+%             for i=1:gh.graph.numEdges
+%                 if isempty(equId)
+%                     if (gh.graph.edges(i).varId == varId)
+%                         id = [id gh.graph.edges(i).id];
+%                     end
+%                 elseif isempty(varId)
+%                     if (gh.graph.edges(i).equId == equId)
+%                         id = [id gh.graph.edges(i).id];
+%                     end
+%                     
+%                 else
+%                     if (gh.graph.edges(i).equId==equId) && (gh.graph.edges(i).varId==varId)
+%                         id = gh.graph.edges(i).id;
+%                         return
+%                     end
+%                 end
+%             end
             
         end
         function [ w ] = getEdgeWeight( gh, id )
@@ -1087,7 +1128,7 @@ classdef GraphInterface < handle
             end
             
         end
-        function [ resp ] = isMatchable( gh, id )
+        function [ resp ] = isMatchable( gh, ids )
             %ISMATCHABLE Decide if an edge can be matched
             %   This should be of minimal use and functionality since
             %   this decision belongs to the LLMatcher module
@@ -1097,55 +1138,111 @@ classdef GraphInterface < handle
             
             if debug; fprintf('Called isMatchable of GraphInterface for edge %d\n',id); end
 
-            if ~gh.isEdge(id)
+            if isempty(ids)
+                error('Requested parsing of empty ID array');
+            end
+            
+            if ~gh.isEdge(ids)
                 error('Only edges can pass this test');
             end
             
-            resp = true;
+            resp = ones(size(ids));
             
-            edgeIndex = gh.getIndexById(id);
-            
-            if gh.graph.edges(edgeIndex).isNonSolvable
-                resp = false;
-            end
-            
-            varId = gh.graph.edges(edgeIndex).varId;
-            varIndex = gh.getIndexById(varId);
-            
-            if gh.isKnown(varId);
-                % No operation
-            end
-            
-            if gh.graph.variables(varIndex).isMeasured
-                resp = false;
-            end
-            if gh.graph.variables(varIndex).isInput
-                resp = false;
-            end
-            if gh.graph.variables(varIndex).isOutput
-                % No operation
+            for i=1:length(resp)
+                edgeIndex = gh.getIndexById(ids(i));
+                
+                if gh.graph.edges(edgeIndex).isNonSolvable
+                    resp(i) = false;
+                end
+                
+                varId = gh.graph.edges(edgeIndex).varId;
+                varIndex = gh.getIndexById(varId);
+                
+                if gh.isKnown(varId);
+                    % No operation
+                end
+                
+                if gh.graph.variables(varIndex).isMeasured
+                    resp(i) = false;
+                end
+                if gh.graph.variables(varIndex).isInput
+                    resp(i) = false;
+                end
+                if gh.graph.variables(varIndex).isOutput
+                    % No operation
+                end
             end
             
         end
-        function [ resp ] = isIntegral(gh, id)
+        function [ resp ] = isIntegral(gh, ids)
             %ISINTEGRAL Decide if an edge represents an integration
             
-            if ~gh.isEdge(id)
+            resp = zeros(size(ids));
+            
+            if isempty(ids)
+                error('Requested parsing of empty ID array');
+            end
+            
+            if ~gh.isEdge(ids)
                 error('Only edges can pass this test');
             end
             
-            edgeIndex = gh.getIndexById(id);
-            resp = gh.graph.edges(edgeIndex).isIntegral;            
+            for i=1:length(resp)
+                edgeIndex = gh.getIndexById(ids(i));
+                resp(i) = gh.graph.edges(edgeIndex).isIntegral;            
+            end               
         end
-        function [ resp ] = isDerivative(gh, id)
+        function [ resp ] = isDerivative(gh, ids)
             %ISDERIVATIVE Decide if an edge represents a differentiation
             
-            if ~gh.isEdge(id)
+            resp = zeros(size(ids));
+            
+            if isempty(ids)
+                error('Requested parsing of empty ID array');
+            end
+            
+            if ~gh.isEdge(ids)
                 error('Only edges can pass this test');
             end
             
-            edgeIndex = gh.getIndexById(id);
-            resp = gh.graph.edges(edgeIndex).isDerivative;            
+            for i=1:length(resp)
+                edgeIndex = gh.getIndexById(ids(i));
+                resp(i) = gh.graph.edges(edgeIndex).isDerivative;            
+            end       
+        end
+        function [ resp ] = isNonSolvable(gh, ids)
+            %ISNONSOLVABLE Decide if an edge represents a non-invertibility
+            
+            resp = zeros(size(ids));
+            
+            if isempty(ids)
+                error('Requested parsing of empty ID array');
+            end
+            
+            if ~gh.isEdge(ids)
+                error('Only edges can pass this test');
+            end
+            
+            for i=1:length(resp)
+                edgeIndex = gh.getIndexById(ids(i));
+                resp(i) = gh.graph.edges(edgeIndex).isNonSolvable;            
+            end
+        end
+        function [ resp ] = isFaultable( gh, ids )
+            %ISMATCHED Summary of this function goes here
+            %   Detailed explanation goes here
+            
+            if ~gh.isEquation(ids)
+                error('Only equations can pass this test');
+            end
+            
+            index = gh.getIndexById(ids);
+            
+            resp = zeros(size(index));
+            
+            for i=1:length(resp)
+                resp(i) = gh.graph.equations(index(i)).isFaultable;
+            end            
         end
         
         %% Set methods
@@ -1192,7 +1289,7 @@ classdef GraphInterface < handle
                 gh.graph.setMatchedEdge(index,value);
                 gh.graph.setMatchedEqu(equIndex, value, varId);
                 gh.graph.setMatchedVar(varIndex, value, equId);
-                gh.graph.setKnownVar(varIndex);
+                gh.graph.setKnownVar(varIndex); % TODO: Debatable
                 
                 if debug; fprintf('GraphInterface/setMatched: setting as matched the edge %d\n',id); end
             else
@@ -1216,16 +1313,10 @@ classdef GraphInterface < handle
                 error('setKnown only applicable to variables, not edges');
             elseif gh.isVariable(id)
                 index = gh.getIndexById(id);
-                gh.graph.setKnownVar(index);
+                gh.graph.setKnownVar(index, value);
                 
-                equId = gh.graph.edges(index).equId;
-                equIndex = gh.getIndexById(equId);
-                varId = gh.graph.edges(index).varId;
-                varIndex = gh.getIndexById(varId);
-                
-                gh.graph.setMatchedEdge(index,value);
-                gh.graph.setMatchedEqu(equIndex, value, varId);
-                gh.graph.setMatchedVar(varIndex, value, equId);
+            % TODO: Direct edges outwards to non-matched equations
+
             else
                 error('Unkown object type with id %d',id);
             end
@@ -1373,6 +1464,7 @@ classdef GraphInterface < handle
                     isIntegral = false;
                     isNonSolvable = false;
                     initProperties = false;
+                    edgeWeight = 1;
                 end
                 word = words{i};
                 opIndex = find(strcmp(operators, word));
@@ -1384,11 +1476,11 @@ classdef GraphInterface < handle
                 
                 switch opIndex % Test if the word is an operator
                     case 1
-                        %             isDerivative = true;
                         isIntegral = true;
+                        edgeWeight = 100;
                     case 2
-                        %             isIntegral = true;
                         isDerivative = true;
+                        edgeWeight = 100;
                     case 3
                         isNonSolvable = true;
                     case 4
@@ -1415,6 +1507,7 @@ classdef GraphInterface < handle
                         edgeProps.isDerivative = isDerivative;
                         edgeProps.isIntegral = isIntegral;
                         edgeProps.isNonSolvable = isNonSolvable;
+                        edgeProps.weight = edgeWeight;
                         this.addEdge([],equId,varId,edgeProps);
                         
                         initProperties = true;
@@ -1552,4 +1645,4 @@ classdef GraphInterface < handle
         end
     
     end
-end
+    end
