@@ -38,24 +38,15 @@ if debug
 end
 
 for equId = CU
-    edgeIds = mh.gi.getEdges(equId);
-    if sum(~mh.gi.isMatched(edgeIds))==1 % Only one edge unmatched
-        if mh.isMatchable(edgeIds)
-            Mstar(end+1) = edgeIds;
-            wstar(end+1) = mh.gi.getEdgeWeight(edgeIds);
+    UKvarIds = mh.gi.getVariablesUnknown(equId);
+    UMvarIds = UKvarIds(~mh.gi.isMatched(UKvarIds));
+    if length(UMvarIds)==1 % Only one uknown variable unmatched
+        edgeId = mh.gi.getEdgeIdByVertices(equId,UMvarIds);
+        if mh.isMatchable(edgeId)
+            Mstar(end+1) = edgeId;
+            wstar(end+1) = mh.gi.getEdgeWeight(edgeId);
         end
     end
-    
-% %     DEPRECATED
-%     vars = mh.gi.getVariablesUnknown(equId);
-%     if length(vars)==1
-%         edgeId = mh.getEdgeIdByVertices(equId,vars);
-%         if mh.isMatchable(edgeId)
-%             edgeIndex = mh.getIndexById(edgeId);
-%             Mstar(end+1) = edgeId;
-%             wstar(end+1) = mh.edges(edgeIndex).weight;
-%         end
-%     end
 end
 
 % Sort in ascending order
@@ -63,7 +54,7 @@ end
 Mstar = Mstar(p);
 
 if debug
-    fprintf('*** Initial matching candidates: ');
+    fprintf('*** Initial matching candidates:\n');
     disp(Mstar);
     disp(wstar);
 end

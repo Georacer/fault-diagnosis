@@ -13,26 +13,26 @@ classdef Edge < GraphElement
         isIntegral = false;
         isNonSolvable = false;
     end
+    
+    methods
         
-        methods
+        function obj = Edge(id, equId, varId)
+            obj = obj@GraphElement(id);
+            obj.equId = equId;
+            obj.varId = varId;
             
-            function obj = Edge(id, equId, varId)
-                obj = obj@GraphElement(id);
-                obj.equId = equId;
-                obj.varId = varId;
-                
-            end
-            
-            function setDerivative(obj,tf_value)
-                obj.isDerivative = tf_value;
-            end
-            function setIntegral(obj,tf_value)
-                obj.isIntegral = tf_value;
-            end
-            function setNonSolvable(obj,tf_value)
-                obj.isNonSolvable = tf_value;
-            end
         end
         
+        function setDerivative(obj,tf_value)
+            obj.isDerivative = tf_value;
+        end
+        function setIntegral(obj,tf_value)
+            obj.isIntegral = tf_value;
+        end
+        function setNonSolvable(obj,tf_value)
+            obj.isNonSolvable = tf_value;
+        end
     end
     
+end
+

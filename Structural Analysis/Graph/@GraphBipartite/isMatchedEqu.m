@@ -5,7 +5,7 @@ function [ resp ] = isMatchedEqu( gh, indices )
 resp = zeros(1,length(indices));
 
 for i=1:length(indices)
-    resp(i)=gh.equations(indces(i)).isMatched;
+    resp(i)=gh.equations(indices(i)).isMatched;
 end
 
 end

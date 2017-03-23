@@ -136,6 +136,7 @@ classdef GraphInterface < handle
                 edgeProps.isDerivative = false;
                 edgeProps.isIntegral = false;
                 edgeProps.isNonSolvable = false;
+                edgeProps.weight = 1;
                 [~, edgeId] = gi.addEdge([],equId,resId,edgeProps);
                 gi.setMatched(edgeId);
                 
@@ -357,7 +358,7 @@ classdef GraphInterface < handle
             % debug = true;
             debug = false;
             
-            if isempty(ids) % Return all of the equations
+            if nargin<2 % Return all of the equations
                 equIds = gh.reg.equIdArray;
                 return
             end            
@@ -394,6 +395,11 @@ classdef GraphInterface < handle
             debug = false;
             
             varIds = [];
+            
+            if nargin<2
+                varIds = gh.reg.varIdArray;
+                return
+            end
             
             indices = gh.getIndexById(ids);
             
@@ -582,6 +588,11 @@ classdef GraphInterface < handle
             debug = false;
             
             edgeIds = [];
+            
+            if nargin<2
+                edgeIds = gh.reg.equIdArray;
+                return
+            end
             
             indices = gh.getIndexById(ids);
             

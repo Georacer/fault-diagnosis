@@ -33,8 +33,8 @@ classdef Plotter < matlab.mixin.Copyable
             
             dotName = sprintf('%s.dot',graphName);
             imageName = sprintf('%s.ps',graphName);
-            dotFilePath = sprintf('LLGraphPool/%s/%s',this.gi.graph.name,dotName);
-            imageFilePath = sprintf('LLGraphPool/%s/%s',this.gi.graph.name,imageName);
+            dotFilePath = sprintf('GraphPool/%s/%s',this.gi.graph.name,dotName);
+            imageFilePath = sprintf('GraphPool/%s/%s',this.gi.graph.name,imageName);
             
             fileID = fopen(dotFilePath,'w');
             % Write header
