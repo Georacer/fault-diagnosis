@@ -1,0 +1,263 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Welcome to the documentation of fault-diagnosis &mdash; fault-diangosis 0.5 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="fault-diangosis 0.5 documentation" href="#"/>
+        <link rel="next" title="Model Input" href="model/index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="#" class="icon icon-home"> fault-diangosis
+        
+
+        
+        </a>
+
+        
+          
+          
+            <div class="version">
+              0.5
+            </div>
+          
+        
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="model/index.html">Model Input</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graph/index.html">Graph Representation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graph_interface/index.html">The graph interface API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="display/index.html">Graph display</a></li>
+<li class="toctree-l1"><a class="reference internal" href="subgraph_generator/index.html">Subgraph Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="matcher/index.html">Graph matching methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demos/index.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributors.html">Contributors</a></li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="#">fault-diangosis</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="#">Docs</a> &raquo;</li>
+      
+    <li>Welcome to the documentation of fault-diagnosis</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="welcome-to-the-documentation-of-fault-diagnosis">
+<h1>Welcome to the documentation of fault-diagnosis<a class="headerlink" href="#welcome-to-the-documentation-of-fault-diagnosis" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="matlab-libraries-for-fault-diangosis-in-dynamic-large-scale-systems">
+<h2>MATLAB libraries for fault-diangosis in dynamic, large-scale systems<a class="headerlink" href="#matlab-libraries-for-fault-diangosis-in-dynamic-large-scale-systems" title="Permalink to this headline">¶</a></h2>
+<p><cite>fault-diagnosis</cite> is research software in MATLAB, targeted for fault diagnosis in large-scale systems. It employs methodologies of Structural Analysis for qualitative abstraction and efficient extraction of residual-generators.</p>
+</div>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p><cite>fault-diangosis</cite> uses the methodology of Structural Analysis to perform Fault Diagnosis, which performs a qualitative abstraction of the mathematical model of a system into a bipartite Structural Graph. Graph methodologies are then applied onto that graph for the extraction of residual generators.</p>
+<p>Graph representation of the bipartite graph is favoured, against the biadjacency matrix one, to allow more natural handling and processing of graph meta-information.</p>
+<p>The codebase is split into several logical parts. There is dedicated documentation for each one:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Structural Graph</li>
+<li>Graph Interface</li>
+<li>Display engine</li>
+<li>Subgraph Generator</li>
+<li>Matcher</li>
+</ul>
+</div></blockquote>
+<p>Demos are available in the dedicated section.</p>
+</div>
+<div class="section" id="system-compatibility">
+<h2>System Compatibility<a class="headerlink" href="#system-compatibility" title="Permalink to this headline">¶</a></h2>
+<p>This software is developed and tested under Ubuntu Linux</p>
+</div>
+<div class="section" id="external-software-requirements">
+<h2>External Software Requirements<a class="headerlink" href="#external-software-requirements" title="Permalink to this headline">¶</a></h2>
+<p><cite>fault-diagnosis</cite> requires the following software to operate:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><a class="reference external" href="https://faultdiagnosistoolbox.github.io/">Fault Diagnosis Toolbox</a> - Research software on fault diagnosis using structural graphs. Used for the generation of PSO sets and its interface of the Dulmage-Mendelsohn decomposition.</li>
+<li><a class="reference external" href="http://strategic.mit.edu/downloads.php?page=matlab_networks">matlab_networks_routines</a> - Library for graph operations.</li>
+<li><a class="reference external" href="https://www.mathworks.com/matlabcentral/fileexchange/20652-hungarian-algorithm-for-linear-assignment-problems--v2-3-">munkres</a>  - Fast implementaiton of the Hungarian weighted assignment algorithm.</li>
+</ol>
+</div></blockquote>
+<p>The above software is distributed alognside <cite>fault-diagnosis</cite>, according to the copyright set by their respective authors/owners. Licence files for each software are included in the corresponding directories.</p>
+<p>Also the following software is required to be installed on the system:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>The <em>dot</em> language compiler, part of the GraphViz package - Used for graph visualization.</li>
+</ol>
+</div></blockquote>
+</div>
+<div class="section" id="related-publications">
+<h2>Related Publications<a class="headerlink" href="#related-publications" title="Permalink to this headline">¶</a></h2>
+<p><cite>fault-diagnosis</cite> was developed alongside and was part of the research included in the following publications:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Zogopoulos Papaliakos, G., &amp; Kyriakopoulos, K. J. (2016). On the selection of calculable residual generators for UAV fault diagnosis. In MED’16: The 24th Mediterranean Conference on Control and Automation (pp. 0–5). IEEE. <a class="reference external" href="http://doi.org/10.1109/MED.2016.7536003">http://doi.org/10.1109/MED.2016.7536003</a></li>
+<li>Zogopoulos-Papaliakos, G., &amp; Kyriakopoulos, K. J. (2017). Generating Semi-Explicit DAEs with Structural Index 1 for Fault Diagnosis Using Structural Analysis. In 2017 IEEE International Conference on Robotics and Automation (ICRA). ΙΕΕΕ.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="licence">
+<h2>Licence<a class="headerlink" href="#licence" title="Permalink to this headline">¶</a></h2>
+<p>The <cite>fault-diagnosis</cite> software project uses the <a class="reference external" href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a> licence.</p>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="model/index.html" class="btn btn-neutral float-right" title="Model Input" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>Except where otherwise noted, this documentation is licensed under <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC Attribution-Share Alike 3.0 Unported</a>.</p>
+
+<div style="float:right;"><a href="https://github.com/Georacer/mavlink-inspector/issues/new?title=Welcome%20to%20the%20documentation%20of%20fault-diagnosis%20-%20&body=URL:%20./index%0ATitle:%20Welcome%20to%20the%20documentation%20of%20fault-diagnosis%0A%0APlease%20update%20this%20description%20and%20the%20issue%20title">Page bug</a></div>
+
+    <p>
+
+    </p>
+  </div>
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.5',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
