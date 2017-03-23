@@ -6,7 +6,7 @@ It is the result of ongoing research, while pursuing my PhD degree in the Contro
 This software was written by George Zogopoulos-Papaliakos, PhD candidate.
 
 ## Documentation
-Documentation can be found at http://georacer.github.io/fault-diagnosis/index.html, including some demo applications of the software.
+Documentation can be found at http://georacer.github.io/fault-diagnosis/ including some demo applications of the software.
 
 It is not by any means complete, but some documentation is always better than no documentation.
 
