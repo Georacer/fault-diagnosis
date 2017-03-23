@@ -1,0 +1,113 @@
+digraph G {
+rankdir = LR;
+size ="8.5"
+node [shape = box, fillcolor = white, style = filled, label="ceq1
+1"]; ceq1;
+node [shape = box, fillcolor = white, style = filled, label="ceq2
+8"]; ceq2;
+node [shape = box, fillcolor = white, style = filled, label="ceq3
+14"]; ceq3;
+node [shape = box, fillcolor = white, style = filled, label="ceq4
+18"]; ceq4;
+node [shape = box, fillcolor = white, style = filled, label="ceq5
+24"]; ceq5;
+node [shape = box, fillcolor = white, style = filled, label="ceq6
+29"]; ceq6;
+node [shape = box, fillcolor = white, style = filled, label="deq1
+36"]; deq1;
+node [shape = box, fillcolor = white, style = filled, label="deq2
+39"]; deq2;
+node [shape = box, fillcolor = white, style = filled, label="deq3
+42"]; deq3;
+node [shape = box, fillcolor = white, style = filled, label="seq1
+45"]; seq1;
+node [shape = box, fillcolor = white, style = filled, label="seq2
+49"]; seq2;
+node [shape = box, fillcolor = white, style = filled, label="seq3
+53"]; seq3;
+node [shape = circle, fillcolor = white, style = filled, label="q1
+2"]; q1;
+node [shape = circle, fillcolor = white, style = filled, label="p1
+4"]; p1;
+node [shape = circle, fillcolor = white, style = filled, label="p2
+6"]; p2;
+node [shape = circle, fillcolor = white, style = filled, label="q2
+9"]; q2;
+node [shape = circle, fillcolor = white, style = filled, label="p3
+12"]; p3;
+node [shape = circle, fillcolor = white, style = filled, label="q3
+15"]; q3;
+node [shape = circle, fillcolor = white, style = filled, label="p1_dot
+19"]; p1_dot;
+node [shape = circle, fillcolor = white, style = filled, label="q0
+21"]; q0;
+node [shape = circle, fillcolor = white, style = filled, label="p2_dot
+25"]; p2_dot;
+node [shape = circle, fillcolor = white, style = filled, label="fautl
+30"]; fautl;
+node [shape = circle, fillcolor = white, style = filled, label="p3_dot
+32"]; p3_dot;
+node [shape = circle, fillcolor = yellow, style = filled, label="y1
+46"]; y1;
+node [shape = circle, fillcolor = yellow, style = filled, label="y2
+50"]; y2;
+node [shape = circle, fillcolor = yellow, style = filled, label="y3
+54"]; y3;
+ceq1 -> q1 [penwidth = 1, label = "3", color = red4 ];
+q1 -> ceq1 [penwidth = 1, label = "3"];
+ceq1 -> p1 [penwidth = 1, label = "5", color = red4 ];
+p1 -> ceq1 [penwidth = 1, label = "5"];
+ceq1 -> p2 [penwidth = 1, label = "7", color = red4 ];
+p2 -> ceq1 [penwidth = 1, label = "7"];
+ceq2 -> q2 [penwidth = 1, label = "10", color = red4 ];
+q2 -> ceq2 [penwidth = 1, label = "10"];
+ceq2 -> p2 [penwidth = 1, label = "11", color = red4 ];
+p2 -> ceq2 [penwidth = 1, label = "11"];
+ceq2 -> p3 [penwidth = 1, label = "13", color = red4 ];
+p3 -> ceq2 [penwidth = 1, label = "13"];
+ceq3 -> q3 [penwidth = 1, label = "16", color = red4 ];
+q3 -> ceq3 [penwidth = 1, label = "16"];
+ceq3 -> p3 [penwidth = 1, label = "17", color = red4 ];
+p3 -> ceq3 [penwidth = 1, label = "17"];
+ceq4 -> p1_dot [penwidth = 1, label = "20", color = red4 ];
+p1_dot -> ceq4 [penwidth = 1, label = "20"];
+ceq4 -> q0 [penwidth = 1, label = "22", color = red4 ];
+q0 -> ceq4 [penwidth = 1, label = "22"];
+ceq4 -> q1 [penwidth = 1, label = "23", color = red4 ];
+q1 -> ceq4 [penwidth = 1, label = "23"];
+ceq5 -> p2_dot [penwidth = 1, label = "26", color = red4 ];
+p2_dot -> ceq5 [penwidth = 1, label = "26"];
+ceq5 -> q1 [penwidth = 1, label = "27", color = red4 ];
+q1 -> ceq5 [penwidth = 1, label = "27"];
+ceq5 -> q2 [penwidth = 1, label = "28", color = red4 ];
+q2 -> ceq5 [penwidth = 1, label = "28"];
+ceq6 -> fautl [penwidth = 1, label = "31", color = red4 ];
+fautl -> ceq6 [penwidth = 1, label = "31"];
+ceq6 -> p3_dot [penwidth = 1, label = "33", color = red4 ];
+p3_dot -> ceq6 [penwidth = 1, label = "33"];
+ceq6 -> q2 [penwidth = 1, label = "34", color = red4 ];
+q2 -> ceq6 [penwidth = 1, label = "34"];
+ceq6 -> q3 [penwidth = 1, label = "35", color = red4 ];
+q3 -> ceq6 [penwidth = 1, label = "35"];
+deq1 -> p1 [penwidth = 1, label = "37", color = red4 ];
+p1 -> deq1 [penwidth = 1, label = "37"];
+deq1 -> p1_dot [penwidth = 1, label = "38", color = red4 ];
+p1_dot -> deq1 [penwidth = 1, label = "38"];
+deq2 -> p2 [penwidth = 1, label = "40", color = red4 ];
+p2 -> deq2 [penwidth = 1, label = "40"];
+deq2 -> p2_dot [penwidth = 1, label = "41", color = red4 ];
+p2_dot -> deq2 [penwidth = 1, label = "41"];
+deq3 -> p3 [penwidth = 1, label = "43", color = red4 ];
+p3 -> deq3 [penwidth = 1, label = "43"];
+deq3 -> p3_dot [penwidth = 1, label = "44", color = red4 ];
+p3_dot -> deq3 [penwidth = 1, label = "44"];
+y1 -> seq1 [penwidth = 1, label = "47"];
+seq1 -> p1 [penwidth = 1, label = "48", color = red4 ];
+p1 -> seq1 [penwidth = 1, label = "48"];
+y2 -> seq2 [penwidth = 1, label = "51"];
+seq2 -> q2 [penwidth = 1, label = "52", color = red4 ];
+q2 -> seq2 [penwidth = 1, label = "52"];
+y3 -> seq3 [penwidth = 1, label = "55"];
+seq3 -> q0 [penwidth = 1, label = "56", color = red4 ];
+q0 -> seq3 [penwidth = 1, label = "56"];
+}

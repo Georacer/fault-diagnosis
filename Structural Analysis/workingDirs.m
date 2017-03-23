@@ -1,10 +1,13 @@
 %% Run to add necessary folders to the Matlab path
 
-addpath(genpath('LLClasses'));
-addpath(genpath('LLScripts'));
-addpath(genpath('LLGraphPool'));
+addpath(genpath('GraphPool'));
 addpath(genpath('3rd party libraries/matlab_networks_routines'));
-addpath(genpath('3rd party libraries/xticklabel_rotate'));
-addpath(genpath('3rd party research/FaultDiagnosisToolbox_2015-08-27'));
+addpath(genpath('3rd party research/FaultDiagnosisToolbox'));
 addpath(genpath('3rd party libraries/munkres'));
-addpath(genpath('LLMatching'));
+addpath(genpath('Graph'));
+addpath(genpath('Matcher'));
+addpath(genpath('ModelCreator'));
+addpath(genpath('Plotter'));
+addpath(genpath('ResidualGenerator'));
+addpath(genpath('SubgraphGenerator'));
+addpath(genpath('Demos'));

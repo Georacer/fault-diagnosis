@@ -1,6 +1,6 @@
 GrTheory
     MATRIX FORMAT: Mx2 or Mx3 edge matrix
-    grCycleBasis: % all independent cycles for a connected simple graph without loops and multiple edges --Doesn't work for my g001 example
+    grCycleBasis: % all independent cycles for a connected simple graph without self loops and multiple edges - ONLY FOR UNDIRECTED GRAPHS
     grDecOrd(E): solve the problem about decomposition of the digraph to the sections with mutually accessed vertexes (strongly connected components).
     grDistances(E): find the distances between any vertexes of graph.
     grEccentricity(E): find the (weighted) eccentricity of all vertexes of graph.

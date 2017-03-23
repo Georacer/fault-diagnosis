@@ -1,0 +1,69 @@
+digraph G {
+rankdir = LR;
+size ="8.5"
+node [shape = box, fillcolor = white, style = filled, label="ceq1
+1"]; ceq1;
+node [shape = box, fillcolor = white, style = filled, label="ceq2
+8"]; ceq2;
+node [shape = box, fillcolor = white, style = filled, label="ceq3
+13"]; ceq3;
+node [shape = box, fillcolor = white, style = filled, label="ceq4
+17"]; ceq4;
+node [shape = box, fillcolor = white, style = filled, label="ceq5
+21"]; ceq5;
+node [shape = box, fillcolor = white, style = filled, label="ceq6
+25"]; ceq6;
+node [shape = box, fillcolor = white, style = filled, label="ceq7
+29"]; ceq7;
+node [shape = box, fillcolor = white, style = filled, label="ceq8
+33"]; ceq8;
+node [shape = circle, fillcolor = white, style = filled, label="V_a
+2"]; V_a;
+node [shape = circle, fillcolor = white, style = filled, label="theta
+4"]; theta;
+node [shape = circle, fillcolor = white, style = filled, label="V_g
+6"]; V_g;
+node [shape = circle, fillcolor = white, style = filled, label="h_dot
+11"]; h_dot;
+node [shape = circle, fillcolor = white, style = filled, label="h
+15"]; h;
+node [shape = circle, fillcolor = yellow, style = filled, label="h_gps
+19"]; h_gps;
+node [shape = circle, fillcolor = yellow, style = filled, label="V_g_gps
+23"]; V_g_gps;
+node [shape = circle, fillcolor = yellow, style = filled, label="h_bar
+27"]; h_bar;
+node [shape = circle, fillcolor = yellow, style = filled, label="V_a_m
+31"]; V_a_m;
+node [shape = circle, fillcolor = yellow, style = filled, label="theta_m
+34"]; theta_m;
+ceq1 -> V_a [penwidth = 1];
+V_a -> ceq1 [penwidth = 1];
+theta -> ceq1 [penwidth = 1];
+ceq1 -> V_g [penwidth = 1];
+V_g -> ceq1 [penwidth = 1];
+ceq2 -> V_a [penwidth = 1];
+V_a -> ceq2 [penwidth = 1];
+theta -> ceq2 [penwidth = 1];
+ceq2 -> h_dot [penwidth = 1];
+h_dot -> ceq2 [penwidth = 1];
+ceq3 -> h_dot [penwidth = 1];
+h_dot -> ceq3 [penwidth = 1];
+ceq3 -> h [penwidth = 1];
+h -> ceq3 [penwidth = 1];
+ceq4 -> h [penwidth = 1];
+h -> ceq4 [penwidth = 1];
+h_gps -> ceq4 [penwidth = 1];
+ceq5 -> V_g [penwidth = 1];
+V_g -> ceq5 [penwidth = 1];
+V_g_gps -> ceq5 [penwidth = 1];
+ceq6 -> h [penwidth = 1];
+h -> ceq6 [penwidth = 1];
+h_bar -> ceq6 [penwidth = 1];
+ceq7 -> V_a [penwidth = 1];
+V_a -> ceq7 [penwidth = 1];
+V_a_m -> ceq7 [penwidth = 1];
+theta_m -> ceq8 [penwidth = 1];
+ceq8 -> theta [penwidth = 1];
+theta -> ceq8 [penwidth = 1];
+}

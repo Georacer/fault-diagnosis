@@ -1,0 +1,99 @@
+digraph G {
+rankdir = LR;
+size ="8.5"
+node [shape = box, fillcolor = white, style = filled, label="ceq1
+1"]; ceq1;
+node [shape = box, fillcolor = white, style = filled, label="ceq2
+16"]; ceq2;
+node [shape = box, fillcolor = white, style = filled, label="ceq3
+24"]; ceq3;
+node [shape = box, fillcolor = white, style = filled, label="ceq4
+32"]; ceq4;
+node [shape = box, fillcolor = white, style = filled, label="deq1
+36"]; deq1;
+node [shape = box, fillcolor = white, style = filled, label="deq2
+39"]; deq2;
+node [shape = box, fillcolor = white, style = filled, label="deq3
+42"]; deq3;
+node [shape = box, fillcolor = white, style = filled, label="deq4
+45"]; deq4;
+node [shape = box, fillcolor = white, style = filled, label="seq1
+48"]; seq1;
+node [shape = circle, fillcolor = white, style = filled, label="b_dot
+2"]; b_dot;
+node [shape = circle, fillcolor = white, style = filled, label="b
+4"]; b;
+node [shape = circle, fillcolor = white, style = filled, label="p
+6"]; p;
+node [shape = circle, fillcolor = white, style = filled, label="r
+8"]; r;
+node [shape = circle, fillcolor = white, style = filled, label="phi
+10"]; phi;
+node [shape = doublecircle, fillcolor = green, style = filled, label="deltaa
+12"]; deltaa;
+node [shape = doublecircle, fillcolor = green, style = filled, label="deltar
+14"]; deltar;
+node [shape = circle, fillcolor = white, style = filled, label="p_dot
+17"]; p_dot;
+node [shape = circle, fillcolor = white, style = filled, label="r_dot
+25"]; r_dot;
+node [shape = circle, fillcolor = white, style = filled, label="phi_dot
+33"]; phi_dot;
+node [shape = circle, fillcolor = yellow, style = filled, label="y1
+49"]; y1;
+ceq1 -> b_dot [penwidth = 1];
+b_dot -> ceq1 [penwidth = 1];
+ceq1 -> b [penwidth = 1];
+b -> ceq1 [penwidth = 1];
+ceq1 -> p [penwidth = 1];
+p -> ceq1 [penwidth = 1];
+ceq1 -> r [penwidth = 1];
+r -> ceq1 [penwidth = 1];
+ceq1 -> phi [penwidth = 1];
+phi -> ceq1 [penwidth = 1];
+deltaa -> ceq1 [penwidth = 1];
+deltar -> ceq1 [penwidth = 1];
+ceq2 -> p_dot [penwidth = 1];
+p_dot -> ceq2 [penwidth = 1];
+ceq2 -> b [penwidth = 1];
+b -> ceq2 [penwidth = 1];
+ceq2 -> p [penwidth = 1];
+p -> ceq2 [penwidth = 1];
+ceq2 -> r [penwidth = 1];
+r -> ceq2 [penwidth = 1];
+deltaa -> ceq2 [penwidth = 1];
+deltar -> ceq2 [penwidth = 1];
+ceq3 -> r_dot [penwidth = 1];
+r_dot -> ceq3 [penwidth = 1];
+ceq3 -> b [penwidth = 1];
+b -> ceq3 [penwidth = 1];
+ceq3 -> p [penwidth = 1];
+p -> ceq3 [penwidth = 1];
+ceq3 -> r [penwidth = 1];
+r -> ceq3 [penwidth = 1];
+deltaa -> ceq3 [penwidth = 1];
+deltar -> ceq3 [penwidth = 1];
+ceq4 -> phi_dot [penwidth = 1];
+phi_dot -> ceq4 [penwidth = 1];
+ceq4 -> p [penwidth = 1];
+p -> ceq4 [penwidth = 1];
+deq1 -> b_dot [penwidth = 1];
+b_dot -> deq1 [penwidth = 1];
+deq1 -> b [penwidth = 1];
+b -> deq1 [penwidth = 1];
+deq2 -> p_dot [penwidth = 1];
+p_dot -> deq2 [penwidth = 1];
+deq2 -> p [penwidth = 1];
+p -> deq2 [penwidth = 1];
+deq3 -> r_dot [penwidth = 1];
+r_dot -> deq3 [penwidth = 1];
+deq3 -> r [penwidth = 1];
+r -> deq3 [penwidth = 1];
+deq4 -> phi_dot [penwidth = 1];
+phi_dot -> deq4 [penwidth = 1];
+deq4 -> phi [penwidth = 1];
+phi -> deq4 [penwidth = 1];
+y1 -> seq1 [penwidth = 1];
+seq1 -> p [penwidth = 1];
+p -> seq1 [penwidth = 1];
+}

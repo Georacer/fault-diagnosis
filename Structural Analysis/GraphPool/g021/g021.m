@@ -1,0 +1,36 @@
+classdef g021 < model
+% Commault et.al. 2006
+%  "Structural analysis for the sensor location problem
+%  in fault detection and isolation" by C. Commault, 
+%  J. Dion and S.Y. Agha, Proceedings of Safeprocess'06 
+%  Beijing, China.
+
+% According to the model presented in Fault Diagnosis Toolbox, not the
+% original paper
+
+    methods
+        function this = g021()
+            this.name = 'g021';
+            this.description = '"Structural analysis for the sensor location problem in fault detection and isolation" by C. Commault, J. Dion and S.Y. Agha, Proceedings of Safeprocess06 Beijing, China';
+            
+            con = [...
+                {'fault x5'};...
+                {'fault x7'};...
+                {'fault x6'};...
+                {'x1 x5 x7'};...
+                {'fault x2 x6'};...
+                {'x1 x2 x3'};...
+                {'x1 x2 x4'};...
+                {'x3'};...
+                {'x3 x4'};...
+                {'x4'};...
+                ];
+            this.constraints = [{con},{'c'}];
+            
+            this.coordinates = [];
+            
+        end
+        
+    end
+    
+end
