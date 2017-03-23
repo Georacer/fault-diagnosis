@@ -1,0 +1,360 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Basic functionality &mdash; fault-diangosis 0.5 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="fault-diangosis 0.5 documentation" href="../index.html"/>
+        <link rel="up" title="Demos" href="index.html"/>
+        <link rel="next" title="Introduction to matching" href="matching_intro.html"/>
+        <link rel="prev" title="Demos" href="index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="../index.html" class="icon icon-home"> fault-diangosis
+        
+
+        
+        </a>
+
+        
+          
+          
+            <div class="version">
+              0.5
+            </div>
+          
+        
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../model/index.html">Model Input</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../graph/index.html">Graph Representation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../graph_interface/index.html">The graph interface API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../display/index.html">Graph display</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../subgraph_generator/index.html">Subgraph Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../matcher/index.html">Graph matching methods</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Demos</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="">Basic functionality</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#create-and-examine-a-graph">Create and examine a graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#graph-elements-discovery">Graph elements discovery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#discover-elements-by-property">Discover elements by property</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="matching_intro.html">Introduction to matching</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contributors.html">Contributors</a></li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">fault-diangosis</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="index.html">Demos</a> &raquo;</li>
+      
+    <li>Basic functionality</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="basic-functionality">
+<span id="id1"></span><h1>Basic functionality<a class="headerlink" href="#basic-functionality" title="Permalink to this headline">¶</a></h1>
+<p>In this demo you will learn how to load a graph, generate its plot and search through it.</p>
+<div class="section" id="create-and-examine-a-graph">
+<h2>Create and examine a graph<a class="headerlink" href="#create-and-examine-a-graph" title="Permalink to this headline">¶</a></h2>
+<p>First, load a structural system model</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="n">model</span> <span class="p">=</span> <span class="n">g007</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>Create a new GraphInterface object to host the graph</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="n">initialGraph</span> <span class="p">=</span> <span class="n">GraphInterface</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>Then, read the model</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="n">initialGraph</span><span class="p">.</span><span class="n">readModel</span><span class="p">(</span><span class="n">model</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Build the adjacency matrices</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="n">initialGraph</span><span class="p">.</span><span class="n">createAdjacency</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>The initial graph has a GraphBipartite, a Registry and an Adjacency member</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="nb">disp</span><span class="p">(</span><span class="n">initialGraph</span><span class="p">);</span>
+
+<span class="n">GraphInterface</span> <span class="n">with</span> <span class="k">properties</span><span class="p">:</span>
+
+      <span class="n">graph</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="n">x1</span> <span class="n">GraphBipartite</span><span class="p">]</span>
+        <span class="n">reg</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="n">x1</span> <span class="n">Registry</span><span class="p">]</span>
+ <span class="n">idProvider</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="n">x1</span> <span class="n">IDProvider</span><span class="p">]</span>
+  <span class="n">adjacency</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="n">x1</span> <span class="n">Adjacency</span><span class="p">]</span>
+<span class="n">formulaList</span><span class="p">:</span> <span class="p">[]</span>
+       <span class="n">name</span><span class="p">:</span> <span class="s">&#39;g007&#39;</span>
+</pre></div>
+</div>
+<p>The graph member contains all of the graph element arrays</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="nb">disp</span><span class="p">(</span><span class="n">initialGraph</span><span class="p">.</span><span class="n">graph</span><span class="p">);</span>
+
+<span class="n">GraphBipartite</span> <span class="n">with</span> <span class="k">properties</span><span class="p">:</span>
+
+<span class="n">equations</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="n">x17</span> <span class="n">Equation</span><span class="p">]</span>
+<span class="n">variables</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="n">x19</span> <span class="n">Variable</span><span class="p">]</span>
+    <span class="n">edges</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="n">x45</span> <span class="n">Edge</span><span class="p">]</span>
+     <span class="n">name</span><span class="p">:</span> <span class="s">&#39;g007&#39;</span>
+   <span class="n">coords</span><span class="p">:</span> <span class="p">[]</span>
+       <span class="n">gi</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="n">x1</span> <span class="n">GraphInterface</span><span class="p">]</span>
+  <span class="n">numVars</span><span class="p">:</span> <span class="mi">19</span>
+   <span class="n">numEqs</span><span class="p">:</span> <span class="mi">17</span>
+ <span class="n">numEdges</span><span class="p">:</span> <span class="mi">45</span>
+</pre></div>
+</div>
+<p>The adjacency member contains the bidirectional, the equation-to-veriable and variable-to-equation adjacency matrices</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="nb">disp</span><span class="p">(</span><span class="n">initialGraph</span><span class="p">.</span><span class="n">adjacency</span><span class="p">);</span>
+
+<span class="n">Adjacency</span> <span class="n">with</span> <span class="k">properties</span><span class="p">:</span>
+
+      <span class="n">gi</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="n">x1</span> <span class="n">GraphInterface</span><span class="p">]</span>
+      <span class="n">BD</span><span class="p">:</span> <span class="p">[</span><span class="mi">36</span><span class="n">x36</span> <span class="n">double</span><span class="p">]</span>
+ <span class="n">numVars</span><span class="p">:</span> <span class="mi">19</span>
+  <span class="n">numEqs</span><span class="p">:</span> <span class="mi">17</span>
+ <span class="n">eqNames</span><span class="p">:</span> <span class="p">[]</span>
+   <span class="n">eqIds</span><span class="p">:</span> <span class="p">[]</span>
+<span class="n">varNames</span><span class="p">:</span> <span class="p">[]</span>
+  <span class="n">varIds</span><span class="p">:</span> <span class="p">[]</span>
+     <span class="n">E2V</span><span class="p">:</span> <span class="p">[</span><span class="mi">17</span><span class="n">x19</span> <span class="n">double</span><span class="p">]</span>
+     <span class="n">V2E</span><span class="p">:</span> <span class="p">[</span><span class="mi">19</span><span class="n">x17</span> <span class="n">double</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Create a new plotter object</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="n">plotter</span> <span class="p">=</span> <span class="n">Plotter</span><span class="p">(</span><span class="n">initialGraph</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Create a dot graph and compile it</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="n">plotter</span><span class="p">.</span><span class="n">plotDot</span><span class="p">(</span><span class="s">&#39;initial&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>The output .ps image is in the g008 folder.
+This is the resulting image. Open it in a new tab to view it in full resolution.</p>
+<img alt="../_images/basic.png" src="../_images/basic.png" />
+<p>Note how every equation is a rectrangle and every variable is a circle. All graph elements display their ID below them.</p>
+</div>
+<div class="section" id="graph-elements-discovery">
+<h2>Graph elements discovery<a class="headerlink" href="#graph-elements-discovery" title="Permalink to this headline">¶</a></h2>
+<p>Get the IDs of all the variables in the graph</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="n">variableIdArray</span> <span class="p">=</span> <span class="n">initialGraph</span><span class="p">.</span><span class="n">getVariables</span><span class="p">()</span>
+
+<span class="n">variableIdArray</span> <span class="p">=</span>
+
+ <span class="mi">2</span>     <span class="mi">4</span>     <span class="mi">6</span>     <span class="mi">8</span>    <span class="mi">10</span>    <span class="mi">13</span>    <span class="mi">15</span>    <span class="mi">19</span>    <span class="mi">22</span>    <span class="mi">28</span>    <span class="mi">32</span>    <span class="mi">35</span>    <span class="mi">38</span>    <span class="mi">41</span>    <span class="mi">44</span>    <span class="mi">47</span>    <span class="mi">71</span>    <span class="mi">75</span>    <span class="mi">79</span>
+</pre></div>
+</div>
+<p>Get the names of all the variables</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="n">variableNames</span> <span class="p">=</span> <span class="n">initialGraph</span><span class="p">.</span><span class="n">getAliasById</span><span class="p">(</span><span class="n">variableIdArray</span><span class="p">)</span>
+
+<span class="n">variableNames</span> <span class="p">=</span>
+
+<span class="n">Columns</span> <span class="mi">1</span> <span class="n">through</span> <span class="mi">12</span>
+
+<span class="s">&#39;dot_x1&#39;</span>    <span class="s">&#39;x1&#39;</span>    <span class="s">&#39;x3&#39;</span>    <span class="s">&#39;x4&#39;</span>    <span class="s">&#39;x6&#39;</span>    <span class="s">&#39;dot_x2&#39;</span>    <span class="s">&#39;x2&#39;</span>    <span class="s">&#39;x7&#39;</span>    <span class="s">&#39;dot_x3&#39;</span>    <span class="s">&#39;dot_x4&#39;</span>    <span class="s">&#39;dot_x5&#39;</span>    <span class="s">&#39;x5&#39;</span>
+
+<span class="n">Columns</span> <span class="mi">13</span> <span class="n">through</span> <span class="mi">19</span>
+
+<span class="s">&#39;dot_x6&#39;</span>    <span class="s">&#39;u1&#39;</span>    <span class="s">&#39;dot_x7&#39;</span>    <span class="s">&#39;u2&#39;</span>    <span class="s">&#39;y1&#39;</span>    <span class="s">&#39;y2&#39;</span>    <span class="s">&#39;y3&#39;</span>
+</pre></div>
+</div>
+<p>Get the equations which use the first variable</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="n">equ1</span> <span class="p">=</span> <span class="n">initialGraph</span><span class="p">.</span><span class="n">getEquations</span><span class="p">(</span><span class="n">variableIdArray</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+
+<span class="n">equ1</span> <span class="p">=</span>
+
+ <span class="mi">1</span>    <span class="mi">49</span>
+</pre></div>
+</div>
+<p>Get the edge between the first variable and the first equation</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="n">edge1</span> <span class="p">=</span> <span class="n">initialGraph</span><span class="p">.</span><span class="n">getEdgeIdByVertices</span><span class="p">(</span><span class="n">equ1</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="n">variableIdArray</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+
+<span class="n">edge1</span> <span class="p">=</span>
+
+ <span class="mi">3</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="discover-elements-by-property">
+<h2>Discover elements by property<a class="headerlink" href="#discover-elements-by-property" title="Permalink to this headline">¶</a></h2>
+<p>Find all of the known variables</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="n">knownVars</span> <span class="p">=</span> <span class="n">initialGraph</span><span class="p">.</span><span class="n">getVariablesKnown</span><span class="p">;</span>
+<span class="n">initialGraph</span><span class="p">.</span><span class="n">getAliasById</span><span class="p">(</span><span class="n">knownVars</span><span class="p">)</span>
+
+<span class="nb">ans</span> <span class="p">=</span>
+
+<span class="s">&#39;u1&#39;</span>    <span class="s">&#39;u2&#39;</span>    <span class="s">&#39;y1&#39;</span>    <span class="s">&#39;y2&#39;</span>    <span class="s">&#39;y3&#39;</span>
+</pre></div>
+</div>
+<p>Find all of the inputs</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="n">inputVars</span> <span class="p">=</span> <span class="n">initialGraph</span><span class="p">.</span><span class="n">getVarIdByProperty</span><span class="p">(</span><span class="s">&#39;isInput&#39;</span><span class="p">);</span>
+<span class="n">initialGraph</span><span class="p">.</span><span class="n">getAliasById</span><span class="p">(</span><span class="n">inputVars</span><span class="p">)</span>
+
+<span class="nb">ans</span> <span class="p">=</span>
+
+<span class="s">&#39;u1&#39;</span>    <span class="s">&#39;u2&#39;</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="matching_intro.html" class="btn btn-neutral float-right" title="Introduction to matching" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Demos" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>Except where otherwise noted, this documentation is licensed under <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC Attribution-Share Alike 3.0 Unported</a>.</p>
+
+<div style="float:right;"><a href="https://github.com/Georacer/mavlink-inspector/issues/new?title=Basic%20functionality%20-%20&body=URL:%20../demos/basic_functionality%0ATitle:%20Basic%20functionality%0A%0APlease%20update%20this%20description%20and%20the%20issue%20title">Page bug</a></div>
+
+    <p>
+
+    </p>
+  </div>
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.5',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

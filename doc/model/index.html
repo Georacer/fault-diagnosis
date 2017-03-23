@@ -1,0 +1,308 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Model Input &mdash; fault-diangosis 0.5 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="fault-diangosis 0.5 documentation" href="../index.html"/>
+        <link rel="next" title="Graph Representation" href="../graph/index.html"/>
+        <link rel="prev" title="Welcome to the documentation of fault-diagnosis" href="../index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="../index.html" class="icon icon-home"> fault-diangosis
+        
+
+        
+        </a>
+
+        
+          
+          
+            <div class="version">
+              0.5
+            </div>
+          
+        
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">Model Input</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#bipartite-structural-graph">Bipartite structural graph</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#model-input-format">Model input format</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../graph/index.html">Graph Representation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../graph_interface/index.html">The graph interface API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../display/index.html">Graph display</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../subgraph_generator/index.html">Subgraph Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../matcher/index.html">Graph matching methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos/index.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributors.html">Contributors</a></li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">fault-diangosis</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+    <li>Model Input</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="model-input">
+<h1>Model Input<a class="headerlink" href="#model-input" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="bipartite-structural-graph">
+<h2>Bipartite structural graph<a class="headerlink" href="#bipartite-structural-graph" title="Permalink to this headline">¶</a></h2>
+<p>The functionality of <cite>fault-diangosis</cite> revolves around structural representation of mathamatical system models. According to this methodology, the system model is abstracted into a qualitative bipartite graph representation where:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Every equation is assigned a vertex in the &#8220;equations&#8221; set</li>
+<li>Every variable is assigned a vertex in the &#8220;variables&#8221; set</li>
+<li>A variable which participates in an equation is connected to it with an edge</li>
+</ul>
+</div></blockquote>
+<p>Traditionally, no other information is encoded into the structural graph. However, more modern approaches require a bit more information to produce valid and causal results. For that reason:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="../graph/index.html#sec-graph-variables"><span>Variables</span></a> vertices are embelished with information on whether they are known, measured, inputs, outputs or residual generators.</li>
+<li><a class="reference internal" href="../graph/index.html#sec-graph-edges"><span>Edges</span></a> are embelished with information on their calculation cost and whether they represent a differentiation, an integration or a non-solvable variable-equation relation</li>
+<li>All derivative variables must be declared through explicit differentiation equations</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="model-input-format">
+<h2>Model input format<a class="headerlink" href="#model-input-format" title="Permalink to this headline">¶</a></h2>
+<p>Currenlty <cite>fault-diagnosis</cite> only accepts structural model input, instead of mathematical equations. Examples of structural model specificaiton can be found in the <code class="docutils literal"><span class="pre">GraphPool</span></code> folder.</p>
+<p>Each line of the model description file represents one equation. The indentifier <code class="docutils literal"><span class="pre">fault</span></code> at the start of the line signifies that the equation is subject to a fault. All subsequent words, space-separated are unique variable names, except for the following identifiers:</p>
+<blockquote>
+<div><ul class="simple">
+<li><code class="docutils literal"><span class="pre">msr</span></code> sets the following variable to a known measurement</li>
+<li><code class="docutils literal"><span class="pre">inp</span></code> sets the following variable to a known input</li>
+<li><code class="docutils literal"><span class="pre">ni</span></code> restricts this equation to be evaluated for this variable</li>
+<li><code class="docutils literal"><span class="pre">int</span></code> signifies the use of that variable in an explicit differentiation as integration, i.e. this is the derivative of the state</li>
+<li><code class="docutils literal"><span class="pre">dot</span></code> signifies the use of that variable in an explicit differentiation is differentiaton, i.e. this is the original state</li>
+</ul>
+</div></blockquote>
+<p>Below is a short model description. <code class="docutils literal"><span class="pre">g007</span></code> is the name of the model. The separation of equations to the <code class="docutils literal"><span class="pre">con</span></code>, <code class="docutils literal"><span class="pre">der</span></code> and <code class="docutils literal"><span class="pre">msr</span></code> cells is only visual and serves better readability purposes.</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="k">classdef</span> <span class="n">g007</span> <span class="o">&lt;</span> <span class="n">model</span>
+    <span class="c">%% Linear T.I. airplane model found in</span>
+    <span class="c">% Izadi-Zamanabadi, R. (2002).</span>
+    <span class="c">% Structural analysis approach to fault diagnosis with application to fixed-wing aircraft motion.</span>
+    <span class="c">% Proceedings of the 2002 American Control Conference (IEEE Cat. No.CH37301), 5, 3949–3954. doi:10.1109/ACC.2002.1024546</span>
+
+    <span class="c">% x1dot = a11 x1 + a13 x3 + a14 x4 + a16 x6</span>
+    <span class="c">% x2dot = a21 x1 + a22 x2 + a23 x3 + a27 x7</span>
+    <span class="c">% x3dot = a31 x1 + a33 x3 + a36 x6</span>
+    <span class="c">% x4dot = x2</span>
+    <span class="c">% x5dot = x3 + a55 x5</span>
+    <span class="c">% x6dot = a66 x6 + b61 u1</span>
+    <span class="c">% x7dot = a77 x7 + b72 u2</span>
+    <span class="c">% y1 = x1</span>
+    <span class="c">% y2 = x4</span>
+    <span class="c">% y3 = x5</span>
+    <span class="k">methods</span>
+<span class="k">        function</span><span class="w"> </span>this <span class="p">=</span><span class="w"> </span><span class="nf">g007</span><span class="p">()</span><span class="w"></span>
+<span class="w">            </span><span class="n">this</span><span class="p">.</span><span class="n">name</span> <span class="p">=</span> <span class="s">&#39;g007&#39;</span><span class="p">;</span>
+            <span class="n">this</span><span class="p">.</span><span class="n">description</span> <span class="p">=</span> <span class="s">&#39;Linear T.I. airplane model found in &quot;Structural analysis approach to fault diagnosis with application to fixed-wing aircraft motion&quot;&#39;</span><span class="p">;</span>
+
+            <span class="n">con</span> <span class="p">=</span> <span class="p">[</span><span class="c">...</span>
+                <span class="p">{</span><span class="s">&#39;dot_x1 x1 x3 x4 x6&#39;</span><span class="p">};</span><span class="c">...</span>
+                <span class="p">{</span><span class="s">&#39;dot_x2 x2 x1 x3 x7&#39;</span><span class="p">};</span><span class="c">...</span>
+                <span class="p">{</span><span class="s">&#39;dot_x3 x1 x3 x6&#39;</span><span class="p">};</span><span class="c">...</span>
+                <span class="p">{</span><span class="s">&#39;dot_x4 x2&#39;</span><span class="p">};</span><span class="c">...</span>
+                <span class="p">{</span><span class="s">&#39;dot_x5 x3 x5&#39;</span><span class="p">};</span><span class="c">...</span>
+                <span class="p">{</span><span class="s">&#39;fault dot_x6 x6 inp u1&#39;</span><span class="p">};</span><span class="c">...</span>
+                <span class="p">{</span><span class="s">&#39;fault dot_x7 x7 inp u2&#39;</span><span class="p">};</span><span class="c">...</span>
+                <span class="p">];</span>
+
+            <span class="n">der</span> <span class="p">=</span> <span class="p">[</span><span class="c">...</span>
+                <span class="p">{</span><span class="s">&#39;dot x1 int dot_x1&#39;</span><span class="p">};</span><span class="c">...</span>
+                <span class="p">{</span><span class="s">&#39;dot x2 int dot_x2&#39;</span><span class="p">};</span><span class="c">...</span>
+                <span class="p">{</span><span class="s">&#39;dot x3 int dot_x3&#39;</span><span class="p">};</span><span class="c">...</span>
+                <span class="p">{</span><span class="s">&#39;dot x4 int dot_x4&#39;</span><span class="p">};</span><span class="c">...</span>
+                <span class="p">{</span><span class="s">&#39;dot x5 int dot_x5&#39;</span><span class="p">};</span><span class="c">...</span>
+                <span class="p">{</span><span class="s">&#39;dot x6 int dot_x6&#39;</span><span class="p">};</span><span class="c">...</span>
+                <span class="p">{</span><span class="s">&#39;dot x7 int dot_x7&#39;</span><span class="p">};</span><span class="c">...</span>
+                <span class="p">];</span>
+
+            <span class="n">msr</span> <span class="p">=</span> <span class="p">[</span><span class="c">...</span>
+                <span class="p">{</span><span class="s">&#39;fault msr y1 x1&#39;</span><span class="p">};</span><span class="c">...</span>
+                <span class="p">{</span><span class="s">&#39;fault msr y2 x4&#39;</span><span class="p">};</span><span class="c">...</span>
+                <span class="p">{</span><span class="s">&#39;fault msr y3 x5&#39;</span><span class="p">};</span><span class="c">...</span>
+                <span class="p">];</span>
+
+            <span class="n">this</span><span class="p">.</span><span class="n">constraints</span> <span class="p">=</span> <span class="p">[</span><span class="c">...</span>
+                <span class="p">{</span><span class="n">con</span><span class="p">},{</span><span class="s">&#39;c&#39;</span><span class="p">};</span><span class="c">...</span>
+                <span class="p">{</span><span class="n">der</span><span class="p">},{</span><span class="s">&#39;d&#39;</span><span class="p">};</span><span class="c">...</span>
+                <span class="p">{</span><span class="n">msr</span><span class="p">},{</span><span class="s">&#39;s&#39;</span><span class="p">};</span><span class="c">...</span>
+                <span class="p">];</span>
+
+            <span class="n">this</span><span class="p">.</span><span class="n">coordinates</span> <span class="p">=</span> <span class="p">[];</span>
+
+        <span class="k">end</span>
+
+    <span class="k">end</span>
+
+<span class="k">end</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../graph/index.html" class="btn btn-neutral float-right" title="Graph Representation" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../index.html" class="btn btn-neutral" title="Welcome to the documentation of fault-diagnosis" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>Except where otherwise noted, this documentation is licensed under <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC Attribution-Share Alike 3.0 Unported</a>.</p>
+
+<div style="float:right;"><a href="https://github.com/Georacer/mavlink-inspector/issues/new?title=Model%20Input%20-%20&body=URL:%20../model/index%0ATitle:%20Model%20Input%0A%0APlease%20update%20this%20description%20and%20the%20issue%20title">Page bug</a></div>
+
+    <p>
+
+    </p>
+  </div>
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.5',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
