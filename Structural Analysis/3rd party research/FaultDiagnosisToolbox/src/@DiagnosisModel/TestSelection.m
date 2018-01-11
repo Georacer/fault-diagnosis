@@ -145,7 +145,7 @@ function ts = TestSets(FSM,im)
   [r,c] = find(im==0);
   ts = cell(1,length(r));
   for ii=1:length(r)
-    ts{ii} = find((FSM(:,r(ii))==1) & (FSM(:,c(ii))==0))';
+    ts{ii} = find((FSM(:,c(ii))==1) & (FSM(:,r(ii))==0))';
   end
 end
  

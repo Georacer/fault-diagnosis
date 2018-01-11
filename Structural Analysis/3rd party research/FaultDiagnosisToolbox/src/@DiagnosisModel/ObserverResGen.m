@@ -27,7 +27,6 @@ function [A0,C0] = ObserverResGen( model, eq, name, varargin )
 %                     exploration of the symbolic solving capabilities of
 %                     the symbolic toolbox in Matlab is not supported.
 %    linpoint         Linearization point to compute the A0/C0 matrices
-%    parameters       Parameter values for the computation of the A0/C0 matrices
 %
  
 % Copyright Erik Frisk, 2015
@@ -43,7 +42,6 @@ function [A0,C0] = ObserverResGen( model, eq, name, varargin )
   p = inputParser;
   p.addOptional('type','numerical');
   p.addOptional('linpoint', [] );
-  p.addOptional('parameters', [] );
   
   p.parse( varargin{:});
   opts = p.Results;
@@ -119,7 +117,7 @@ function [A0,C0] = ComputeLinearizationMatrices(model, sol, modelPartition, hod,
   symParams = cellfun( @(x) sym(x), model.parameters, 'UniformOutput', false );
   paramVals = zeros(1,length(model.parameters));
   for k=1:length(model.parameters);
-    paramVals(k) = opts.parameters.(model.parameters{k});
+    paramVals(k) = model.parameter_values.(model.parameters{k});
   end
 
   nf = length(model.f);

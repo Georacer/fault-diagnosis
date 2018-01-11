@@ -1,7 +1,7 @@
 clear
 
 %% Specify installation directory for CSparse
-CSPARSEDIR = '/Users/frisk/sw/CSparse';
+CSPARSEDIR = '../CSparse';
 
 % Derive include and lib directory
 CSPARSEINC=['-I' fullfile(CSPARSEDIR, '/Include')]; 

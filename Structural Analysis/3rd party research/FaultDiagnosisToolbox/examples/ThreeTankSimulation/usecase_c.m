@@ -20,6 +20,15 @@ modelDef.f = {'fV1','fV2','fV3','fT1','fT2','fT3'};
 modelDef.z = {'y1','y2','y3'};
 modelDef.parameters = {'Rv1', 'Rv2', 'Rv3', 'CT1', 'CT2', 'CT3'};
 
+% Define parameter values
+params.Rv1 = 1;
+params.Rv2 = 1;
+params.Rv3 = 1;
+params.CT1 = 1;
+params.CT2 = 1;
+params.CT3 = 1;
+modelDef.parameter_values = params;
+
 syms(modelDef.x{:})
 syms(modelDef.f{:})
 syms(modelDef.z{:})
@@ -46,15 +55,7 @@ clear( modelDef.f{:} )
 clear( modelDef.z{:} )
 clear( modelDef.parameters{:} )
 
-% Store parameter values
-params.Rv1 = 1;
-params.Rv2 = 1;
-params.Rv3 = 1;
-params.CT1 = 1;
-params.CT2 = 1;
-params.CT3 = 1;
-
-clear modelDef
+clear modelDef params
 
 %% Plot model
 figure(10)
@@ -115,7 +116,7 @@ model.SeqResGen( Gamma3, redeq3,'ResGen3cb', 'implementation', 'discrete','langu
 eqr4 = mso2;
 linpoint.x0 = [0,0,0,0,0,0];
 linpoint.z0 = [0;0;0];
-[A4,C4] = model.ObserverResGen( eqr4, 'ResGen4', 'linpoint', linpoint, 'parameters', params );
+[A4,C4] = model.ObserverResGen( eqr4, 'ResGen4', 'linpoint', linpoint );
 K4 = place(A4',C4',[-0.2,-0.3])';
 
 % cleanup
@@ -141,7 +142,7 @@ figure(31)
 model.IsolabilityAnalysisFSM( FSM );
 
 %% Step 4: Design simple controller for simulation scenarios
-G = ThreeTankModel( params );
+G = ThreeTankModel( model.parameter_values );
 
 % Design simple state-feedback controller and a reference signal
 Lx = lqr(G,eye(3,3),0.5);
@@ -160,13 +161,13 @@ fs = 10; Tend = 20;
 t = (0:1/fs:Tend)'; % Output time vector
 
 sim = cell(1,7);
-sim{1} = SimScenario(0,@(t) 0, controller, params, t, xinit);
-sim{2} = SimScenario(1,@(t) 0.3*ramp(t,6,10), controller, params, t, xinit);
-sim{3} = SimScenario(2,@(t) 0.3*ramp(t,6,10), controller, params, t, xinit);
-sim{4} = SimScenario(3,@(t) 0.3*ramp(t,6,10), controller, params, t, xinit);
-sim{5} = SimScenario(4,@(t) 0.3*ramp(t,6,10), controller, params, t, xinit);
-sim{6} = SimScenario(5,@(t) 0.3*ramp(t,6,10), controller, params, t, xinit);
-sim{7} = SimScenario(6,@(t) 0.3*ramp(t,6,10), controller, params, t, xinit);
+sim{1} = SimScenario(0,@(t) 0, controller, model.parameter_values, t, xinit);
+sim{2} = SimScenario(1,@(t) 0.3*ramp(t,6,10), controller, model.parameter_values, t, xinit);
+sim{3} = SimScenario(2,@(t) 0.3*ramp(t,6,10), controller, model.parameter_values, t, xinit);
+sim{4} = SimScenario(3,@(t) 0.3*ramp(t,6,10), controller, model.parameter_values, t, xinit);
+sim{5} = SimScenario(4,@(t) 0.3*ramp(t,6,10), controller, model.parameter_values, t, xinit);
+sim{6} = SimScenario(5,@(t) 0.3*ramp(t,6,10), controller, model.parameter_values, t, xinit);
+sim{7} = SimScenario(6,@(t) 0.3*ramp(t,6,10), controller, model.parameter_values, t, xinit);
 
 % Define measurements and add noise
 nstd = [0.01,0,0,0,0,0.01,0]*noise;
@@ -233,8 +234,8 @@ M4 = [eye(2) zeros(2,4);zeros(4,6)];
 for fi=1:length(sim)
   % Simulate residual generators implemented in continuous time    
   x0 = [sim{fi}.z0(1:5,1);0]; % p1,p2,q0,q1,q2,r
-%  [~,x] = ode15s(@(ts,x) ResGen4( x, interp1(sim{fi}.t,sim{fi}.z',ts), K4, params ), t, x0, odeset('Mass',M4, 'AbsTol', 1e-3));
-  [~,x] = ode23t(@(ts,x) ResGen4( x, interp1(sim{fi}.t,sim{fi}.z',ts), K4, params ), t, x0, odeset('Mass',M4, 'AbsTol', 1e-3));
+%  [~,x] = ode15s(@(ts,x) ResGen4( x, interp1(sim{fi}.t,sim{fi}.z',ts), K4, model.parameter_values ), t, x0, odeset('Mass',M4, 'AbsTol', 1e-3));
+  [~,x] = ode23t(@(ts,x) ResGen4( x, interp1(sim{fi}.t,sim{fi}.z',ts), K4, model.parameter_values ), t, x0, odeset('Mass',M4, 'AbsTol', 1e-3));
   r4(fi,:) = x(:,6)';
   
   % Simulate residual generators implemented in discrete time  
@@ -245,9 +246,9 @@ for fi=1:length(sim)
   state3.p1 = sim{fi}.z(1,1); state3.p2 = sim{fi}.z(2,1); state3.p3 = sim{fi}.z(3,1);
   state3c = state3;
   
-  r1(fi,:) = ResGen1cb( sim{fi}.z, state1, params, 1/fs);
-  r2(fi,:) = ResGen2cb( sim{fi}.z, state2, params, 1/fs);
-  r3(fi,:) = ResGen3cb( sim{fi}.z, state3, params, 1/fs);
+  r1(fi,:) = ResGen1cb( sim{fi}.z, state1, model.parameter_values, 1/fs);
+  r2(fi,:) = ResGen2cb( sim{fi}.z, state2, model.parameter_values, 1/fs);
+  r3(fi,:) = ResGen3cb( sim{fi}.z, state3, model.parameter_values, 1/fs);
 end
 r1(:,1:2) = 0; 
 r3(:,1) = 0;

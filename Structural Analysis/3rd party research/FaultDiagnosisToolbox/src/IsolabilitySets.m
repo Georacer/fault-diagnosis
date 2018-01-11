@@ -1,15 +1,16 @@
 %% Sensor placement for isolability of detectable faults
-function detSets = IsolabilitySets( X, F, P )
+function detSets = IsolabilitySets( X, F, P, Ispec )
   detSets = {};
   
   nf = size(F,2);
   for ii=1:nf
-    isolDetSets = IsolabilitySubProblem(X, F, P, ii);
+    isolDetSets = IsolabilitySubProblem(X, F, P, ii, Ispec(ii,:));
     detSets = [detSets isolDetSets{:}];
   end
 end
 
-function detSets=IsolabilitySubProblem( X, F, P, f )
+function detSets=IsolabilitySubProblem( X, F, P, f, Ispec )
+  % Isolate from f
   ef = find(F(:,f));
   
   n = size(X,1);
@@ -33,7 +34,9 @@ function detSets=IsolabilitySubProblem( X, F, P, f )
     feq(ii) = e;
   end  
   nondet = ismember(feq,dm.M0eqs);
-  F0 = Fisol(dm.M0eqs,nondet);
+  % Adapt to isolability specification
+  nondetisol = nondet & (Ispec==0);
+  F0 = Fisol(dm.M0eqs,nondetisol);
   
   % Translate P to P0  
   [r,c] = ismember(P,dm.M0vars);

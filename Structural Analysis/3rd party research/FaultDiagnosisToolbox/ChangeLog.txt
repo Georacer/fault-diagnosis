@@ -1,3 +1,15 @@
+Changes between 0.12 and 0.13
+=============================
+* Added parameter_values property to DiagnosisModel object
+* Added DynamicVariables and AlgebraicVariables methods
+* Fixed bug in SensorPlacementIsolability, thanks Eeshan Deosthale <deosthale.2@buckeyemail.osu.edu>
+* Added causality / (‘mixed’, ‘int’ ‘der’) to DetectabilityAnalysis 
+* Added isolability specification to SensorPlacementIsolability
+
+Changes between 0.11 and 0.12
+=============================
+* Bugfixes
+
 Changes between 0.1 and 0.11
 ============================
 * Bugfixes

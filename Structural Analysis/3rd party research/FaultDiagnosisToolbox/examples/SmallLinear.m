@@ -52,3 +52,10 @@ model3.IsolabilityAnalysis();
 % Plot the Dulmage-Mendelsohn decomposition of the extended system
 figure(3)
 model3.PlotDM('eqclass',true, 'fault', true)
+
+%% Perform sensor placement with specified isolability performance
+Ispec = eye(4);
+Ispec(3,4) = 1;
+Ispec(4,3) = 1;
+
+sIsol = model.SensorPlacementIsolability('isolabilityspecification', Ispec);
