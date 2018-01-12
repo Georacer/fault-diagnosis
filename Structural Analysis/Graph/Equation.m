@@ -15,6 +15,7 @@ classdef Equation < Vertex
         isNonLinear = false;
         isResGenerator = false;
         isFaultable = false;
+        subsystem = [];
     end
    
     methods
@@ -60,6 +61,9 @@ classdef Equation < Vertex
         function setFaultable(obj,tf_value)
             obj.isFaultable = tf_value;
         end
+        function setSubsystem(obj,name)
+            obj.subsystem = name;
+        end
         
         %%
         function disp(obj)
@@ -67,6 +71,7 @@ classdef Equation < Vertex
             fprintf('Equation object:\n');
             fprintf('ID = %d\n',obj.id);
             fprintf('name = %s\n',obj.alias);
+            fprintf('subsystem = %s\n',obj.subsystem);
         end
 
     end

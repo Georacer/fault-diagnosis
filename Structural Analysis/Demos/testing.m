@@ -23,7 +23,8 @@ stats = [];
 % * SmallLinear(FDT)(g026)
 % * Fravolini(g005a)
 
-modelArray{end+1} = g014e();
+% modelArray{end+1} = g014e();
+modelArray{end+1} = g014g();
 % modelArray{end+1} = g008();
 % modelArray{end+1} = g021();
 % modelArray{end+1} = g022();
@@ -39,8 +40,8 @@ matchMethod = 'BBILP';
 SOType = 'MTES';
 % SOType = 'MSO';
 
-branchMethod = 'cheap';
-% branchMethod = 'DFS';
+% branchMethod = 'cheap';
+branchMethod = 'DFS';
 % branchMethod = 'BFS';
 
 for modelIndex=1:length(modelArray)
@@ -67,7 +68,7 @@ for modelIndex=1:length(modelArray)
     graphOver = sgInitial.getOver();
     
     switch model.name
-        case 'g014e'
+        case {'g014e', 'g014g'}
             matchWERank = 1;
         otherwise
             matchWERank = 0;

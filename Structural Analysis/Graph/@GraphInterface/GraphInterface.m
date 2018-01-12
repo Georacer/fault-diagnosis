@@ -1459,7 +1459,7 @@ classdef GraphInterface < handle
             % inp - input variable
             % out - output variable
             % msr - measured variable
-            operators = {'dot','int','ni','inp','out','msr','fault'}; % Available operators
+            operators = {'dot','int','ni','inp','out','msr','fault', 'sub'}; % Available operators
             words = strsplit(exprStr,' '); % Split expression to operands and variables
             linkedVariables = []; % Array with variables linked to this equation
             initProperties = true; % New variable flag for properties initialization
@@ -1474,6 +1474,7 @@ classdef GraphInterface < handle
                     isDerivative = false;
                     isIntegral = false;
                     isNonSolvable = false;
+                    isSubsystem = false;
                     initProperties = false;
                     edgeWeight = 1;
                 end
@@ -1504,24 +1505,31 @@ classdef GraphInterface < handle
                         isKnown = true;
                     case 7
                         this.setProperty(equId,'isFaultable');
-                    otherwise % Found a variable
+                    case 8
+                        isSubsystem = true;
+                    otherwise % Found a variable or subsystem designation
                         
-                        varProps.isKnown = isKnown;
-                        varProps.isMeasured = isMeasured;
-                        varProps.isInput = isInput;
-                        varProps.isOutput = isOutput;
-                        varProps.isResidual = isResidual;
-                        varProps.isMatched = isMatched;
-                        [resp, varId] = this.addVariable([],word,varProps);
-                        
-                        edgeProps.isMatched = false;
-                        edgeProps.isDerivative = isDerivative;
-                        edgeProps.isIntegral = isIntegral;
-                        edgeProps.isNonSolvable = isNonSolvable;
-                        edgeProps.weight = edgeWeight;
-                        this.addEdge([],equId,varId,edgeProps);
-                        
-                        initProperties = true;
+                        if isSubsystem % sub keyword met previously
+                            isSubsystem = false;
+                            this.setProperty(equId,'subsystem',word);
+                        else % This is a variable           
+                            varProps.isKnown = isKnown;
+                            varProps.isMeasured = isMeasured;
+                            varProps.isInput = isInput;
+                            varProps.isOutput = isOutput;
+                            varProps.isResidual = isResidual;
+                            varProps.isMatched = isMatched;
+                            [resp, varId] = this.addVariable([],word,varProps);
+                            
+                            edgeProps.isMatched = false;
+                            edgeProps.isDerivative = isDerivative;
+                            edgeProps.isIntegral = isIntegral;
+                            edgeProps.isNonSolvable = isNonSolvable;
+                            edgeProps.weight = edgeWeight;
+                            this.addEdge([],equId,varId,edgeProps);
+                            
+                            initProperties = true;
+                        end
                         
                 end
             end
