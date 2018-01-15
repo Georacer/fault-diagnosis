@@ -133,6 +133,7 @@ for modelIndex=1:length(modelArray)
         waitbar(i/length(ResGenSets),h);
         SOSubgraphs(i) = sgRemaining.buildSubgraph(ResGenSets{i},'pruneKnown',true,'postfix','_MTES');
         SOSubgraphs(i).createAdjacency();
+        stats.(name).subsystems(i) = {SOSubgraphs(i).reg.subsystems}; % Populate subsystems data
         %     plotters(i) = Plotter(MTESsubgraphs(i));
         %     plotters(i).plotDot(sprintf('subgraph_%d',i));
     end
@@ -142,7 +143,7 @@ for modelIndex=1:length(modelArray)
     
     
     % return
-    %% INJECTION
+    %% Matching Procedure
     % clc
     
     matchers = Matcher.empty;
@@ -230,7 +231,7 @@ stats.g014e
 return
 
 %%
-%%%%%%%%%
+%%%%%%%%% Deprecated?
 
 % Find which MSOs contain an integration, indicating dynamic loops
 MTESsIndices_dynamic = [];
@@ -248,46 +249,4 @@ for i=1:length(MTESs)
     if ~isempty(matchingSet) &&  sum(graphInitial.isNonSolvable(matchingSet))
         MTESsIndices_NI(end+1,:) = [ i sum(graphInitial.isNonSolvable(matchingSet))];
     end
-end
-
-%%
-clc
-
-% Extract all MSOs for each MTES subgraph
-i=1;
-
-MSOs = GraphInterface.empty;
-plotters = Plotter.empty;
-for i=1:length(MTESsubgraphs)
-    gi = MTESsubgraphs(i);
-    sg = SubgraphGenerator(gi);
-    sg.buildLiUSM();
-    sg.buildMSOs();
-    tempMSOs = sg.getMSOs();
-    for j=1:length(tempMSOs)
-        MSOs(end+1) = sg.buildSubgraph(tempMSOs{j},'pruneKnown',true,'postfix',sprintf('MSO_%d',i));
-        plotter = Plotter(MSOs(end));
-        plotter.plotDot(sprintf('MSO_%d',i));
-        i=i+1;
-    end
-end
-
-MSOContainer = MSOs;
-
-%% Get a valid matching for each MSO
-
-clc
-
-MSOs = copy(MSOContainer);
-
-for i=1:length(MSOs)
-    delete(matcher); matcher = Matcher(MSOs(i));
-    edgeList = matcher.match('Valid');
-    delete(tempPlotter); tempPlotter = Plotter(MSOs(i));
-    tempPlotter.plotDot(sprintf('MSO_%d_matched',i));
-end
-
-%% Verify matching validity by size
-for i=1:length(MSOs)
-    
 end

@@ -350,7 +350,7 @@ classdef GraphInterface < handle
             
         end
         
-        %% Get methods        
+        %% Get methods
         function [ equIds ] = getEquations( gh, ids )
             %GETVARIABLES get equations related to a variable or edge
             %   Detailed explanation goes here
@@ -1597,7 +1597,7 @@ classdef GraphInterface < handle
             
             resp = true;
             
-            this.reg.update();
+            this.reg.update(); % Batch update registry
             this.name = this.graph.name;
         end
         function resp = testPropertyExists( gh, ids, property )

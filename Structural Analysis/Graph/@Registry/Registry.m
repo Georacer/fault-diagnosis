@@ -15,6 +15,9 @@ classdef Registry < matlab.mixin.Copyable
         equIdToIndexArray = []; % Id-indexed
         varIdToIndexArray = []; % Id-indexed
         edgeIdToIndexArray = []; % Id-indexed
+        
+        subsystems = {}; % List of all included subsystems
+        
     end
     
     methods
@@ -75,6 +78,18 @@ classdef Registry < matlab.mixin.Copyable
             arrayNew = zeros(1,max(this.varIdArray));
             arrayNew(this.varIdArray) = 1:this.graph.numVars;
             this.varIdToIndexArray = arrayNew;
+            
+            %% Update submodel list
+            for i=1:length(this.graph.equations)
+                systemName = this.graph.equations(i).subsystem;
+                if isempty(systemName)
+                    break
+                end
+                if ~ismember(systemName, this.subsystems)
+                    this.subsystems{end+1} = systemName;
+                end
+            end
+            this.subsystems = sort(this.subsystems);
         end
         
     end
