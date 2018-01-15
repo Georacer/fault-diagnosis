@@ -1460,7 +1460,7 @@ classdef GraphInterface < handle
             % out - output variable
             % msr - measured variable
             operators = {'dot','int','ni','inp','out','msr','fault', 'sub'}; % Available operators
-            words = strsplit(exprStr,' '); % Split expression to operands and variables
+            words = strsplit(strtrim(exprStr),' '); % Split expression to operands and variables
             linkedVariables = []; % Array with variables linked to this equation
             initProperties = true; % New variable flag for properties initialization
             for i=1:size(words,2)
