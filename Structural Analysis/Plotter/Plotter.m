@@ -45,12 +45,16 @@ classdef Plotter < matlab.mixin.Copyable
             edgeDef = '';
             
             for i=1:this.gi.graph.numEqs
-                color = 'white';                
+                color = 'white';
+                frameColor = 'black';
                 if this.gi.graph.equations(i).isMatched
                     color = 'lightskyblue';
                 end
-                nodeDef = [nodeDef sprintf('node [shape = box, fillcolor = %s, style = filled, label="%s\n%d"]; %s;\n'...
-                    ,color,this.gi.reg.equAliasArray{i},this.gi.reg.equIdArray(i),this.gi.reg.equAliasArray{i})];
+                if this.gi.graph.equations(i).isFaultable
+                    frameColor = 'red';
+                end
+                nodeDef = [nodeDef sprintf('node [shape = box, color = %s, fillcolor = %s, style = filled, label="%s\n%d"]; %s;\n'...
+                    ,frameColor,color,this.gi.reg.equAliasArray{i},this.gi.reg.equIdArray(i),this.gi.reg.equAliasArray{i})];
             end
             
             for i=1:this.gi.graph.numVars
