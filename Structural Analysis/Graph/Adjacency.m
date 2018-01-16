@@ -4,7 +4,7 @@ classdef Adjacency < matlab.mixin.Copyable
     
     properties
         gi
-        BD
+        BD % Variables indexed first, then equations
         numVars
         numEqs
         eqNames

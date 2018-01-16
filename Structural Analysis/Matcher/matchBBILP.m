@@ -23,10 +23,11 @@ C.findMatching();
 if C.isMatchingValid() %
     if debug; fprintf('matchBBILP: initial relaxed solution was valid; ending\n'); end
     Mvalid = C.matching;
-    if debug;
+    if debug
         fprintf('matchBBILP: Final solution: [');
         fprintf('%d ',Mvalid);
         fprintf('], with cost %d\n',C.cost);
+        evalin('base',sprintf('examinations(end+1) = %d', 0))
     end
     return;
 end
@@ -79,11 +80,12 @@ while (~isempty(activeSet))
 
 end
 
-if debug;
+if debug
     fprintf('matchBBILP: Final solution: [');
     fprintf('%d ',Mvalid);
     fprintf('], with cost %d\n',U);
     fprintf('Found after %d examinations\n',examinations);
+    evalin('base',sprintf('examinations(end+1) = %d',examinations));
 end
 
 end

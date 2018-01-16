@@ -543,10 +543,14 @@ classdef GraphInterface < handle
             %     end
             
             if gh.isEquation(id)
-                if debug; fprintf('getAncestorEqs: Sourcing parent variables of %s\n',gh.getAliasById(id)); end
+                if debug
+                    aliases = gh.getAliasById(id);
+                    fprintf('getAncestorEqs: Sourcing parent variables of %s\n', aliases{1}); end
                 parentVars = gh.getParentVars(id);
                 for i=parentVars
-                    if debug; fprintf('getAncestorEqs: Sourcing parent equation of variable %s\n',gh.getAliasById(i)); end
+                    if debug
+                        aliases = gh.getAliasById(i);
+                        fprintf('getAncestorEqs: Sourcing parent equation of variable %s\n', aliases{1}); end
                     [tally, matching] = gh.getAncestorEqs(i, tally, matching);
                 end
                 
@@ -568,7 +572,9 @@ classdef GraphInterface < handle
                     varIndex = gh.getIndexById(id);
                     equId = gh.graph.variables(varIndex).matchedTo;
                     if ~any(ismember(tally,equId)) % Check if this equation has been previously visited
-                        if debug; fprintf('getAncestorEqs: Adding equation %s and sourcing its ancestors.\n',gh.getAliasById(equId)); end
+                        if debug
+                            aliases = gh.getAliasById(equId);
+                            fprintf('getAncestorEqs: Adding equation %s and sourcing its ancestors.\n',aliases{1}); end
                         tally(end+1) = equId;
                         matching(end+1) = gh.getEdgeIdByVertices(equId,id);
                         [tally, matching] = gh.getAncestorEqs(equId, tally, matching);
