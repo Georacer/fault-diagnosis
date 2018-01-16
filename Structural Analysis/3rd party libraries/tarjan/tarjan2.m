@@ -1,4 +1,4 @@
-function [SCC,I] = tarjan(e)
+function [SCC,I] = tarjan2(e)
 % function SCC = tarjan(e)
 % Implements tarjan's algorithm for a graph with adjacency matrix e.  A value in
 % e(i,j) indicates an edge from v(j) to v(i).  If this is transposed from the
