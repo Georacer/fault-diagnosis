@@ -31,10 +31,15 @@ classdef Plotter < matlab.mixin.Copyable
                 compile = true;
             end
             
+            folderName = sprintf('GraphPool/%s/graphs',this.gi.graph.name);
+            if ~exist(folderName,'dir')
+                mkdir(folderName);
+            end
+            
             dotName = sprintf('%s.dot',graphName);
             imageName = sprintf('%s.ps',graphName);
-            dotFilePath = sprintf('GraphPool/%s/%s',this.gi.graph.name,dotName);
-            imageFilePath = sprintf('GraphPool/%s/%s',this.gi.graph.name,imageName);
+            dotFilePath = sprintf('GraphPool/%s/graphs/%s',this.gi.graph.name,dotName);
+            imageFilePath = sprintf('GraphPool/%s/graphs/%s',this.gi.graph.name,imageName);
             
             fileID = fopen(dotFilePath,'w');
             % Write header

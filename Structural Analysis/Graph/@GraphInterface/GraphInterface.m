@@ -78,7 +78,7 @@ classdef GraphInterface < handle
                 gi.setPropertyOR(edgeId,'isNonSolvable',edgeProps.isNonSolvable);
             end
         end
-        function [respAdded, id] = addEquation( this, id, alias, prefix, description )
+        function [respAdded, id] = addEquation( this, id, alias, prefix, expressionStr, description )
             %ADDEQUATION Add equation to graph
             %   Detailed explanation goes here
             
@@ -92,15 +92,20 @@ classdef GraphInterface < handle
             end
             
             if nargin<5
-                description = '';
+                expressionStr = '';
             end
+            
+            
+            if nargin<6
+                description = '';
+            end            
             
             l1 = length(this.graph.equations);
             l2 = length(this.reg.equAliasArray);
             l3 = length(this.reg.equIdArray);
             
             if (l1==l2) && (l2==l3)
-                this.graph.addEquation(id, [prefix alias],description); %TODO: change expStr for description
+                this.graph.addEquation(id, [prefix alias], expressionStr, description);
                 if debug; fprintf('addEquation: Created new equation with name %s and ID %d\n',[prefix alias],id); end
                 
                 this.reg.equAliasArray{end+1} = [prefix alias];
@@ -1487,7 +1492,6 @@ classdef GraphInterface < handle
             
             % Parse structural expression
             [resp, equId] = this.addEquation([], alias, prefix, exprStr);
-            % this.equations(end+1) = Equation([],alias, prefix, exprStr);
             
             % legend:
             % {} - normal term

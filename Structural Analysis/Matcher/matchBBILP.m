@@ -2,8 +2,14 @@ function [ Mvalid ] = matchBBILP( matcher, varargin )
 %MATCHVALID Find valid residuals in provided MTES
 %   Uses Branch-and-Bound Integer Linear Programming
 
-% debug = false;
-debug = true;
+debug = false;
+% debug = true;
+
+if debug
+    if ~evalin('base','exist(''examinations'')')
+        evalin('base','examinations=0');
+    end
+end
 
 p = inputParser;
 

@@ -52,7 +52,7 @@ classdef GraphBipartite < matlab.mixin.Copyable
         
         % Add methods
         [resp, id] = addEdge(this,id,equId,varId,edgeProps)
-        [resp, id] = addEquation(this,id, alias, description)
+        [resp, id] = addEquation(this,id, alias,expressionStr, description)
         [resp, id] = addVariable(this,id,alias,description,varProps)
         resp = addEdgeToEqu(this,equIndices,edgeIndices)
         resp = addEdgeToVar(this,varIndices,edgeIndices)

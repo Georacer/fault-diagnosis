@@ -15,12 +15,13 @@ classdef Equation < Vertex
         isNonLinear = false;
         isResGenerator = false;
         isFaultable = false;
+        expressionStr = [];
         subsystem = [];
     end
    
     methods
         
-        function obj = Equation(id, alias, description)
+        function obj = Equation(id, alias, expressionStr, description)
             % Constructor
             obj = obj@Vertex(id);
             
@@ -39,6 +40,9 @@ classdef Equation < Vertex
             
             % If a description is provided
             if nargin>=3
+                obj.expressionStr = expressionStr;
+            end
+            if nargin>=4
                 obj.description = description;
             end
         end

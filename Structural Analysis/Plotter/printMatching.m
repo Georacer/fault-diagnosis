@@ -19,10 +19,6 @@ matchedEqs = digraph.getEquIdByProperty('isMatched');
 if length(matchedEqs)~=length(matchedVars)
     error('# of matched equations not equal to # of matched variables');
 end
-resGenerators = digraph.getEquIdByProperty('isResGenerator');
-if isempty(resGenerators)
-    error('No residual generators exist');
-end
 
 %% Get the residual generator equations
 
