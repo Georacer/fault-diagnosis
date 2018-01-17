@@ -26,7 +26,7 @@ for equId = freeEqs
     if faultsOnly
         anyFaultable = any([gi.isFaultable([equId parentEqs])]);
         if ~anyFaultable
-            if debug; fprintf('found a residual wich doesnt cover any faults\n'); end
+            if debug; fprintf('found a residual which doesnt cover any faults\n'); end
             continue
         end
     end

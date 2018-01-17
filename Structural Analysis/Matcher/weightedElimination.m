@@ -93,8 +93,6 @@ while ~isempty(Mstar)
     end
     rankArray(equId) = maxRank+1;
     rankArray(varId) = maxRank+1;
-%     mh.equations(equInd).rank = maxRank+1;
-%     mh.variables(varInd).rank = maxRank+1; 
     
     M(end+1) = m;
     w(end+1) = wstar(1);

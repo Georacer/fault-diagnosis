@@ -860,11 +860,41 @@ classdef GraphInterface < handle
             end
             
         end
-        function [ ids ] = getMatchedEqus(gh)
-            ids = gh.getEquIdByProperty('isMatched',true);
+        function [ ids ] = getMatchedEqus(gh, varIds)
+            if nargin==1
+                ids = gh.getEquIdByProperty('isMatched',true);
+            elseif nargin==2
+                if ~all(gh.isVariable(varIds))
+                    error('Only variable Ids accepted');
+                end
+                ids = [];
+                for id=varIds
+                    varIndex = gh.getIndexById(id);
+                    matchedID = gh.graph.variables(varIndex).matchedTo;
+                    if isempty(matchedID)
+                        error('Variable %d is not matched', id);
+                    end
+                    ids(end+1) = matchedID;
+                end
+            end
         end
-        function [ ids ] = getMatchedVars(gh)
+        function [ ids ] = getMatchedVars(gh, equIds)
+            if nargin==1
             ids = gh.getVarIdByProperty('isMatched',true);
+            elseif nargin==2
+                if ~all(gh.isEquation(equIds))
+                    error('Only equation Ids accepted');
+                end
+                ids = [];
+                for id=equIds
+                    equIndex = gh.getIndexById(id);
+                    matchedID = gh.graph.equations(equIndex).matchedTo;
+                    if isempty(matchedID)
+                        error('Equation %d is not matched', id);
+                    end
+                    ids(end+1) = matchedID;
+                end
+            end
         end
         function [ ids ] = getMatchedEdges(gh)
             ids = gh.getEdgeIdByProperty('isMatched',true);
@@ -1354,12 +1384,15 @@ classdef GraphInterface < handle
                 if gh.isEquation(id)
                     index = gh.getIndexById(id);
                     gh.graph.setPropertyEqu(index,property,value);
+                    resp = true;
                 elseif gh.isVariable(id)
                     index = gh.getIndexById(id);
+                    resp = true;
                     gh.graph.setPropertyVar(index,property,value);
                 elseif gh.isEdge(id)
                     index = gh.getIndexById(id);
                     gh.graph.setPropertyEdge(index,property,value);
+                    resp = true;
                 else
                     error('Unkown object type with id %d',id);
                 end
