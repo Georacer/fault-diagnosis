@@ -1,0 +1,98 @@
+1,dot_north ni phi ni theta ni psi ni u ni v ni w sub kinematics
+16,dot_east ni phi ni theta ni psi ni u ni v ni w sub kinematics
+25,dot_down ni phi ni theta ni psi ni u ni v ni w sub kinematics
+34,dot_phi ni phi ni theta p ni q ni r sub kinematics
+45,dot_theta ni phi q ni r sub kinematics
+51,dot_psi ni phi ni theta ni q r sub kinematics
+58,C_0 ni p ni q ni r ni J sub kinematics
+66,C_1 ni p ni q ni r ni J sub kinematics
+73,C_2 ni p ni q ni r ni J sub kinematics
+80,dot_p ni Ji ni T_x ni T_y ni T_z ni C_0 ni C_1 ni C_2 sub kinematics
+94,dot_q ni Ji ni T_x ni T_y ni T_z ni C_0 ni C_1 ni C_2 sub kinematics
+104,dot_r ni Ji ni T_x ni T_y ni T_z ni C_0 ni C_1 ni C_2 sub kinematics
+114,V_i ni u ni v ni w sub kinematics
+120,chi ni u ni v ni w ni phi ni theta ni psi sub kinematics
+129,gamma ni u ni v ni w ni phi ni theta ni psi V_i sub kinematics
+139,V_g V_i gamma sub kinematics
+144,dot_u ni v ni w ni r ni q F_x ni m sub kinematics
+155,dot_v ni u ni w ni p r F_y ni m sub kinematics
+165,dot_w ni u ni v ni p q F_z ni m sub kinematics
+175,u_r u u_w sub airdata
+181,v_r v v_w sub airdata
+187,w_r w w_w sub airdata
+193,alpha w_r u_r sub airdata
+198,beta v_r V_a sub airdata
+204,V_a ni u_r ni v_r ni w_r sub airdata
+209,m sub mass
+211,p_cm sub mass
+214,J sub mass
+216,Ji ni J sub mass
+219,F_x F_g_x F_a_x F_t_x sub dynamics
+227,F_y F_g_y F_a_y F_t_y sub dynamics
+235,F_z F_g_z F_a_z F_t_z sub dynamics
+249,T_y T_atot_y T_ttot_y sub dynamics
+261,F_g_x theta ni m ni g sub gravity
+267,F_g_y phi ni theta ni m ni g sub gravity
+273,F_g_z phi theta m g sub gravity
+279,F_a_x ni alpha ni beta F_D ni F_Y ni F_L sub aerodynamics
+289,F_a_y ni beta ni F_D F_Y sub aerodynamics
+294,F_a_z ni alpha ni beta ni F_D ni F_Y F_L sub aerodynamics
+301,dp_CL p_cm p_cl sub aerodynamics
+314,T_atot_y T_a_y ni dp_CL ni F_a_x ni F_a_z sub aerodynamics
+328,q_bar rho V_a sub aerodynamics
+334,F_D ni q_bar C_D sub aerodynamics
+344,F_L ni q_bar C_L sub aerodynamics
+349,C_D ni V_a ni alpha ni q ni delta_e sub aerodynamics
+366,C_L ni V_a ni alpha ni ni q ni delta_e sub aerodynamics
+377,T_a_y ni q_bar C_m sub aerodynamics
+395,C_m ni V_a ni alpha ni q ni delta_e sub aerodynamics
+416, F_t_y sub propeller
+418, F_t_z sub propeller
+427, T_t_y sub propeller
+433,dp_prop p_cm p_prop sub propeller
+445,T_ttot_y T_t_y ni dp_prop ni F_t_x ni F_t_z sub propeller
+495,int dot_north dot north sub kinematics
+499,int dot_east dot east sub kinematics
+503,int dot_down dot down sub kinematics
+507,int dot_phi dot phi sub kinematics
+510,int dot_theta dot theta sub kinematics
+513,int dot_psi dot psi sub kinematics
+516,int dot_p dot p sub kinematics
+519,int dot_q dot q sub kinematics
+522,int dot_r dot r sub kinematics
+525,int dot_u dot u sub kinematics
+528,int dot_v dot v sub kinematics
+531,int dot_w dot w sub kinematics
+537,north z lat lat_0 sub earth
+545,east z lon lon_0 sub earth
+552,down z z_0 sub earth
+557,h z sub earth
+561,T T_0 ni h ni h_0 sub athmosphere
+569,P P_0 ni T_0 ni T sub athmosphere
+576,h ni T_0 ni P ni P_0 h_0 sub athmosphere
+582,rho P T sub athmosphere
+586,P_t P rho V_a sub athmosphere
+592,u_w ni phi ni theta ni psi ni w_n ni w_e sub athmosphere
+601,v_w ni phi ni theta ni psi ni w_n ni w_e sub athmosphere
+608,w_w ni phi ni theta ni psi ni w_n ni w_e sub athmosphere
+615,w_n sub atmosphere
+617,w_e sub atmosphere
+654,fault msr phi_m phi sub sensors
+658,fault msr theta_m theta sub sensors
+662,fault msr psi_m psi sub sensors
+666, msr lat_0_gps lat_0 sub sensors
+670, msr lon_0_gps lon_0 sub sensors
+674, msr lat_gps lat sub sensors
+678, msr lon_gps lon sub sensors
+682, msr z_gps z sub sensors
+686, msr V_g_gps V_g sub sensors
+690, msr chi_gps chi sub sensors
+694,msr T_0_m T_0 sub initializations
+698,msr z_0_m z_0 sub initializations
+705, msr P_bar P sub sensors
+713,fault msr P_t_m P_t sub sensors
+717,fault msr alpha_m alpha sub sensors
+721,fault msr beta_m beta sub sensors
+755,p_prop sub constants
+757,p_cl sub constants
+759,g sub constants

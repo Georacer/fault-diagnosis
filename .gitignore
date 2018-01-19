@@ -21,3 +21,6 @@ octave-workspace
 # Sublime project files
 *.sublime-project
 *.sublime-workspace
+
+# PyCharm files
+*.idea
