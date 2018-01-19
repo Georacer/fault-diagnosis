@@ -957,12 +957,20 @@ classdef GraphInterface < handle
             end
             
         end
+        function [ expr ] = getStrExprById ( gh, id )
+            %GETSTREXPRBYID Returns the str. expression of the input id
+            if ~gh.isEquation(id)
+                error('%d is not an equation',id);
+            end
+            index = gh.getIndexById(id);
+            expr = gh.graph.equations(index).expressionStr;
+        end
         function [ expr ] = getStrExprByAlias( gh, alias )
             %GETSTREXPRBYALIAS Returns the str. expression of input alias
             %   Detailed explanation goes here
             
             equIndex = find(strcmp(gh.reg.equAliasArray,alias));
-            expr = gh.graph.equations(equIndex).expressionStructural;
+            expr = gh.graph.equations(equIndex).expressionStr;
             
         end
         function [ varIds ] = getVariablesKnown( gh, id )
