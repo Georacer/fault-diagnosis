@@ -9,29 +9,42 @@
 # licence         :Apache 2.0
 # ==============================================================================
 
+import logging
 
 class GraphElement:
+
+    __logger = logging.getLogger('GraphElement')
 
     def __init__(self, input_id):
 
         self.is_matched = False
         self.id = 0
-        self.__debug = False
 
-        if input_id is None:
-            self.id = input_id
-            if self.__debug:
-                print('Acquired ID %d from provider' % input_id)
-            else:
-                raise TypeError('ID should be a positive integer')
+        # try:
+        #     assert (type(input_id) == int) and (input_id > 0)
+        # except:
+        #     self.__logger.exception('ID should be a positive integer')
+        #     raise ValueError
 
-    def set_mathed(self, tf_value):
+        try:
+            if not ((type(input_id) == int) and (input_id > 0)):
+                raise ValueError
+        except ValueError as e:
+            self.__logger.exception('ID should be a positive integer')
+            raise e
+
+        self.id = input_id
+        self.__logger.debug('Acquired ID %d from provider' % input_id)
+
+    def set_matched(self, tf_value):
         self.is_matched = tf_value
 
     # TODO implement getProperties
 
 
 class Vertex(GraphElement):
+
+    __logger = logging.getLogger('GraphElement')
 
     def __init__(self, input_id):
         GraphElement.__init__(self, input_id)
