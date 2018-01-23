@@ -13,6 +13,7 @@ classdef Variable < Vertex
         isInput
         isOutput
         isResidual
+        isMatrix
     end
         
     methods

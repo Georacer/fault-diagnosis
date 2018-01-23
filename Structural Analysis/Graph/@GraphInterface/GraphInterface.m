@@ -1510,7 +1510,7 @@ classdef GraphInterface < handle
             % inp - input variable
             % out - output variable
             % msr - measured variable
-            operators = {'dot','int','ni','inp','out','msr','fault', 'sub'}; % Available operators
+            operators = {'dot','int','ni','inp','out','msr','fault', 'sub', 'mat'}; % Available operators
             words = strsplit(strtrim(exprStr),' '); % Split expression to operands and variables
             linkedVariables = []; % Array with variables linked to this equation
             initProperties = true; % New variable flag for properties initialization
@@ -1526,6 +1526,7 @@ classdef GraphInterface < handle
                     isIntegral = false;
                     isNonSolvable = false;
                     isSubsystem = false;
+                    isMatrix = false;
                     initProperties = false;
                     edgeWeight = 1;
                 end
@@ -1535,7 +1536,7 @@ classdef GraphInterface < handle
                     opIndex = -1; % Found a new variable alias
                 end
                 
-                if debug;disp(sprintf('parseExpression: opIndex=%i',opIndex)); end
+                if debug; disp(sprintf('parseExpression: opIndex=%i',opIndex)); end
                 
                 switch opIndex % Test if the word is an operator
                     case 1
@@ -1558,6 +1559,8 @@ classdef GraphInterface < handle
                         this.setProperty(equId,'isFaultable');
                     case 8
                         isSubsystem = true;
+                    case 9
+                        isMatrix = true;
                     otherwise % Found a variable or subsystem designation
                         
                         if isSubsystem % sub keyword met previously
@@ -1570,6 +1573,7 @@ classdef GraphInterface < handle
                             varProps.isOutput = isOutput;
                             varProps.isResidual = isResidual;
                             varProps.isMatched = isMatched;
+                            varProps.isMatrix = isMatrix;
                             [resp, varId] = this.addVariable([],word,varProps);
                             
                             edgeProps.isMatched = false;
