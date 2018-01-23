@@ -196,6 +196,7 @@ classdef GraphInterface < handle
                     this.setPropertyOR(varId,'isInput',varProps.isInput);
                     this.setPropertyOR(varId,'isOutput',varProps.isOutput);
                     this.setPropertyOR(varId,'isMatched',varProps.isMatched);
+                    this.setPropertyOR(varId,'isMatrix',varProps.isMatrix);
                     id = varId;
                 end
             else
@@ -1510,7 +1511,7 @@ classdef GraphInterface < handle
             % inp - input variable
             % out - output variable
             % msr - measured variable
-            operators = {'dot','int','ni','inp','out','msr','fault', 'sub', 'mat'}; % Available operators
+            operators = {'dot','int','ni','inp','out','msr','fault', 'sub', 'mat', 'expr'}; % Available operators
             words = strsplit(strtrim(exprStr),' '); % Split expression to operands and variables
             linkedVariables = []; % Array with variables linked to this equation
             initProperties = true; % New variable flag for properties initialization
@@ -1527,6 +1528,7 @@ classdef GraphInterface < handle
                     isNonSolvable = false;
                     isSubsystem = false;
                     isMatrix = false;
+                    isExpression = false;
                     initProperties = false;
                     edgeWeight = 1;
                 end
@@ -1561,11 +1563,16 @@ classdef GraphInterface < handle
                         isSubsystem = true;
                     case 9
                         isMatrix = true;
+                    case 10
+                        isExpression = true;
                     otherwise % Found a variable or subsystem designation
                         
                         if isSubsystem % sub keyword met previously
                             isSubsystem = false;
                             this.setProperty(equId,'subsystem',word);
+                        elseif isExpression % expr keyword met previously
+                            isExpression = false;
+                            this.setProperty(equId,'expression',word);
                         else % This is a variable           
                             varProps.isKnown = isKnown;
                             varProps.isMeasured = isMeasured;

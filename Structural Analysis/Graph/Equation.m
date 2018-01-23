@@ -16,6 +16,7 @@ classdef Equation < Vertex
         isResGenerator = false;
         isFaultable = false;
         expressionStr = [];
+        expression = [];
         subsystem = [];
     end
    
