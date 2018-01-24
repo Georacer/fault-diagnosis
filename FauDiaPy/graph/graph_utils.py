@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-
-# title           :graphUtils.py
+# title           :graph_utils.py
 # description     :
 # author          :George Zogopoulos-Papaliakos
 # date            :19/1/2018
@@ -10,6 +8,7 @@
 # ==============================================================================
 
 import logging
+
 
 class GraphElement:
 
@@ -30,7 +29,7 @@ class GraphElement:
             if not ((type(input_id) == int) and (input_id > 0)):
                 raise ValueError
         except ValueError as e:
-            self.__logger.exception('ID should be a positive integer')
+            self.__logger.exception('ID should be a positive integer, {} given'.format(input_id))
             raise e
 
         self.id = input_id
@@ -44,7 +43,7 @@ class GraphElement:
 
 class Vertex(GraphElement):
 
-    __logger = logging.getLogger('GraphElement')
+    __logger = logging.getLogger('Vertex')
 
     def __init__(self, input_id):
         GraphElement.__init__(self, input_id)
@@ -59,6 +58,8 @@ class Vertex(GraphElement):
 
 class Variable(Vertex):
 
+    __logger = logging.getLogger('Variable')
+
     def __init__(self, input_id, alias=None, description=None):
         Vertex.__init__(self, input_id)
 
@@ -67,6 +68,7 @@ class Variable(Vertex):
         self.is_input = False
         self.is_output = False
         self.is_residual = False
+        self.is_matrix = False
 
         if alias is not None:
             self.alias = alias
@@ -81,7 +83,7 @@ class Variable(Vertex):
         output += 'description = {}'.format(self.description)
         return output
 
-    # TODO write dispDetailed mehtod
+    # TODO write dispDetailed method
 
     def set_known(self, tf_value):
         self.is_known = tf_value
@@ -101,7 +103,9 @@ class Variable(Vertex):
 
 class Equation(Vertex):
 
-    def __init__(self, input_id, alias=None, expression_str=None, description=None):
+    __logger = logging.getLogger('Equation')
+
+    def __init__(self, input_id, alias=None, expression_str=None, expression=None, description=None):
         Vertex.__init__(self, input_id)
 
         self.is_static = False
@@ -110,6 +114,7 @@ class Equation(Vertex):
         self.is_res_generator = False
         self.is_faultable = False
         self.expression_str = ""
+        self.expression = ""
         self.subsystem = ""
 
         if alias is not None:
@@ -119,6 +124,9 @@ class Equation(Vertex):
 
         if expression_str is not None:
             self.expression_str = expression_str
+
+        if expression is not None:
+            self.expression = expression
 
         if description is not None:
             self.description = description
@@ -149,3 +157,4 @@ class Equation(Vertex):
         output += 'name = {}\n'.format(self.alias)
         output += 'subsystem = {}\n'.format(self.subsystem)
         return output
+
