@@ -784,8 +784,8 @@ classdef GraphInterface < handle
             %GETEQUIDBYALIAS Summary of this function goes here
             %   Detailed explanation goes here
             
-            equIndex = find(strcmp(this.reg.equationAliasArray,alias));
-            id = this.reg.equationIdArray(equIndex);
+            equIndex = find(strcmp(this.reg.equAliasArray,alias));
+            id = this.reg.equIdArray(equIndex);
             
         end
         function [ id ] = getEquIdByProperty(gh,property,value,operator)
