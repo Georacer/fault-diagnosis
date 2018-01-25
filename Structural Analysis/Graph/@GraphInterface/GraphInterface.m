@@ -934,24 +934,29 @@ classdef GraphInterface < handle
             end
             
         end
-        function [ value ] = getPropertyById( gh, id, property )
+        function [ values ] = getPropertyById( gh, ids, property )
             %GETPROPERTYBYID Get object property value by id
             %   Detailed explanation goes here
             
-            index = gh.getIndexById(id);
-            if index==0
-                error('Unkown id %d',id);
-            elseif gh.testPropertyExists(id,property)
-                if gh.isEquation(id)
-                    value = gh.graph.equations(index).(property);
-                elseif gh.isVariable(id)
-                    value = gh.graph.variables(index).(property);
-                elseif gh.isEdge(id)
-                    value = gh.graph.edges(index).(property);
-                else
-                    error('Unknown object type with id %d',id);
+            values = zeros(1,length(ids));
+            
+            for i=1:length(ids)
+                id = ids(i);
+                index = gh.getIndexById(id);
+                if index==0
+                    error('Unkown id %d',id);
+                elseif gh.testPropertyExists(id,property)
+                    if gh.isEquation(id)
+                        values(i) = gh.graph.equations(index).(property);
+                    elseif gh.isVariable(id)
+                        values(i) = gh.graph.variables(index).(property);
+                    elseif gh.isEdge(id)
+                        values(i) = gh.graph.edges(index).(property);
+                    else
+                        error('Unknown object type with id %d',id);
+                    end
+                    
                 end
-                
             end
             
         end

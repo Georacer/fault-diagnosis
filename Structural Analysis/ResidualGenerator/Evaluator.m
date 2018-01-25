@@ -79,7 +79,13 @@ classdef Evaluator < handle
                     answer = expressions_subs;
                 end
             else  % This is a non-singular SCC
-                error('Code not implemented yet');
+                if any(obj.gi.getPropertyById(obj.scc,'isDynamic'))
+                    error('DAEs not implemented yet');
+                else  % This is an algebraic SCC
+                    expressions_subs = subs(obj.expressions, obj.sym_var_input_array, obj.values);
+                    answer = solve(expressions_subs, obj.sym_var_matched_array);
+                    answer = struct2array(answer);
+                end
             end
         end
     end
