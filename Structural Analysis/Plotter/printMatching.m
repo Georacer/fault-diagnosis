@@ -104,6 +104,8 @@ else
 end
 
 %% Write the residual
+
+fprintf(fileID, '$\n');
 if useAlias
     alias = digraph.getAliasById(RGids);
     fprintf(fileID, '%s', alias{:});

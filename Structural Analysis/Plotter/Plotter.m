@@ -65,6 +65,7 @@ classdef Plotter < matlab.mixin.Copyable
             for i=1:this.gi.graph.numVars
                 shape = 'circle';
                 color = 'white';
+                frameColor = 'black';
                 if this.gi.graph.variables(i).isKnown
                     % No operation
                 end
@@ -81,8 +82,8 @@ classdef Plotter < matlab.mixin.Copyable
                 if this.gi.graph.variables(i).isMatched
                     color = 'lightskyblue';
                 end
-                nodeDef = [nodeDef sprintf('node [shape = %s, fillcolor = %s, style = filled, label="%s\n%d"]; %s;\n'...
-                    ,shape,color,this.gi.reg.varAliasArray{i},this.gi.reg.varIdArray(i),this.gi.reg.varAliasArray{i})];
+                nodeDef = [nodeDef sprintf('node [shape = %s, color = %s, fillcolor = %s, style = filled, label="%s\n%d"]; %s;\n'...
+                    ,shape,frameColor,color,this.gi.reg.varAliasArray{i},this.gi.reg.varIdArray(i),this.gi.reg.varAliasArray{i})];
             end
             
             E = this.gi.getEdgeList();
