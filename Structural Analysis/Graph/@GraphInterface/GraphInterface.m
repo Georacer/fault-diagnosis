@@ -125,7 +125,7 @@ classdef GraphInterface < handle
             
             resIds = zeros(size(equIds));
             
-            for i=1:length(equIds);
+            for i=1:length(equIds)
                 equId = equIds(i);
                 
                 alias = sprintf('res_%d',equId);
@@ -224,7 +224,13 @@ classdef GraphInterface < handle
             
             edgeIndices = this.getIndexById(ids);
             
-            varIds = this.getVariables(ids);
+            % Build the variable ids one-by one in case two edges refer to
+            % the same variable
+            varIds = zeros(1,length(edgeIndices));
+            for i=1:length(varIds)
+               varIds(i) = this.getVariables(ids(i)); 
+            end
+            
             varIndices = this.getIndexById(varIds);
             this.graph.removeEdgeFromVar(varIndices,edgeIndices);
             
@@ -305,8 +311,8 @@ classdef GraphInterface < handle
             %DELETEVARIABLE Delete variable from graph
             %   Also delete related edges
             
-%             debug=true;
-            debug=false;
+            debug=true;
+%             debug=false;
             
             resp = false;
             
@@ -427,6 +433,8 @@ classdef GraphInterface < handle
                 end
                 
             end
+            
+            varIds = unique(varIds);
             
         end
         function E = getEdgeList(gh, option)
@@ -724,7 +732,6 @@ classdef GraphInterface < handle
             
             end
             
-            % New implementation
             if isempty(equIds) % Return all edges connected to varIds
                 ids = gh.getEdges(varIds);
             elseif isempty(varIds) % Return all edges connected to equIds
@@ -743,26 +750,6 @@ classdef GraphInterface < handle
                 end
                 ids(ids==0) = []; % Delete empty placeholders
             end
-            
-            
-%             % Old implementation
-%             for i=1:gh.graph.numEdges
-%                 if isempty(equId)
-%                     if (gh.graph.edges(i).varId == varId)
-%                         id = [id gh.graph.edges(i).id];
-%                     end
-%                 elseif isempty(varId)
-%                     if (gh.graph.edges(i).equId == equId)
-%                         id = [id gh.graph.edges(i).id];
-%                     end
-%                     
-%                 else
-%                     if (gh.graph.edges(i).equId==equId) && (gh.graph.edges(i).varId==varId)
-%                         id = gh.graph.edges(i).id;
-%                         return
-%                     end
-%                 end
-%             end
             
         end
         function [ w ] = getEdgeWeight( gh, id )
@@ -838,6 +825,15 @@ classdef GraphInterface < handle
             end
             
         end
+        function [ expr ] = getExpressionById(gh, id)
+            % getExpressionById Retun the symbolic expression
+            if ~gh.isEquation(id)
+                error('%d is not an equation',id);
+            end
+            index = gh.getIndexById(id);
+            expr = gh.graph.equations(index).expression;
+            
+        end
         function [ index, type ] = getIndexById( gh,id )
             %GETEQINDEXBYID Return object indices for the provided IDs
             %   Also returns the object type:
@@ -896,9 +892,10 @@ classdef GraphInterface < handle
                     equIndex = gh.getIndexById(id);
                     matchedID = gh.graph.equations(equIndex).matchedTo;
                     if isempty(matchedID)
-                        error('Equation %d is not matched', id);
+                        warning('Equation %d is not matched', id);
+                    else
+                        ids(end+1) = matchedID;
                     end
-                    ids(end+1) = matchedID;
                 end
             end
         end
@@ -1544,9 +1541,11 @@ classdef GraphInterface < handle
                     case 1
                         isIntegral = true;
                         edgeWeight = 100;
+                        this.setProperty(equId,'isDynamic');
                     case 2
                         isDerivative = true;
                         edgeWeight = 100;
+                        this.setProperty(equId,'isDynamic');
                     case 3
                         isNonSolvable = true;
                     case 4
