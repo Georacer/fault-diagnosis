@@ -5,10 +5,11 @@
 # version         :
 # notes           :
 # licence         : Apache 2.0  
-#==============================================================================
+# ==============================================================================
 
 import logging
 import graph.graph_utils as gu
+import sympy as sp
 
 
 class Evaluator:
@@ -23,7 +24,7 @@ class Evaluator:
         self.var_ids_assigning = []
         self.var_aliases_assigning = []
         self.expressions = []
-        self.values = None
+        self.values = None  # This is a dictionary and should hold only input values
 
         # Gather the matched equations and variables
         for assignment in scc:
@@ -32,6 +33,11 @@ class Evaluator:
                 self.var_ids_assigning.append(assignment[1])
 
         self.__logger.debug('Created Evaluator for equations {}'.format(self.equation_ids))
+
+        # Find the aliases of the assigning variables
+        for var_id in self.var_ids_assigning:
+            alias = [var.alias for var in var_array if var.id == var_id]
+            self.var_aliases_assigning.append(alias[0])
 
         # Gather all involved variable ids
         for equ_id in self.equation_ids:
@@ -55,13 +61,14 @@ class Evaluator:
             self.expressions.append(new_expression)
 
         # Initialize the values dictionary
-        variable_aliases = [variable.alias for variable in var_array if variable.id in self.variable_ids]
+        unknown_ids = list(set(self.variable_ids) - set(self.var_ids_assigning))
+        variable_aliases = [variable.alias for variable in var_array if variable.id in unknown_ids]
         self.values = dict.fromkeys(variable_aliases)
 
     def set_inputs(self, values_dict):
         """
         Register known inputs
-        :param values_dict:
+        :param values_dict: global dictionary with all known variable values
         :return: N/A
         """
 
@@ -86,16 +93,21 @@ class Evaluator:
             self.__logger.error('Symbolic expressions not available')
             raise ValueError
 
-        unassigned_values = []
-        for key, value in self.values:
-            if value is None:
-                unassigned_values.append(key)
+        if len(self.expressions) == 1:  # This is a singular scc
+            expression = sp.sympify(self.expressions[0])  # Form the symbolic expression
+            expression_subs = expression.subs(self.values)  # Substitute any known values before solution
+            # Check if this is a residual
+            if len(self.var_ids_assigning) == 0:  # Yes, it is
+                answer = expression_subs
+            else:  # This is a normal evaluation
+                unknown_variable = self.var_aliases_assigning[0]  # Select the variable to be solved for
+                answer = sp.solve(expression_subs, unknown_variable)[0]  # Solve the expression for the required variable
+            return [answer]
+        else:  # This is a non-singular scc
+            self.__logger.error("Tried to run unimplemented code")
+            # Test if this is dynamic (DAE) or static (AE)
 
-        if len(self.var_ids_assigning) != len(unassigned_values):
-            self.__logger.error('# of unknown variables is not equal to # of assigning variables ({})'.format(unassigned_values))
-            raise AssertionError
-
-        # TODO: more work needed here
+            # TODO: More work needed here
 
 
 class Differentiator(Evaluator):
@@ -161,7 +173,7 @@ class Differentiator(Evaluator):
         if 'dot' in known_variable:  # We know the derivative
             self.state = self.values[known_variable]
             return self.get_integral(self.dt)
-        else:  # We known the integral
+        else:  # We know the integral
             self.state = self.values[known_variable]
             return self.get_derivative(self.dt)
 

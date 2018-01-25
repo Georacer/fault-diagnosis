@@ -136,10 +136,22 @@ relations_file = '../equations-variables.csv'
 relations = read_equations_variables_relations(relations_file)
 
 # Read assignments
-assignments_file = '../calc_seq_2_567.csv'
+assignments_file = '../calc_seq_1_17.csv'
 solution_order = read_calc_sequence(assignments_file)
 
 evaluators_ordered = rgu.create_evaluators(solution_order, equations, variables, relations)
+
+# Correct set of values
+values = dict({'u1': 10, 'u2': 1, 'u3': -1.1, 'x1': None, 'x2': None, 'x3': None})
+
+# Iterate over all evaluators
+for evaluator in evaluators_ordered:
+    evaluator.set_inputs(values)
+    answers = evaluator.evaluate()
+    if evaluator.var_aliases_assigning:
+        values[evaluator.var_aliases_assigning[0]] = answers[0]
+    else:
+        print('Residual evaluated to {}'.format(answers[0]))
 
 
 logger.info('Finished test script')
