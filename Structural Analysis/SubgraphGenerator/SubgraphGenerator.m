@@ -65,6 +65,7 @@ classdef SubgraphGenerator < matlab.mixin.Copyable
             p.addOptional('varIds',[],@(x) all(isnumeric(x)));
             p.addParameter('postfix', '_submodel' ,@isstr);
             p.addParameter('pruneKnown',false,@islogical);
+            p.addParameter('pruneUnmatched',false,@islogical);
             
             p.parse(this, varargin{:});
             opts = p.Results;
@@ -73,6 +74,7 @@ classdef SubgraphGenerator < matlab.mixin.Copyable
             varIds = opts.varIds;
             postfix = opts.postfix;
             pruneKnown = opts.pruneKnown;
+            pruneUnmatched = opts.pruneUnmatched;
             
             gi = copy(this.gi);
             
@@ -98,6 +100,14 @@ classdef SubgraphGenerator < matlab.mixin.Copyable
                 for i=1:length(ids2Del)
                     gi.deleteVariables(ids2Del(i),false);
                 end
+            end
+            
+            if pruneUnmatched
+                % Delete unmatched variables
+                ids2Del = gi.getVarIdByProperty('isMatched',false);
+                for i=1:length(ids2Del)
+                    gi.deleteVariables(ids2Del(i),false);
+                end                
             end
             
             gi.createAdjacency();

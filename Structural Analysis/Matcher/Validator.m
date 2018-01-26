@@ -47,7 +47,7 @@ classdef Validator
             if obj.debug; fprintf('Validator/isValid: Finding SCCs\n'); end
             adjList = createAdjList(graphDir_NoDynamics); % Convert to adjacency list
             SCCs = tarjan(adjList); % Find all Strongly Connected Components
-            % Remove trivial SCCs of uniti size
+            % Remove trivial SCCs of unit size
             for i=length(SCCs):-1:1
                 if length(SCCs{i})==1
                     SCCs(i) = [];

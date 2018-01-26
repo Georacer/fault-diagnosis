@@ -222,6 +222,13 @@ classdef GraphInterface < handle
                 error('Requested to delete an edge while passing non-edge Id');
             end
             
+            for id=ids
+                if this.isMatched(id)  % If this edge was matched
+                    if debug; fprintf('deleteEdges: setting edge %d matched value as false\n', id); end
+                    this.setMatched(id,false);  % Unmatch the edge and all related components
+                end
+            end
+            
             edgeIndices = this.getIndexById(ids);
             
             % Build the variable ids one-by one in case two edges refer to
@@ -311,8 +318,8 @@ classdef GraphInterface < handle
             %DELETEVARIABLE Delete variable from graph
             %   Also delete related edges
             
-            debug=true;
-%             debug=false;
+%             debug=true;
+            debug=false;
             
             resp = false;
             
@@ -618,7 +625,7 @@ classdef GraphInterface < handle
             
             for i=1:length(ids)
                 
-                if gh.isVariable(ids(i));
+                if gh.isVariable(ids(i))
                     tempVect = gh.graph.variables(indices(i)).edgeIdArray;
                     edgeIds = [edgeIds tempVect];
                     
@@ -1325,7 +1332,7 @@ classdef GraphInterface < handle
             gh.graph.setEdgeWeight(indices,weights);
             
         end
-        function resp = setMatched( gh, id,  value )
+        function resp = setMatched( gh, ids,  value )
             %SETPROPERTYOR Summary of gh function goes here
             %   Detailed explanation goes here
             
@@ -1338,25 +1345,27 @@ classdef GraphInterface < handle
                 value = true;
             end
             
-            if gh.isEquation(id)
-                error('Use edges to match equations');
-            elseif gh.isVariable(id)
-                error('Use edges to match variables');
-            elseif gh.isEdge(id)
-                index = gh.getIndexById(id);
-                equId = gh.graph.edges(index).equId;
-                equIndex = gh.getIndexById(equId);
-                varId = gh.graph.edges(index).varId;
-                varIndex = gh.getIndexById(varId);
-                
-                gh.graph.setMatchedEdge(index,value);
-                gh.graph.setMatchedEqu(equIndex, value, varId);
-                gh.graph.setMatchedVar(varIndex, value, equId);
-                gh.graph.setKnownVar(varIndex); % TODO: Debatable
-                
-                if debug; fprintf('GraphInterface/setMatched: setting as matched the edge %d\n',id); end
-            else
-                error('Unkown object type with id %d',id);
+            for id = ids
+                if gh.isEquation(id)
+                    error('Use edges to match equations');
+                elseif gh.isVariable(id)
+                    error('Use edges to match variables');
+                elseif gh.isEdge(id)
+                    index = gh.getIndexById(id);
+                    equId = gh.graph.edges(index).equId;
+                    equIndex = gh.getIndexById(equId);
+                    varId = gh.graph.edges(index).varId;
+                    varIndex = gh.getIndexById(varId);
+                    
+                    gh.graph.setMatchedEdge(index,value);
+                    gh.graph.setMatchedEqu(equIndex, value, varId);
+                    gh.graph.setMatchedVar(varIndex, value, equId);
+                    gh.graph.setKnownVar(varIndex, value); % TODO: Debatable
+                    
+                    if debug; fprintf('GraphInterface/setMatched: setting as matched the edge %d\n',id); end
+                else
+                    error('Unkown object type with id %d',id);
+                end
             end
             
         end
@@ -1730,4 +1739,4 @@ classdef GraphInterface < handle
         end
     
     end
-    end
+end
