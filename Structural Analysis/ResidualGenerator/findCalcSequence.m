@@ -1,7 +1,8 @@
-function [ solutionOrder ] = findCalcSequence( digraph )
-%PRINTMATCHING Print the calculation sequence of a directed graph
-%   In a friendly way that will allow later the extraction of the
-%   analytical calculation sequence
+function [ solutionOrder ] = findCalcSequence( digraph, varargin )
+%PRINTMATCHING find the calculation sequence of a directed graph
+%
+%   CAUTION: Supposes that the graph only contains unknown variables. No
+%   input variables must exist
 %
 %   OUTPUT: Equation IDs, in the order they should be evaluated. Each line
 %   is an SCC
@@ -9,34 +10,58 @@ function [ solutionOrder ] = findCalcSequence( digraph )
 
 debug = true;
 
+p = inputParser;
+
+p.addRequired('digraph',@(x) true);
+p.addParameter('asResGenerator', false);
+
+p.parse(digraph, varargin{:});
+opts = p.Results;
+
 %% Checks
 
-matchedVars = digraph.getVarIdByProperty('isMatched');
-if length(matchedVars)~=digraph.graph.numVars
-    error('Not all variables are matched');
+unknown_vars = digraph.getVarIdByProperty('isKnown',false);
+if isempty(unknown_vars)
+    unsolvable_vars_exist = false;
+else
+    unsolvable_vars_exist = digraph.isMatched(unknown_vars);
 end
+if unsolvable_vars_exist
+    error('Unknown yet unmatched variables exist');
+end
+matchedVars = digraph.getVarIdByProperty('isMatched');
 matchedEqs = digraph.getEquIdByProperty('isMatched');
 if length(matchedEqs)~=length(matchedVars)
     error('# of matched equations not equal to # of matched variables');
 end
 
-%% Get the residual generator equations
+%% If this digraph constructs a residual generator
 
-RGids = findResGenerators(digraph, true);
-if isempty(RGids)
-    error('No residual generators available');
+if opts.asResGenerator
+    
+    % Get the residual generator equations
+    
+    RGids = findResGenerators(digraph, true);
+    if isempty(RGids)
+        error('No residual generators available');
+    end
+    
+    % It should normally be only 1
+    if length(RGids)>1
+        error('I expected only 1 residual generator');
+    end
+    
+    % Find all ancestor equations in DFS order
+    
+    relevantEqIds = digraph.getAncestorEqs(RGids);
+    relevantEqIds = setdiff(relevantEqIds,RGids); % Remove the residual from the calculation order
+    relevantEqIds = relevantEqIds(end:-1:1); % Reverse order to start from known inputs
+
+else
+    relevantEqIds = digraph.getEquations();
 end
 
-% It should normally be only 1
-if length(RGids)>1
-    error('I expected only 1 residual generator');
-end
-
-%% Find all ancestor equations in DFS order
-
-ancestorEqIds = digraph.getAncestorEqs(RGids);
-ancestorEqIds = setdiff(ancestorEqIds,RGids); % Remove the residual from the calculation order
-ancestorEqIds = ancestorEqIds(end:-1:1); % Reverse order to start from known inputs
+%% Generate the fully ordered SCC list
 
 % Extract all SCCs
 SCCs = tarjan2(digraph.adjacency.BD);
@@ -51,9 +76,9 @@ for i=1:length(SCCs)
     if ~any(equIndices) % This SCC is a single variable
         continue
     end
-    if ~ismember(SCCIds(logical(equIndices)), ancestorEqIds) % Test if these equations actually affect the residual
+    if ~ismember(SCCIds(logical(equIndices)), relevantEqIds) % Test if these equations actually affect the residual
         if debug
-            fprintf('printMatching: Dropping equations irrelevant to the residual: ');
+            fprintf('findCalcSequence: Dropping equations irrelevant to the residual: ');
             fprintf('%d,', SCCIds(logical(equIndices)) );
             fprintf('\n');
         end
@@ -102,7 +127,10 @@ if ~isempty(unusedIndices)
     error('Not all SCCs were introduced to the calculation sequence');
 end
 
-solutionOrder(end+1) = {RGids};
+% Add the residual generator at the end of the sequence
+if opts.asResGenerator
+    solutionOrder(end+1) = {RGids};
+end
 
 % Print solution order
 for i=1:length(solutionOrder)
