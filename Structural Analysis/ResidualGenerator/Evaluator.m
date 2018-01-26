@@ -13,15 +13,19 @@ classdef Evaluator < handle
         var_matched_ids;
         sym_var_matched_array;  % array of symbolic variables to be solved for
         expressions;  % array of symbolic expressions
-        values;
+        values;  % dictionary of all values
+        
+        debug = true;
+%         debug = false;
     end
     
     methods
-        function obj = Evaluator(gi, digraph, scc)
+        function obj = Evaluator(gi, digraph, scc, dictionary)
             % Constructor
             obj.gi = gi;
             obj.digraph = digraph;
             obj.scc = scc;
+            obj.values = dictionary;
             
             % Build the symbolic variables array
             equ_ids = scc;
@@ -40,6 +44,7 @@ classdef Evaluator < handle
                 var_id = obj.var_matched_ids(i);
                 obj.sym_var_matched_array(end+1) = sym(obj.gi.getAliasById(var_id));
             end
+            if obj.debug; fprintf('Evaluator: Built symbolic variables array: '); fprintf('%s, ',obj.sym_var_array); fprintf('\n'); end
             
             % Build the symbolic input variables array
             obj.sym_var_input_array = setdiff(obj.sym_var_array, obj.sym_var_matched_array);
@@ -53,41 +58,44 @@ classdef Evaluator < handle
                 end
             end
             
-            % Build the values array
-            obj.values = inf*ones(1,length(obj.var_input_ids));   
-            
+        end
+    
+        function [] = set_output(obj, id, value)
+        % Save a single output value with ID=id
+            var_mask = ismember(obj.var_matched_ids, id);
+            obj.answer(var_mask) = value;
         end
         
-        function [] = set_inputs(obj, values)
-        % Save the known variables values
-            obj.values = values;
-        end
-        
-        function [] = clear_values(obj)
-        % Clear the known variables values
-            obj.values = obj.values * inf;
-        end
-        
-        function [answer] = evaluate(obj)
+        function [ answer ] = evaluate(obj)
         % Evaluate the involved expressions given the stored values
         
             if length(obj.scc)==1  % This is a singular SCC
-                expressions_subs = subs(obj.expressions, obj.sym_var_input_array, obj.values);
+                lexicon = obj.values.create_lexicon(obj.var_input_ids);
+                expressions_subs = subs(obj.expressions, lexicon);
                 if ~isempty(obj.var_matched_ids)  % If this is not a residual generator
-                    answer = solve(expressions_subs, obj.sym_var_matched_array);
+                    answer = vpasolve(expressions_subs, obj.sym_var_matched_array);
+                    obj.values.setValue(obj.var_matched_ids, [], answer);
                 else
                     answer = expressions_subs;
+                    fprintf('Residual evaluated to %g\n',answer(1));
                 end
+                if obj.debug; fprintf('Evaluator: Evaluated %s to %g\n', obj.expressions, answer); end
+                if obj.debug; fprintf('Evaluator: Input variables: '); fprintf('%s, ',obj.sym_var_input_array); fprintf('\n'); end
+                if obj.debug; fprintf('Evaluator: Input values: '); fprintf('%g, ',obj.values.getValue(obj.var_input_ids)); fprintf('\n'); end
             else  % This is a non-singular SCC
                 if any(obj.gi.getPropertyById(obj.scc,'isDynamic'))
-                    error('DAEs not implemented yet');
+                    error('DAEs should be handled by a DAESolver object');
+                    
                 else  % This is an algebraic SCC
-                    expressions_subs = subs(obj.expressions, obj.sym_var_input_array, obj.values);
-                    answer = solve(expressions_subs, obj.sym_var_matched_array);
-                    answer = struct2array(answer);
+                    expressions_subs = subs(obj.expressions, obj.values.create_lexicon(obj.var_input_ids));
+                    answer = vpasolve(expressions_subs, obj.sym_var_matched_array);
+                    obj.values.parse_lexicon(answer);
                 end
             end
+            
+            assert(isempty(obj.var_matched_ids) || length(answer)==length(obj.var_matched_ids), 'Non matching lengths of answer and matched variables');
         end
+        
     end
     
 end

@@ -11,12 +11,15 @@ classdef Differentiator < Evaluator
         isDifferentiator = false;
         integral_id;
         derivative_id;
+        
     end
     
     methods
-        function obj = Differentiator(gi, digraph, scc)
+        function obj = Differentiator(gi, digraph, scc, dictionary, dt)
             % Constructor
-            obj = obj@Evaluator(gi, digraph, scc);
+            obj = obj@Evaluator(gi, digraph, scc, dictionary);
+            
+            obj.dt = dt;
             
             if length(obj.scc)>1
                 error('Differentiator must be a singular SCC');
@@ -29,9 +32,9 @@ classdef Differentiator < Evaluator
             if ~isempty(obj.var_matched_ids)
                 edge_id = gi.getEdgeIdByVertices(obj.scc, obj.var_matched_ids);
                 if gi.isIntegral(edge_id)
-                    obj.isIntegrator = True;
+                    obj.isIntegrator = true;
                 elseif gi.isDerivative(edge_id)
-                    obj.isDifferentiator = True;
+                    obj.isDifferentiator = true;
                 else
                     error('Differentiator must be in either derivative or integral causality');
                 end
@@ -43,8 +46,10 @@ classdef Differentiator < Evaluator
                 edge_id = gi.getEdgeIdByVertices(obj.scc, var_id);
                 if gi.isIntegral(edge_id)
                     obj.integral_id = var_id;
+                    obj.derivative_id = obj.var_matched_ids;
                 elseif gi.isDerivative(edge_id)
                     obj.derivative_id = var_id;
+                    obj.integral_id = obj.var_matched_ids;
                 else
                     error('Differentiator variables must be either integrals or derivatives')
                 end
@@ -52,31 +57,36 @@ classdef Differentiator < Evaluator
             
         end
         
-        function [] = set_state(obj, value)
-            obj.state = value;
-        end
+%         function [] = set_state(obj, value)
+%             if obj.debug; fprintf('Differentiator: input set to %d\n', value); end
+%             obj.state = value;
+%         end
         
         function [] = set_dt(obj, value)
             obj.dt = value;
         end
         
         function [answer] = get_derivative(obj)
-            answer = (obj.state - obj.prev_state)/obj.dt;
-            obj.prev_state = obj.state;
+            input = obj.values.getValue(obj.integral_id);
+            answer = (input - obj.prev_state)/obj.dt;
+            obj.prev_state = input;
         end
         
         function [answer] = get_integral(obj)
-            answer = obj.prev_state + obj.state*obj.dt;
-            obj.prev_state = obj.state;
+            input = obj.values.getValue(obj.derivative_id);
+            answer = obj.prev_state + input*obj.dt;
+            obj.prev_state = answer;
         end
         
         function [answer] = evaluate(obj)
             if obj.isIntegrator
-                obj.set_state(obj.values);
                 answer = obj.get_integral();
+                obj.values.setValue(obj.integral_id,[],answer);
+                if obj.debug; fprintf('Differentiator: Adding %g*%g to integral\n', obj.prev_state, obj.dt); end
             elseif obj.isDifferentiator
-                obj.set_state(obj.values);
                 answer = obj.get_derivative();
+                obj.values.setValue(obj.derivative_id,[],answer);
+                if obj.debug; fprintf('Differentiator: Got %g and differentiated by %g\n', obj.prev_state, obj.dt); end
             else  % The Differentiator is a residual generator
                 % We shall solve it in derivative causality
                 int_index = find(obj.var_input_ids==obj.integral_id); % Find the integral id

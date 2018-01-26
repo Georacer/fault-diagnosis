@@ -8,7 +8,8 @@ function [ solutionOrder ] = findCalcSequence( digraph, varargin )
 %   is an SCC
 
 
-debug = true;
+% debug = true;
+debug = false;
 
 p = inputParser;
 
@@ -135,7 +136,7 @@ end
 % Print solution order
 for i=1:length(solutionOrder)
     s = sprintf('%d, ', solutionOrder{i});
-    fprintf('%s\n', s(1:end-1));
+    fprintf('findCalcSequence: Solution order: %s\n', s(1:end-1));
 end
 
 end
