@@ -74,7 +74,7 @@ classdef Evaluator < handle
                 expressions_subs = subs(obj.expressions, lexicon);
                 if ~isempty(obj.var_matched_ids)  % If this is not a residual generator
                     answer = vpasolve(expressions_subs, obj.sym_var_matched_array);
-                    obj.values.setValue(obj.var_matched_ids, [], answer);
+                    obj.values.setValue(obj.var_matched_ids, [], double(answer));
                 else
                     answer = expressions_subs;
                     fprintf('Residual evaluated to %g\n',answer(1));
@@ -93,7 +93,6 @@ classdef Evaluator < handle
                 end
             end
             
-            assert(isempty(obj.var_matched_ids) || length(answer)==length(obj.var_matched_ids), 'Non matching lengths of answer and matched variables');
         end
         
     end

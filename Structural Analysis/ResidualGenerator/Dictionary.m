@@ -56,6 +56,10 @@ classdef Dictionary < handle
             %SETVALUE Set a variable value in the dictionary
             %   Detailed explanation goes here
             
+            if nargin<3
+                aliases = {};
+            end
+            
             if ~isempty(ids)
                 id_indices = obj.getIdIndex(ids);
                 value = obj.values_array(id_indices);
@@ -112,8 +116,8 @@ classdef Dictionary < handle
         function [] = parse_lexicon(obj, lexicon)
             fieldNames = fieldnames(lexicon);
             for i=1:length(fieldNames)
-                fieldName = fieldNames{i};
-                value = lexicon.(fieldName);
+                fieldName = fieldNames(i);
+                value = double(lexicon.(fieldName{1}));
                 obj.setValue([], fieldName, value);
             end
         end

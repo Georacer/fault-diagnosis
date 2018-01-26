@@ -3,6 +3,8 @@ function [ solutionOrder ] = findCalcSequence( digraph, varargin )
 %
 %   CAUTION: Supposes that the graph only contains unknown variables. No
 %   input variables must exist
+%   CAUTION: Will not include the residual generator id in the solution
+%   order
 %
 %   OUTPUT: Equation IDs, in the order they should be evaluated. Each line
 %   is an SCC
@@ -55,6 +57,7 @@ if opts.asResGenerator
     % Find all ancestor equations in DFS order
     
     relevantEqIds = digraph.getAncestorEqs(RGids);
+%     relevantEqIds = union(relevantEqIds, RGids); % Add the residual generator to the equation set
     relevantEqIds = setdiff(relevantEqIds,RGids); % Remove the residual from the calculation order
     relevantEqIds = relevantEqIds(end:-1:1); % Reverse order to start from known inputs
 
@@ -101,7 +104,7 @@ unusedIndices = 1:length(SCCsEquIds); % Indices to the equations SCCs cell array
 activeList = []; % This contains indices to SCCsEquIds
 for i=unusedIndices
     unknownVariables = setdiff(SCCsVarIds{i},knownVarIds);
-    if isequal(unknownVariables,SCCsMatchedVarIds{i})
+    if isequal(sort(unknownVariables),sort(SCCsMatchedVarIds{i}))
         activeList(end+1) = i;
     end
 end
@@ -118,7 +121,10 @@ while ~isempty(activeList)
     % Search for new solvable equations to populate the list
     for i=unusedIndices
         unknownVariables = setdiff(SCCsVarIds{i},knownVarIds);
-        if isequal(sort(unknownVariables),sort(SCCsMatchedVarIds{i}))
+        if isempty(unknownVariables) % This SCC can be solved 
+            activeList(end+1) = i;
+        end
+        if isequal(sort(unknownVariables),sort(SCCsMatchedVarIds{i})) % This SCC has unknown variables but it will match all of them
             activeList(end+1) = i;
         end
     end
@@ -136,7 +142,7 @@ end
 % Print solution order
 for i=1:length(solutionOrder)
     s = sprintf('%d, ', solutionOrder{i});
-    fprintf('findCalcSequence: Solution order: %s\n', s(1:end-1));
+    if debug; fprintf('findCalcSequence: Solution order: %s\n', s(1:end-1)); end
 end
 
 end

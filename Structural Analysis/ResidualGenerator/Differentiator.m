@@ -5,7 +5,7 @@ classdef Differentiator < Evaluator
     
     properties
         state;
-        prev_state = 0;
+        prev_state;
         dt;
         isIntegrator = false;
         isDifferentiator = false;
@@ -38,6 +38,8 @@ classdef Differentiator < Evaluator
                 else
                     error('Differentiator must be in either derivative or integral causality');
                 end
+            else % The differentiator is a residual generator, use it in differential causality
+                obj.isDifferentiator = true;
             end
             
             % Find the integral and derivative variables
@@ -46,14 +48,17 @@ classdef Differentiator < Evaluator
                 edge_id = gi.getEdgeIdByVertices(obj.scc, var_id);
                 if gi.isIntegral(edge_id)
                     obj.integral_id = var_id;
-                    obj.derivative_id = obj.var_matched_ids;
+                    obj.derivative_id = setdiff(obj.var_ids, var_id);
                 elseif gi.isDerivative(edge_id)
                     obj.derivative_id = var_id;
-                    obj.integral_id = obj.var_matched_ids;
+                    obj.integral_id = setdiff(obj.var_ids, var_id);
                 else
                     error('Differentiator variables must be either integrals or derivatives')
                 end
             end
+            
+            % Initialize the Differentiator state
+            obj.prev_state = obj.values.getValue(obj.integral_id);
             
         end
         
@@ -89,10 +94,7 @@ classdef Differentiator < Evaluator
                 if obj.debug; fprintf('Differentiator: Got %g and differentiated by %g\n', obj.prev_state, obj.dt); end
             else  % The Differentiator is a residual generator
                 % We shall solve it in derivative causality
-                int_index = find(obj.var_input_ids==obj.integral_id); % Find the integral id
-                der_index = find(obj.var_input_ids==obj.derivative_id); % Find the integral id
-                obj.set_state(obj.values(int_index)); % Set the integral variable input as the state
-                answer = obj.values(der_index) - obj.get_derivative() ;
+                answer = obj.values.getValue(obj.derivative_id, []) - obj.get_derivative() ;
             end
         end
         

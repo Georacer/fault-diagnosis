@@ -1,0 +1,34 @@
+digraph G {
+rankdir = LR;
+size ="8.5"
+node [shape = box, color = red, fillcolor = lightskyblue, style = filled, label="ceq1
+1"]; ceq1;
+node [shape = box, color = red, fillcolor = lightskyblue, style = filled, label="ceq2
+10"]; ceq2;
+node [shape = box, color = red, fillcolor = lightskyblue, style = filled, label="ceq3
+15"]; ceq3;
+node [shape = box, color = red, fillcolor = white, style = filled, label="ceq4
+19"]; ceq4;
+node [shape = box, color = black, fillcolor = lightskyblue, style = filled, label="ceq5
+23"]; ceq5;
+node [shape = circle, color = black, fillcolor = lightskyblue, style = filled, label="dot_x1
+2"]; dot_x1;
+node [shape = circle, color = black, fillcolor = lightskyblue, style = filled, label="x1
+4"]; x1;
+node [shape = circle, color = black, fillcolor = lightskyblue, style = filled, label="x2
+6"]; x2;
+node [shape = circle, color = black, fillcolor = lightskyblue, style = filled, label="x3
+8"]; x3;
+ceq1 -> dot_x1 [penwidth = 1.5, label = "3", color = red4 ];
+x1 -> ceq1 [penwidth = 1, label = "5"];
+x2 -> ceq1 [penwidth = 1, label = "7"];
+x3 -> ceq1 [penwidth = 1, label = "9"];
+ceq2 -> x2 [penwidth = 1.5, label = "11", color = red4 ];
+x3 -> ceq2 [penwidth = 1, label = "12"];
+ceq3 -> x3 [penwidth = 1.5, label = "16", color = red4 ];
+x2 -> ceq3 [penwidth = 1, label = "17"];
+x1 -> ceq3 [penwidth = 1, label = "18"];
+x1 -> ceq4 [penwidth = 1, label = "22"];
+dot_x1 -> ceq5 [penwidth = 1, label = "24"];
+ceq5 -> x1 [penwidth = 1.5, label = "25", color = red4 ];
+}
