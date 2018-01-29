@@ -101,6 +101,7 @@ classdef Dictionary < handle
         end
         
         function [ lexicon ] = create_lexicon(obj, ids)
+            % Create a lexicon structur for passing to a symbolic solver
             if nargin<2
                 ids = obj.ids_array;
             end
@@ -114,6 +115,7 @@ classdef Dictionary < handle
         end
         
         function [] = parse_lexicon(obj, lexicon)
+            % Read a values structure from a symbolic solver
             fieldNames = fieldnames(lexicon);
             for i=1:length(fieldNames)
                 fieldName = fieldNames(i);
@@ -122,8 +124,48 @@ classdef Dictionary < handle
             end
         end
         
+        function [ var_ids ] = get_known_ids(obj)
+            % Return the variables whose value is known (not inf)
+            var_ids = obj.ids_array(~isinf(obj.values_array));
+        end
+        
         function [ resp ] = get.numEls(obj)
             resp = length(obj.ids_array);
+        end
+        
+        function [ ] = disp(obj)
+            % Override the default print
+            
+            % Find the maximum column length
+            alias_length = max(cellfun('length', obj.aliases_cell));
+            if alias_length < 5
+                column_length = 6;
+            else
+                column_length = alias_length+1;
+            end
+            
+            integer_format = sprintf('%%%dd',column_length);
+            string_format = sprintf('%%%ds', column_length);
+            float_format = sprintf('%%%d.3g', column_length);
+            
+            % Set the ids
+            fprintf('IDs    : ');
+            for i=1:obj.numEls
+                fprintf(integer_format, obj.ids_array(i));
+            end
+            fprintf('\n');
+            fprintf('Aliases: ');
+            % Set the aliases
+            for i=1:obj.numEls
+                fprintf(string_format, obj.aliases_cell{i});
+            end
+            fprintf('\n');
+            fprintf('Values : ');
+            % Set the ids
+            for i=1:obj.numEls
+                fprintf(float_format, obj.values_array(i));
+            end
+            fprintf('\n');
         end
         
     end

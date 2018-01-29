@@ -841,29 +841,29 @@ classdef GraphInterface < handle
             expr = gh.graph.equations(index).expression;
             
         end
-        function [ index, type ] = getIndexById( gh,id )
+        function [ index, type ] = getIndexById( gh, ids )
             %GETEQINDEXBYID Return object indices for the provided IDs
             %   Also returns the object type:
             %   0: equation
             %   1: variable
             %   2: edge
             
-            index = zeros(1,length(id));
-            type = zeros(1,length(id));
+            index = zeros(1,length(ids));
+            type = zeros(1,length(ids));
             
-            for i=1:length(id)
+            for i=1:length(ids)
                 
-                if gh.isEquation(id(i))
-                    index(i) = gh.reg.equIdToIndexArray(id(i));
+                if gh.isEquation(ids(i))
+                    index(i) = gh.reg.equIdToIndexArray(ids(i));
                     type(i) = 0;
-                elseif gh.isVariable(id(i))
-                    index(i) = gh.reg.varIdToIndexArray(id(i));
+                elseif gh.isVariable(ids(i))
+                    index(i) = gh.reg.varIdToIndexArray(ids(i));
                     type(i) = 1;
-                elseif gh.isEdge(id(i))
-                    index(i) = gh.reg.edgeIdToIndexArray(id(i));
+                elseif gh.isEdge(ids(i))
+                    index(i) = gh.reg.edgeIdToIndexArray(ids(i));
                     type(i) = 2;
                 else
-                    error('Unknown object type with id %d',id(i));
+                    error('Unknown object type with id %d',ids(i));
                 end
                 
             end
