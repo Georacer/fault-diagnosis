@@ -15,8 +15,8 @@ classdef Evaluator < handle
         expressions;  % array of symbolic expressions
         values;  % dictionary of all values
         
-        debug = true;
-%         debug = false;
+%         debug = true;
+        debug = false;
     end
     
     methods
@@ -67,27 +67,26 @@ classdef Evaluator < handle
         end
         
         function [ answer ] = evaluate(obj)
-        % Evaluate the involved expressions given the stored values
-        
+            % Evaluate the involved expressions given the stored values
+            
+            lexicon = obj.values.create_lexicon(obj.var_input_ids);
             if length(obj.scc)==1  % This is a singular SCC
-                lexicon = obj.values.create_lexicon(obj.var_input_ids);
                 expressions_subs = subs(obj.expressions, lexicon);
                 if ~isempty(obj.var_matched_ids)  % If this is not a residual generator
                     answer = vpasolve(expressions_subs, obj.sym_var_matched_array);
                     obj.values.setValue(obj.var_matched_ids, [], double(answer));
                 else
                     answer = expressions_subs;
-                    fprintf('Residual evaluated to %g\n',answer(1));
+                    if obj.debug; fprintf('Evaluator: Residual evaluated to %g\n',answer(1)); end
                 end
                 if obj.debug; fprintf('Evaluator: Evaluated %s to %g\n', obj.expressions, answer); end
                 if obj.debug; fprintf('Evaluator: Input variables: '); fprintf('%s, ',obj.sym_var_input_array); fprintf('\n'); end
                 if obj.debug; fprintf('Evaluator: Input values: '); fprintf('%g, ',obj.values.getValue(obj.var_input_ids)); fprintf('\n'); end
             else  % This is a non-singular SCC
                 if any(obj.gi.getPropertyById(obj.scc,'isDynamic'))
-                    error('DAEs should be handled by a DAESolver object');
-                    
+                    error('DAEs should be handled by a DAESolver object');                    
                 else  % This is an algebraic SCC
-                    expressions_subs = subs(obj.expressions, obj.values.create_lexicon(obj.var_input_ids));
+                    expressions_subs = subs(obj.expressions, lexicon);
                     answer = vpasolve(expressions_subs, obj.sym_var_matched_array);
                     obj.values.parse_lexicon(answer);
                 end

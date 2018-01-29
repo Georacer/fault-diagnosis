@@ -58,7 +58,13 @@ classdef Differentiator < Evaluator
             end
             
             % Initialize the Differentiator state
-            obj.prev_state = obj.values.getValue(obj.integral_id);
+            integrator_value = obj.values.getValue(obj.integral_id);
+            % If not set, set to 0
+            if isinf(integrator_value)
+                obj.prev_state = 0;
+            else
+                obj.prev_state = integrator_value;
+            end
             
         end
         

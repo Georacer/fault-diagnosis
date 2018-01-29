@@ -2,8 +2,8 @@ function [ evaluators_cell ] = create_evaluators( gi, digraph, solution_order, d
 %CREATE_EVALUATORS Convert the solution order into Evaluator objets
 %   Detailed explanation goes here
 
-% debug = false;
-debug = true;
+debug = false;
+% debug = true;
 
 if nargin < 4
     dt = 0.01;
@@ -19,14 +19,14 @@ for i=1:length(solution_order)
         if length(scc)==1  % Build a Differentiator
             new_evaluator = Differentiator(gi, sub_digraph, scc, dictionary, dt);
             if (debug)
-                fprintf('Created a new Differentiator for equations ');
+                fprintf('create_evaluators: Created a new Differentiator for equations ');
                 fprintf('%d,', new_evaluator.scc);
                 fprintf('\n');
             end
         else  % This is a non-trivial SCC, build a DAESolver
             new_evaluator = DAESolver(gi, sub_digraph, scc, dictionary, dt);
             if (debug)
-                fprintf('Created a new DAESolver for equations ');
+                fprintf('create_evaluators: Created a new DAESolver for equations ');
                 fprintf('%d,', new_evaluator.scc);
                 fprintf('\n');
             end
@@ -34,7 +34,7 @@ for i=1:length(solution_order)
     else
         new_evaluator = Evaluator(gi, sub_digraph, scc, dictionary);
             if (debug)
-                fprintf('Created a new Evaluator for equations ');
+                fprintf('create_evaluators: Created a new Evaluator for equations ');
                 fprintf('%d,', new_evaluator.scc);
                 fprintf('\n');
             end
