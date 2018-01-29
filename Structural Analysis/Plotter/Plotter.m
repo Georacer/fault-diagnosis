@@ -76,6 +76,10 @@ classdef Plotter < matlab.mixin.Copyable
                     color = 'green';
                     shape = 'doublecircle';
                 end
+                if this.gi.graph.variables(i).isFault
+                    color = 'red';
+                    shape = 'doublecircle';
+                end
                 if this.gi.graph.variables(i).isOutput
                     shape = 'Mcircle';
                 end

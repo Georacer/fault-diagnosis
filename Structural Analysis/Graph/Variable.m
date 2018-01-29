@@ -14,6 +14,7 @@ classdef Variable < Vertex
         isOutput
         isResidual
         isMatrix
+        isFault
     end
         
     methods

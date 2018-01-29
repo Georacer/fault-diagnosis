@@ -197,6 +197,7 @@ classdef GraphInterface < handle
                     this.setPropertyOR(varId,'isOutput',varProps.isOutput);
                     this.setPropertyOR(varId,'isMatched',varProps.isMatched);
                     this.setPropertyOR(varId,'isMatrix',varProps.isMatrix);
+                    this.setPropertyOR(varId,'isFault',varProps.isMatrix);
                     id = varId;
                 end
             else
@@ -1512,6 +1513,7 @@ classdef GraphInterface < handle
             
             % Parse structural expression
             [resp, equId] = this.addEquation([], alias, prefix, exprStr);
+            has_fault = false;
             
             % legend:
             % {} - normal term
@@ -1571,7 +1573,25 @@ classdef GraphInterface < handle
                         isMeasured = true;
                         isKnown = true;
                     case 7
+                        has_fault = true;
                         this.setProperty(equId,'isFaultable');
+                        % Add a virtual fault variable
+                        faultVarProps.isKnown = true;
+                        faultVarProps.isMeasured = false;
+                        faultVarProps.isInput = true;
+                        faultVarProps.isOutput = false;
+                        faultVarProps.isResidual = false;
+                        faultVarProps.isMatched = false;
+                        faultVarProps.isMatrix = false;
+                        faultVarProps.isFault = true;
+                        [resp, varId] = this.addVariable([], ['f' prefix alias], faultVarProps);
+                        
+                        edgeProps.isMatched = false;
+                        edgeProps.isDerivative = false;
+                        edgeProps.isIntegral = false;
+                        edgeProps.isNonSolvable = false;
+                        edgeProps.weight = 1;
+                        this.addEdge([],equId,varId,edgeProps);
                     case 8
                         isSubsystem = true;
                     case 9
@@ -1585,6 +1605,9 @@ classdef GraphInterface < handle
                             this.setProperty(equId,'subsystem',word);
                         elseif isExpression % expr keyword met previously
                             isExpression = false;
+                            if has_fault
+                                word = [word '+f' prefix alias];  % Add the fault to the symbolic equation
+                            end
                             this.setProperty(equId,'expression',word);
                         else % This is a variable           
                             varProps.isKnown = isKnown;
@@ -1594,6 +1617,7 @@ classdef GraphInterface < handle
                             varProps.isResidual = isResidual;
                             varProps.isMatched = isMatched;
                             varProps.isMatrix = isMatrix;
+                            varProps.isFault = false;  % Faults are generated specifically above
                             [resp, varId] = this.addVariable([],word,varProps);
                             
                             edgeProps.isMatched = false;
