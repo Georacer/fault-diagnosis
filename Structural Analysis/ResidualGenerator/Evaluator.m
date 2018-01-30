@@ -50,8 +50,14 @@ classdef Evaluator < handle
             if obj.debug; fprintf('Evaluator: Built symbolic variables array: '); fprintf('%s, ',obj.sym_var_array); fprintf('\n'); end
             
             % Build the symbolic input variables array
-            obj.sym_var_input_array = setdiff(obj.sym_var_array, obj.sym_var_matched_array);
+%             obj.sym_var_input_array = setdiff(obj.sym_var_array, obj.sym_var_matched_array);
             obj.var_input_ids = setdiff(obj.var_ids, obj.var_matched_ids);
+            obj.sym_var_input_array = sym.empty;
+            for i=1:length(obj.var_input_ids)
+                var_id = obj.var_input_ids(i);
+                obj.sym_var_input_array(end+1) = sym(obj.gi.getAliasById(var_id));
+            end
+            
             
             % Build the symbolic expressions array
             obj.expressions = sym.empty;
@@ -65,10 +71,10 @@ classdef Evaluator < handle
             if length(obj.scc)==1  % This is a singular SCC
                 if ~isempty(obj.var_matched_ids)  % If this is not a residual generator
                     obj.expressions_solved = vpasolve(obj.expressions, obj.sym_var_matched_array); % Store the pre-solved expressions
-                    obj.expressions_solved_handle = matlabFunction(obj.expressions_solved, 'Vars', [obj.sym_var_input_array]);
+                    obj.expressions_solved_handle = matlabFunction(obj.expressions_solved, 'Vars', obj.sym_var_input_array, 'Outputs', obj.gi.getAliasById(obj.var_matched_ids));
                 else  % This is a residual generator
                     obj.is_res_gen = true; % No pre-solved expression to store, we just need to evaluate it
-                    obj.expressions_solved_handle = matlabFunction(obj
+                    obj.expressions_solved_handle = matlabFunction(obj.expressions, 'Vars', obj.sym_var_input_array);
                 end
                 
             else  % This is a non-singular SCC
@@ -76,6 +82,17 @@ classdef Evaluator < handle
                     error('DAEs should be handled by a DAESolver object');                    
                 else  % This is an algebraic SCC
                     obj.expressions_solved = vpasolve(obj.expressions, obj.sym_var_matched_array);
+                    % Since vpasolve sorts the output arguments, I have to
+                    % re-sort them in the order of their var_matched_ids
+                    field_names = obj.gi.getAliasById(obj.var_matched_ids);
+                    [field_names_sorted, permutations] = sort(field_names);
+                    solution_names = fieldnames(obj.expressions_solved);
+                    assert(isempty(setxor(field_names, solution_names))); % Verify the expected matched variable names
+                    function_array = sym.empty;
+                    for i=1:length(field_names)
+                        function_array(permutations(i)) = obj.expressions_solved.(field_names_sorted{i});
+                    end
+                    obj.expressions_solved_handle = matlabFunction(function_array, 'Vars', obj.sym_var_input_array, 'Outputs', obj.gi.getAliasById(obj.var_matched_ids));
                 end
                 
             end
@@ -91,24 +108,20 @@ classdef Evaluator < handle
         function [ answer ] = evaluate(obj)
             % Evaluate the involved expressions given the stored values
             
-            lexicon = obj.values.create_lexicon(obj.var_input_ids);
+%             lexicon = obj.values.create_lexicon(obj.var_input_ids);
+            values_vector = obj.values.getValue(obj.var_input_ids);
             if length(obj.scc)==1  % This is a singular SCC
                 if obj.is_res_gen
-                    answer = subs(obj.expressions, lexicon);
-                    if obj.debug; fprintf('Evaluator: Residual evaluated to %g\n',answer(1)); end
+%                     answer = subs(obj.expressions, lexicon);
+                    argument_cell = num2cell(values_vector);
+                    answer = obj.expressions_solved_handle(argument_cell{:});
+                    if obj.debug; fprintf('Evaluator: Residual evaluated to %g\n',answer); end
                 else
-                    answer = subs(obj.expressions_solved, lexicon);
-                    obj.values.setValue(obj.var_matched_ids, [], double(answer));
+%                     answer = subs(obj.expressions_solved, lexicon);
+                    argument_cell = num2cell(values_vector);
+                    answer = obj.expressions_solved_handle(argument_cell{:});
+                    obj.values.setValue(obj.var_matched_ids, [], answer);
                 end
-                
-%                 expressions_subs = subs(obj.expressions, lexicon);
-%                 if ~isempty(obj.var_matched_ids)  % If this is not a residual generator
-%                     answer = vpasolve(expressions_subs, obj.sym_var_matched_array);
-%                     obj.values.setValue(obj.var_matched_ids, [], double(answer));
-%                 else
-%                     answer = expressions_subs;
-%                     if obj.debug; fprintf('Evaluator: Residual evaluated to %g\n',answer(1)); end
-%                 end
                 
                 if obj.debug; fprintf('Evaluator: Evaluated %s to %g\n', obj.expressions, answer); end
                 if obj.debug; fprintf('Evaluator: Input variables: '); fprintf('%s, ',obj.sym_var_input_array); fprintf('\n'); end
@@ -117,15 +130,15 @@ classdef Evaluator < handle
                 if any(obj.gi.getPropertyById(obj.scc,'isDynamic'))
                     error('DAEs should be handled by a DAESolver object');                    
                 else  % This is an algebraic SCC
-                    answer = struct();
-                    answer_fields = fieldnames(obj.expressions_solved);
-                    for i=1:length(answer_fields)
-                        answer.(answer_fields{i}) = subs(obj.expressions_solved.(answer_fields{i}), lexicon);
-                    end
-%                     answer = subs(obj.expressions_solved, lexicon);
-%                     expressions_subs = subs(obj.expressions, lexicon);
-%                     answer = vpasolve(expressions_subs, obj.sym_var_matched_array);
-                    obj.values.parse_lexicon(answer);
+%                     answer = struct();
+%                     answer_fields = fieldnames(obj.expressions_solved);
+%                     for i=1:length(answer_fields)
+%                         answer.(answer_fields{i}) = subs(obj.expressions_solved.(answer_fields{i}), lexicon);
+%                     end
+%                     obj.values.parse_lexicon(answer);
+                    argument_cell = num2cell(values_vector);
+                    answer = obj.expressions_solved_handle(argument_cell{:});
+                    obj.values.setValue(obj.var_matched_ids, [], answer);
                 end
             end
             
