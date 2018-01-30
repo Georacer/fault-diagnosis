@@ -65,6 +65,7 @@ classdef Differentiator < Evaluator
             else
                 obj.prev_state = integrator_value;
             end
+            obj.initial_state = obj.prev_state;  % Store the initialization value
             
         end
         
@@ -72,6 +73,10 @@ classdef Differentiator < Evaluator
 %             if obj.debug; fprintf('Differentiator: input set to %d\n', value); end
 %             obj.state = value;
 %         end
+
+        function [] = reset_state(obj)
+            obj.prev_state = obj.initial_state;           
+        end
         
         function [] = set_dt(obj, value)
             obj.dt = value;

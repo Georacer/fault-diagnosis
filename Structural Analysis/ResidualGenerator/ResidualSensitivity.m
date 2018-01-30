@@ -52,7 +52,8 @@ classdef ResidualSensitivity
         function [ cost ] = cost_function(obj, input_vec)
             
             obj.values.setValue(obj.pso_input_ids, [], input_vec);
-                
+            
+            obj.res_gen.reset_state();  % Reset the state variables
             cost = -abs(obj.res_gen.evaluate(obj.values));
             if isinf(cost)
                 error('Cost is not expected to be inf');
@@ -62,7 +63,10 @@ classdef ResidualSensitivity
         
         function [ args, sensitivity_vector] = get_residual_sensitivity(obj)
             % Perform the Particle Swarm Optimization
-            options = optimoptions('particleswarm','SwarmSize',30,'Display','iter','MaxIterations',10);
+            swarm_size = 50;
+            max_iterations = 100;
+            max_stall_iterations = 10;
+            options = optimoptions('particleswarm','SwarmSize',swarm_size,'Display','iter','MaxIterations',max_iterations, 'MaxStallIterations', max_stall_iterations);
             [args, sensitivity_vector] = particleswarm(@obj.cost_function, length(obj.pso_input_ids), obj.lower_bounds, obj.upper_bounds, options);
         end
         

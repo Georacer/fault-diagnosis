@@ -16,7 +16,9 @@ classdef Evaluator < handle
         expressions_solved;  % Array of pre-solved symbolic expressions
         expressions_solved_handle;  % Array of pre-solve numeric expressions
         values;  % dictionary of all values
+        initial_state;  % Initialization state
         is_res_gen = false;
+        is_dynamic = false;
         
 %         debug = true;
         debug = false;
@@ -67,34 +69,38 @@ classdef Evaluator < handle
                 end
             end
             
-            % Solve the expressions to get a pre-baked answer
-            if length(obj.scc)==1  % This is a singular SCC
-                if ~isempty(obj.var_matched_ids)  % If this is not a residual generator
-                    obj.expressions_solved = vpasolve(obj.expressions, obj.sym_var_matched_array); % Store the pre-solved expressions
-                    obj.expressions_solved_handle = matlabFunction(obj.expressions_solved, 'Vars', obj.sym_var_input_array, 'Outputs', obj.gi.getAliasById(obj.var_matched_ids));
-                else  % This is a residual generator
-                    obj.is_res_gen = true; % No pre-solved expression to store, we just need to evaluate it
-                    obj.expressions_solved_handle = matlabFunction(obj.expressions, 'Vars', obj.sym_var_input_array);
-                end
-                
-            else  % This is a non-singular SCC
-                if any(obj.gi.getPropertyById(obj.scc,'isDynamic'))
-                    error('DAEs should be handled by a DAESolver object');                    
-                else  % This is an algebraic SCC
-                    obj.expressions_solved = vpasolve(obj.expressions, obj.sym_var_matched_array);
-                    % Since vpasolve sorts the output arguments, I have to
-                    % re-sort them in the order of their var_matched_ids
-                    field_names = obj.gi.getAliasById(obj.var_matched_ids);
-                    [field_names_sorted, permutations] = sort(field_names);
-                    solution_names = fieldnames(obj.expressions_solved);
-                    assert(isempty(setxor(field_names, solution_names))); % Verify the expected matched variable names
-                    function_array = sym.empty;
-                    for i=1:length(field_names)
-                        function_array(permutations(i)) = obj.expressions_solved.(field_names_sorted{i});
+            if isa(obj, 'DAESolver')
+                % This part of the constructor should only be called by
+                % sub-SCCs
+            else
+                % Solve the expressions to get a pre-baked answer
+                if length(obj.scc)==1  % This is a singular SCC
+                    if ~isempty(obj.var_matched_ids)  % If this is not a residual generator
+                        obj.expressions_solved = vpasolve(obj.expressions, obj.sym_var_matched_array); % Store the pre-solved expressions
+                        obj.expressions_solved_handle = matlabFunction(obj.expressions_solved, 'Vars', obj.sym_var_input_array, 'Outputs', obj.gi.getAliasById(obj.var_matched_ids));
+                    else  % This is a residual generator
+                        obj.is_res_gen = true; % No pre-solved expression to store, we just need to evaluate it
+                        obj.expressions_solved_handle = matlabFunction(obj.expressions, 'Vars', obj.sym_var_input_array);
                     end
-                    obj.expressions_solved_handle = matlabFunction(function_array, 'Vars', obj.sym_var_input_array, 'Outputs', obj.gi.getAliasById(obj.var_matched_ids));
+                else  % This is a non-singular SCC
+                    if any(obj.gi.getPropertyById(obj.scc,'isDynamic'))
+                        obj.is_dynamic = true;
+                        error('DAEs should be handled by a DAESolver object');
+                    else  % This is an algebraic SCC
+                        obj.expressions_solved = vpasolve(obj.expressions, obj.sym_var_matched_array);
+                        % Since vpasolve sorts the output arguments, I have to
+                        % re-sort them in the order of their var_matched_ids
+                        field_names = obj.gi.getAliasById(obj.var_matched_ids);
+                        [field_names_sorted, permutations] = sort(field_names);
+                        solution_names = fieldnames(obj.expressions_solved);
+                        assert(isempty(setxor(field_names, solution_names))); % Verify the expected matched variable names
+                        function_array = sym.empty;
+                        for i=1:length(field_names)
+                            function_array(permutations(i)) = obj.expressions_solved.(field_names_sorted{i});
+                        end
+                        obj.expressions_solved_handle = matlabFunction(function_array, 'Vars', obj.sym_var_input_array, 'Outputs', obj.gi.getAliasById(obj.var_matched_ids));
+                    end
                 end
-                
             end
             
         end
@@ -103,6 +109,10 @@ classdef Evaluator < handle
         % Save a single output value with ID=id
             var_mask = ismember(obj.var_matched_ids, id);
             obj.answer(var_mask) = value;
+        end
+        
+        function [] = reset_state(obj)
+            % Empty method, to be overriden by Differentiator and DAESolver
         end
         
         function [ answer ] = evaluate(obj)
@@ -127,7 +137,7 @@ classdef Evaluator < handle
                 if obj.debug; fprintf('Evaluator: Input variables: '); fprintf('%s, ',obj.sym_var_input_array); fprintf('\n'); end
                 if obj.debug; fprintf('Evaluator: Input values: '); fprintf('%g, ',obj.values.getValue(obj.var_input_ids)); fprintf('\n'); end
             else  % This is a non-singular SCC
-                if any(obj.gi.getPropertyById(obj.scc,'isDynamic'))
+                if obj.is_dynamic
                     error('DAEs should be handled by a DAESolver object');                    
                 else  % This is an algebraic SCC
 %                     answer = struct();

@@ -40,6 +40,12 @@ classdef DAESolver < Evaluator
             obj.dt = value;
         end
         
+        function [] = reset_state(obj)
+            for i=1:length(obj.sub_evaluators)
+                obj.sub_evaluators{i}.reset_state();
+            end
+        end
+        
         function [answer] = evaluate(obj)
         % Evaluate the involved expressions given the stored values
         
