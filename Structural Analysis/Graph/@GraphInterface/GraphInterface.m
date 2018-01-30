@@ -870,6 +870,16 @@ classdef GraphInterface < handle
             end
             
         end
+        function [ limits ] = getLimits( gh, ids)
+            % Get the domain of variables
+            % Returns a Nx2 array
+            if any(~gh.isVariable(ids))
+                error('getLimits only applies to variables');
+            end
+            
+            var_indices = gh.getIndexById(ids);
+            limits = gh.graph.getLimits(var_indices);
+        end
         function [ ids ] = getMatchedEqus(gh, varIds)
             if nargin==1
                 ids = gh.getEquIdByProperty('isMatched',true);
@@ -1315,6 +1325,38 @@ classdef GraphInterface < handle
                 resp(i) = gh.graph.equations(index(i)).isFaultable;
             end            
         end
+        function [ resp ] = isOfProperty( gh, ids, property, value)
+            % ISOFPROPERTY Test if the input ids have the stated property
+            if nargin < 4
+                value = true;
+            end
+            
+            % Initialize the answer
+            resp = false(1,length(ids));
+            
+            indices = gh.getIndexById(ids);
+            
+            for i=1:length(ids)
+                if gh.isEquation(ids(i))
+                    if gh.graph.getPropertyEqu(indices(i),property)==value
+                        resp(i) = true;
+                    end
+                elseif gh.isVariable(ids(i))
+                    if gh.graph.getPropertyVar(indices(i),property)==value
+                        resp(i) = true;
+                    end
+                elseif gh.isEdge(ids(i))
+                    if gh.graph.getPropertyEdge(indices(i),property)==value
+                        resp(i) = true;
+                    end
+                else
+                    error('Unknown object with id=%d',ids(i))
+                end
+                
+            end
+            
+            
+        end
         
         %% Set methods
         function [ resp ] = setEdgeWeight( gh, ids, weights )
@@ -1709,15 +1751,15 @@ classdef GraphInterface < handle
             
             for i=1:length(ids)
                 if gh.isEquation(ids(i))
-                    if gh.graph.testPropertyExistsEqu(indices(i),property);
+                    if gh.graph.testPropertyExistsEqu(indices(i),property)
                         resp(i) = true;
                     end
                 elseif gh.isVariable(ids(i))
-                    if gh.graph.testPropertyExistsVar(indices(i),property);
+                    if gh.graph.testPropertyExistsVar(indices(i),property)
                         resp(i) = true;
                     end
                 elseif gh.isEdge(ids(i))
-                    if gh.graph.testPropertyExistsEdge(indices(i),property);
+                    if gh.graph.testPropertyExistsEdge(indices(i),property)
                         resp(i) = true;
                     end
                 else

@@ -10,6 +10,8 @@ classdef ResidualGenerator
         gi; % Handle to the original graph
         gd; % Handle to the directed subgraph
         
+        var_input_ids;  % IDs of the input variables
+        
     end
     
     methods
@@ -67,6 +69,16 @@ classdef ResidualGenerator
             
             obj.values.setValue(input_ids, [], new_inputs.getValue(input_ids));            
         end
+        
+        function [ input_ids ] = get_input_ids(obj)
+            % Get the input variable ids
+            input_ids = [];
+            for i=1:length(obj.evaluators_list)
+                input_ids = [ input_ids obj.evaluators_list{i}.var_input_ids ];
+            end
+            input_ids = unique(input_ids);
+        end
+        
     end
     
 end

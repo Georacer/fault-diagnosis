@@ -141,7 +141,7 @@ classdef Dictionary < handle
             if alias_length < 5
                 column_length = 6;
             else
-                column_length = alias_length+1;
+                column_length = alias_length+2;
             end
             
             integer_format = sprintf('%%%dd',column_length);
