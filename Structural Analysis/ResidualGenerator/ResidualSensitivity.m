@@ -131,31 +131,9 @@ classdef ResidualSensitivity
                     display_type = 'off';
                 end
                 particleswarm_options = optimoptions('particleswarm','SwarmSize',swarm_size,'Display',display_type,'MaxIterations',max_iterations, 'MaxStallIterations', max_stall_iterations);
-                
-                % Setup the problem for pso_opt toolbox
-                pso_options = psooptimset(...
-                    'PopulationSize',swarm_size,...
-                    'Generations',max_iterations,...
-                    'StallGenLimit',max_stall_iterations,...
-                    'ConstrBoundary','soft',...
-                    'Display','diagnose'...
-                    );
-                problem.fitnessfcn = @obj.fitness_function;
-                problem.nvars = length(obj.pso_input_ids);
-                problem.Aineq = [];
-                problem.bineq = [];
-                problem.Aeq = [];
-                problem.beq = [];
-                problem.LB = lower_bounds;
-                problem.UB = upper_bounds;
-                %                 problem.nonlcon = @obj.constraints;
-                problem.nonlcon = [];
-                problem.options = pso_options;
-                
+                                
                 % Run the PSO
-                [args, sensitivity] = particleswarm(@obj.fitness_function, length(obj.pso_input_ids), lower_bounds, upper_bounds, particleswarm_options);
-                %                 [args, sensitivity] = pso(problem);
-                
+                [args, sensitivity] = particleswarm(@obj.fitness_function, length(obj.pso_input_ids), lower_bounds, upper_bounds, particleswarm_options);                
                 
                 obj.values.setValue(obj.pso_input_ids, [], args);
                 obj.res_gen.reset_state();  % Reset the state variables
