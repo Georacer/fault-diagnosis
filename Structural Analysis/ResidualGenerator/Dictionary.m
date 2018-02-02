@@ -6,6 +6,7 @@ classdef Dictionary < handle
         ids_array = [];
         aliases_cell = {};
         values_array = [];
+        id_2_index_array = [];
     end
     
     properties (Dependent)
@@ -32,6 +33,12 @@ classdef Dictionary < handle
                 obj.values_array = values;
             else
                 obj.values_array = inf*ones(size(obj.ids_array));
+            end
+            
+            % Create a id->index reverse search registry
+            obj.id_2_index_array = zeros(1,max(ids));
+            for i=1:length(ids)
+                obj.id_2_index_array(ids(i)) = i;
             end
         end
         
@@ -80,10 +87,13 @@ classdef Dictionary < handle
         end
         
         function [ index ] = getIdIndex(obj, ids)
-            index = zeros(size(ids));
-            for i=1:length(ids)
-                index(i) = find(obj.ids_array==ids(i));
-            end
+
+            index = obj.id_2_index_array(ids);
+%             Old implementation
+%             index = zeros(size(ids));
+%             for i=1:length(ids)
+%                 index(i) = find(obj.ids_array==ids(i));
+%             end
             assert(length(index)==length(ids));
         end
         
