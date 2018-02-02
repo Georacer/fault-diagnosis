@@ -12,6 +12,11 @@ classdef ResidualSensitivity < handle
         pso_input_ids
         inner_problem_fault_value
         best_minimum_response_cost
+        step_counter = 0;
+        plotCost
+        timeDetection
+        
+        inner_problem_method;
         
         debug = true;
         %         debug = false;
@@ -25,12 +30,20 @@ classdef ResidualSensitivity < handle
             
             p.addRequired('res_gen',@(x) isa(x, 'ResidualGenerator'));
             p.addRequired('gi',@(x) isa(x,'GraphInterface'));
-            % p.addParameter('boundType', 'upper' ,@(s) validatestring(s, {'upper', 'lower'}));
+            p.addParameter('timeDetection', 0 ,@isnumeric);
+            p.addParameter('innerProblem', 'fminbound' ,@(s) validatestring(s, {'fminbound', 'pso'}));
+            p.addParameter('plotCost', false , @islogical);
             
             p.parse(varargin{:});
             opts = p.Results;
             obj.res_gen = opts.res_gen;
             obj.gi = opts.gi;
+            
+            obj.timeDetection = opts.timeDetection;
+            obj.plotCost = opts.plotCost;
+            
+            % Set the inner problem method
+            obj.inner_problem_method = opts.innerProblem;
             
             % Get a new dictionary
             obj.values = copy(obj.res_gen.values);
@@ -59,10 +72,10 @@ classdef ResidualSensitivity < handle
                 error('Cost is not expected to be inf');
             end
             
-            cost_penalty = obj.constraint_cost(pso_input_vec(1:(end-1)));    % pso_input_vec has the fault at its last position         
+            cost_penalty = obj.constraint_cost(pso_input_vec(1:(end-1)));    % pso_input_vec has the fault at its last position
             cost = cost_initial + cost_penalty;
         end
-                
+        
         function [ cost ] = fitness_function_minimum_inner(obj, input_vec, fault_value)
             % Objective function for maximum fault impact PSO
             % input_vec: indexed vector with input variable values,
@@ -90,52 +103,59 @@ classdef ResidualSensitivity < handle
             obj.values.setValue(obj.input_ids, [], input_vec);
             
             %% Maximum fault response search using Particle Swarm
-%             % Setup the inner optimization problem
-%             % Build the input bounds
-%             fault_id = obj.pso_input_ids(end);
-%             limits = obj.gi.getLimits(fault_id);
-%             lower_bound = limits(1);
-%             upper_bound = limits(2);
-%             % Setup the problem for particleswarm
-% %             display_type = 'off';
-%             display_type = 'iter';
-%             particleswarm_options = optimoptions('particleswarm',...
-%                 'SwarmSize',20, ...
-%                 'Display',display_type, ...
-%                 'MaxIterations',100, ...
-%                 'MaxStallIterations', 5 ...
-%                 );
-%             problem.solver = 'particleswarm';
-%             problem.objective = @(f) obj.fitness_function_minimum_inner(input_vec, f);
-%             problem.nvars = 1; % Only 1 fault is the free variable
-%             problem.lb = lower_bound;
-%             problem.ub = upper_bound;
-%             problem.options = particleswarm_options;
-%             % Run the PSO to find the fault value which maximizes the fault
-%             % impact
-%             obj.res_gen.reset_state();  % Reset the state variables
-%             [fault_value, inner_cost] = particleswarm(problem);
-            
+            if strcmp(obj.inner_problem_method, 'pso')
+                
+                % Setup the inner optimization problem
+                % Build the input bounds
+                fault_id = obj.pso_input_ids(end);
+                limits = obj.gi.getLimits(fault_id);
+                lower_bound = limits(1);
+                upper_bound = limits(2);
+                % Setup the problem for particleswarm
+                display_type = 'off';
+                %             display_type = 'iter';
+                particleswarm_options = optimoptions('particleswarm',...
+                    'SwarmSize',10, ...
+                    'Display',display_type, ...
+                    'MaxIterations',100, ...
+                    'MaxStallIterations', 5 ...
+                    );
+                problem.solver = 'particleswarm';
+                problem.objective = @(f) obj.fitness_function_minimum_inner(input_vec, f);
+                problem.nvars = 1; % Only 1 fault is the free variable
+                problem.lb = lower_bound;
+                problem.ub = upper_bound;
+                problem.options = particleswarm_options;
+                % Run the PSO to find the fault value which maximizes the fault
+                % impact
+                obj.res_gen.reset_state();  % Reset the state variables
+                [fault_value, inner_cost] = particleswarm(problem);
+                
             %% Maximum fault response search using fminbound
-            
-            % Build the input bounds
-            fault_id = obj.pso_input_ids(end);
-            limits = obj.gi.getLimits(fault_id);
-            lower_bound = limits(1);
-            upper_bound = limits(2);
-            
-            display_type = 'off';
-%             display_type = 'iter';
-            fminbnd_options = optimset(...
-                'Display',display_type ...
-                );
-            problem.solver = 'fminbnd';
-            problem.objective = @(f) obj.fitness_function_minimum_inner(input_vec, f);
-            problem.x1 = lower_bound;
-            problem.x2 = upper_bound;
-            problem.options = fminbnd_options;
-            % Run the SINGLE-variable solver
-            [ fault_value, inner_cost] = fminbnd(problem);            
+            elseif strcmp(obj.inner_problem_method, 'fminbound')
+                
+                % Build the input bounds
+                fault_id = obj.pso_input_ids(end);
+                limits = obj.gi.getLimits(fault_id);
+                lower_bound = limits(1);
+                upper_bound = limits(2);
+                
+                display_type = 'off';
+                %             display_type = 'iter';
+                fminbnd_options = optimset(...
+                    'Display',display_type ...
+                    );
+                problem.solver = 'fminbnd';
+                problem.objective = @(f) obj.fitness_function_minimum_inner(input_vec, f);
+                problem.x1 = lower_bound;
+                problem.x2 = upper_bound;
+                problem.options = fminbnd_options;
+                % Run the SINGLE-variable solver
+                [ fault_value, inner_cost] = fminbnd(problem);
+                
+            else
+                error('Unsupported maximization method');
+            end
             
             %%
             
@@ -176,13 +196,20 @@ classdef ResidualSensitivity < handle
             end
             
             % Set gamma
-            if q < 1
+%             if q < 1
+            if q < 0.1
                 gamma = 1;
             else
                 gamma = 2;
             end
             
-            penalty = theta*q^gamma;
+%             k = obj.step_counter; % Adaptive penalty cannot work with
+%             this implementation, because particleswarm() does not update
+%             its best fit value on each iteration: The old, cheaper
+%             position fix persists.
+            k=1;
+            
+            penalty = sqrt(k) * theta*q^gamma;
         end
         
         function [inequality, equality] = constraints(obj, input_vec)
@@ -201,6 +228,14 @@ classdef ResidualSensitivity < handle
             end
         end
         
+        function [ stop ] = update_steps(obj, optimValues, state)
+            % Auxiliary function to count the particle swarm algorithm
+            % steps
+            obj.step_counter = optimValues.iteration;
+            
+            stop = false;
+        end
+        
         function [ fault_contribution ] = get_residual_sensitivity(obj)
             
             % Initialize the fault response vectors
@@ -210,6 +245,7 @@ classdef ResidualSensitivity < handle
             
             % Iterate over all faults
             for i=1:length(obj.fault_ids)
+                tic;
                 
                 
                 %% Calculate the maximum fault contributions
@@ -226,6 +262,12 @@ classdef ResidualSensitivity < handle
                 lower_bounds = limits(:,1);
                 upper_bounds = limits(:,2);
                 
+                if obj.plotCost
+                    PlotFcn = @pswplotbestf;
+                else
+                    PlotFcn = [];
+                end
+                
                 % Setup the problem for particleswarm
                 if obj.debug
                     display_type = 'iter';
@@ -236,7 +278,9 @@ classdef ResidualSensitivity < handle
                     'SwarmSize',100, ...
                     'Display',display_type, ...
                     'MaxIterations',200, ...
-                    'MaxStallIterations', 10 ...
+                    'MaxStallIterations', 10, ...
+                    'OutputFcn', @obj.update_steps, ...
+                    'PlotFcn', PlotFcn ...
                     );
                 problem.solver = 'particleswarm';
                 problem.objective = @obj.fitness_function_maximum;
@@ -280,11 +324,14 @@ classdef ResidualSensitivity < handle
                 else
                     display_type = 'off';
                 end
+                    
                 particleswarm_options = optimoptions('particleswarm',...
-                    'SwarmSize',100, ...
+                    'SwarmSize',30, ...
                     'Display',display_type, ...
                     'MaxIterations',200, ...
-                    'MaxStallIterations', 10 ...
+                    'MaxStallIterations', 10, ...
+                    'OutputFcn', @obj.update_steps, ...
+                    'PlotFcn', PlotFcn ...
                     );
                 problem.solver = 'particleswarm';
                 problem.objective = @obj.fitness_function_minimum;
@@ -292,6 +339,7 @@ classdef ResidualSensitivity < handle
                 problem.lb = lower_bounds;
                 problem.ub = upper_bounds;
                 problem.options = particleswarm_options;
+                
                 % Run the PSO
                 [args, sensitivity] = particleswarm(problem);
                 
@@ -315,7 +363,8 @@ classdef ResidualSensitivity < handle
                 end
                 
                 
-                
+                toc
+                %                 pause();
             end
             
             fault_contribution = [fault_contribution_minimum; fault_contribution_maximum];
