@@ -15,6 +15,7 @@ classdef ResidualSensitivity < handle
         step_counter = 0;
         plotCost
         timeDetection
+        dt
         
         inner_problem_method;
         
@@ -31,6 +32,7 @@ classdef ResidualSensitivity < handle
             p.addRequired('res_gen',@(x) isa(x, 'ResidualGenerator'));
             p.addRequired('gi',@(x) isa(x,'GraphInterface'));
             p.addParameter('timeDetection', 0 ,@isnumeric);
+            p.addParameter('deltat', 0.01 ,@isnumeric);            
             p.addParameter('innerProblem', 'fminbound' ,@(s) validatestring(s, {'fminbound', 'pso'}));
             p.addParameter('plotCost', false , @islogical);
             
@@ -40,6 +42,7 @@ classdef ResidualSensitivity < handle
             obj.gi = opts.gi;
             
             obj.timeDetection = opts.timeDetection;
+            obj.dt = opts.deltat;
             obj.plotCost = opts.plotCost;
             
             % Set the inner problem method
@@ -67,7 +70,7 @@ classdef ResidualSensitivity < handle
             obj.values.setValue(obj.pso_input_ids, [], pso_input_vec);
             
             obj.res_gen.reset_state();  % Reset the state variables
-            cost_initial = -abs(obj.res_gen.evaluate(obj.values));
+            cost_initial = obj.residual_evaluation_cost(obj.values);
             if isinf(cost_initial)
                 error('Cost is not expected to be inf');
             end
@@ -87,13 +90,36 @@ classdef ResidualSensitivity < handle
             obj.values.setValue(obj.fault_id_current, [], fault_value);
             
             obj.res_gen.reset_state();  % Reset the state variables
-            cost_initial = -abs(obj.res_gen.evaluate(obj.values));
+            cost_initial = obj.residual_evaluation_cost(obj.values);
             if isinf(cost_initial)
                 error('Cost is not expected to be inf');
             end
             
             cost_penalty = obj.constraint_cost(input_vec);
             cost = cost_initial + cost_penalty;
+        end
+        
+        function [ cost ] = residual_evaluation_cost(obj, values)
+            % Residual evaluation cost to be minimized
+            % Check if integration is needed
+            if obj.res_gen.is_dynamic
+                if obj.timeDetection > 0 % A horizon has been set
+                    % Step once to populate res_gen values
+                    obj.res_gen.evaluate(values);
+                    % Calculate the required number of iterations
+                    iterations = floor(obj.timeDetection/obj.dt) - 2;
+                    % Run the integration
+                    for i=1:iterations
+                        obj.res_gen.evaluate(obj.res_gen.values);
+                    end
+                    % Run the last iteration to graph the residual value
+                    cost = -abs(obj.res_gen.evaluate(obj.res_gen.values));
+                else
+                    cost = -abs(obj.res_gen.evaluate(values));
+                end
+            else
+                cost = -abs(obj.res_gen.evaluate(values));
+            end
         end
         
         function [ cost ] = fitness_function_minimum(obj, input_vec)

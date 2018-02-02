@@ -13,6 +13,8 @@ classdef ResidualGenerator
         all_input_ids;
         var_input_ids;  % IDs of the input variables
         
+        is_dynamic = false;
+        
     end
     
     methods
@@ -36,6 +38,13 @@ classdef ResidualGenerator
             
             % Build and store all system input ids
             obj.all_input_ids = unique([ obj.gi.getVarIdByProperty('isInput') obj.gi.getVarIdByProperty('isMeasured')]);
+            
+            % Check if this res generator represents a dynamic system
+            for i=1:length(obj.evaluators_list)
+                if isa(obj.evaluators_list{i},'DAESolver')
+                    obj.is_dynamic = true;
+                end
+            end
         end
         
         function [ residual ] = evaluate(obj, new_inputs)
