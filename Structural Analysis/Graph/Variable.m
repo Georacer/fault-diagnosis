@@ -15,6 +15,7 @@ classdef Variable < Vertex
         isResidual
         isMatrix
         isFault
+        isParameter
         
         limit_upper = 1;
         limit_lower = -1;

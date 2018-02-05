@@ -71,7 +71,7 @@ classdef GraphInterface < handle
                 respAdded = true;
                 if debug; fprintf('addEdge: Created new edge from (%d,%d) with ID %d\n',equId,varId,id); end
             else
-                warning('I should not be here');
+                warning('I should not be here: Duplicate edge between %d and %d', equId, varId);
                 gi.setPropertyOR(edgeId,'isMatched',edgeProps.isMatched);
                 gi.setPropertyOR(edgeId,'isDerivative',edgeProps.isDerivative);
                 gi.setPropertyOR(edgeId,'isIntegral',edgeProps.isIntegral);
@@ -197,7 +197,8 @@ classdef GraphInterface < handle
                     this.setPropertyOR(varId,'isOutput',varProps.isOutput);
                     this.setPropertyOR(varId,'isMatched',varProps.isMatched);
                     this.setPropertyOR(varId,'isMatrix',varProps.isMatrix);
-                    this.setPropertyOR(varId,'isFault',varProps.isMatrix);
+                    this.setPropertyOR(varId,'isFault',varProps.isFault);
+                    this.setPropertyOR(varId,'isParameter',varProps.isParameter);
                     id = varId;
                 end
             else
@@ -1566,7 +1567,7 @@ classdef GraphInterface < handle
             % inp - input variable
             % out - output variable
             % msr - measured variable
-            operators = {'dot','int','ni','inp','out','msr','fault', 'sub', 'mat', 'expr'}; % Available operators
+            operators = {'dot','int','ni','inp','out','msr','fault', 'sub', 'mat', 'expr', 'par'}; % Available operators
             words = strsplit(strtrim(exprStr),' '); % Split expression to operands and variables
             linkedVariables = []; % Array with variables linked to this equation
             initProperties = true; % New variable flag for properties initialization
@@ -1584,6 +1585,7 @@ classdef GraphInterface < handle
                     isSubsystem = false;
                     isMatrix = false;
                     isExpression = false;
+                    isParameter = false;
                     initProperties = false;
                     edgeWeight = 1;
                 end
@@ -1626,6 +1628,7 @@ classdef GraphInterface < handle
                         faultVarProps.isMatched = false;
                         faultVarProps.isMatrix = false;
                         faultVarProps.isFault = true;
+                        faultVarProps.isParameter = false;                        
                         [resp, varId] = this.addVariable([], ['f' prefix alias], faultVarProps);
                         
                         edgeProps.isMatched = false;
@@ -1640,6 +1643,10 @@ classdef GraphInterface < handle
                         isMatrix = true;
                     case 10
                         isExpression = true;
+                    case 11 % This is a paremeter
+                        isParameter = true;
+                        isNonSolvable = true;
+                        isKnown = true;
                     otherwise % Found a variable or subsystem designation
                         
                         if isSubsystem % sub keyword met previously
@@ -1660,6 +1667,7 @@ classdef GraphInterface < handle
                             varProps.isMatched = isMatched;
                             varProps.isMatrix = isMatrix;
                             varProps.isFault = false;  % Faults are generated specifically above
+                            varProps.isParameter = isParameter;
                             [resp, varId] = this.addVariable([],word,varProps);
                             
                             edgeProps.isMatched = false;
