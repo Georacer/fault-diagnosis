@@ -113,7 +113,7 @@ classdef Evaluator < handle
                     else  % This is an algebraic SCC
                         
                         % State some exceptional cases to avoid
-                        if isempty(setdiff(scc,[16 32 160 166 182 228 252 270 317 323]))
+                        if isempty(setdiff(scc,[16 32 159 165 181 227 251 269 316 322]))
                             error('vpasolve cannot solve this equation set');
                         end
                             

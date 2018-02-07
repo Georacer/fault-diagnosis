@@ -78,6 +78,24 @@ for i=1:length(state_ids)
 end
 s = '\n';  fprintf(fileID,s);
 
+% Create input variable limits setters
+s = '%%Input variable limits Initializations\n'; fprintf(fileID,s);
+input_ids = gi.getVarIdByProperty('isInput');
+input_aliases = gi.getAliasById(input_ids);
+for i=1:length(input_ids)
+    s = sprintf('graphInitial.setLimits([], {''%s''}, [-1 1]);\n', input_aliases{i}); fprintf(fileID, s);
+end
+s = '\n';  fprintf(fileID,s);
+
+% Create measured variable limits setters
+s = '%%Measured variable limits Initializations\n'; fprintf(fileID,s);
+measurement_ids = gi.getVarIdByProperty('isMeasured');
+measured_aliases = gi.getAliasById(measurement_ids);
+for i=1:length(measurement_ids)
+    s = sprintf('graphInitial.setLimits([], {''%s''}, [-1 1]);\n', measured_aliases{i}); fprintf(fileID, s);
+end
+s = '\n';  fprintf(fileID,s);
+
 s = 'end'; fprintf(fileID,s);
 
 fclose(fileID);
