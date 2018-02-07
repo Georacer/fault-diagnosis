@@ -32,12 +32,16 @@ for i=1:length(solution_order)
             end
         end
     else
-        new_evaluator = Evaluator(gi, sub_digraph, scc, dictionary);
+        try
+            new_evaluator = Evaluator(gi, sub_digraph, scc, dictionary);
             if (debug)
                 fprintf('create_evaluators: Created a new Evaluator for equations ');
                 fprintf('%d,', new_evaluator.scc);
                 fprintf('\n');
             end
+        catch e
+            new_evaluator = [];  % MATLAB could not solve the evaluator expression
+        end
     end
     evaluators_cell(end+1) = {new_evaluator};
     

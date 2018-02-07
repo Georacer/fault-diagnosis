@@ -14,6 +14,7 @@ classdef ResidualGenerator
         var_input_ids;  % IDs of the input variables
         
         is_dynamic = false;
+        has_failed = false;
         
     end
     
@@ -35,6 +36,11 @@ classdef ResidualGenerator
             
             % Create the evaluators after the initial values have been specified
             obj.evaluators_list = create_evaluators(graphInitial, matched_graph, SCCs, values, obj.dt);
+            % Test if any evaluator has failed to instantiate
+            if any(cellfun(@isempty,obj.evaluators_list))
+                obj.has_failed = true;
+                return;
+            end
             
             % Build and store all system input ids
             obj.all_input_ids = unique([ obj.gi.getVarIdByProperty('isInput') obj.gi.getVarIdByProperty('isMeasured')]);

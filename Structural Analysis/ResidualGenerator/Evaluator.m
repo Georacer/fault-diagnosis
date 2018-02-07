@@ -65,19 +65,43 @@ classdef Evaluator < handle
             obj.expressions = sym.empty;
             for i=1:length(obj.scc)
                 if ~gi.getPropertyById(scc(i),'isDynamic')  % This equation is not a differentiation
-                    obj.expressions(i) = sym(obj.gi.getExpressionById(scc(i)));
+                    if isempty(obj.gi.getExpressionById(scc(i)))
+                        error('No expression was provided with equation %d',scc(i));
+                    end
+                    try
+                        obj.expressions(i) = sym(obj.gi.getExpressionById(scc(i)));
+                    catch e
+                        rethrow(e);
+                    end
                 end
             end
             
             if isa(obj, 'DAESolver')
                 % This part of the constructor should only be called by
                 % sub-SCCs
+            elseif isa(obj, 'Differentiator')
+                % This part of the constructor should only be handled
+                % explicitly by Differentiator subclass
             else
                 % Solve the expressions to get a pre-baked answer
                 if length(obj.scc)==1  % This is a singular SCC
                     if ~isempty(obj.var_matched_ids)  % If this is not a residual generator
-                        obj.expressions_solved = vpasolve(obj.expressions, obj.sym_var_matched_array); % Store the pre-solved expressions
-                        obj.expressions_solved_handle = matlabFunction(obj.expressions_solved, 'Vars', obj.sym_var_input_array, 'Outputs', obj.gi.getAliasById(obj.var_matched_ids));
+                        try
+                            obj.expressions_solved = vpasolve(obj.expressions, obj.sym_var_matched_array); % Store the pre-solved expressions
+                        catch e
+                            warning('vpasolve could not solve for expression');
+                            try
+                                obj.expressions_solved = solve(obj.expressions, obj.sym_var_matched_array); % Store the pre-solved expressions
+                            catch e
+                                if obj.debug; fprintf('Evaluator: Failed to solve singular SCC\n'); end
+                                rethrow(e);  %This equation cannot be solved at all with MATLAB's computer methods
+                            end
+                        end
+                        try
+                            obj.expressions_solved_handle = matlabFunction(obj.expressions_solved, 'Vars', obj.sym_var_input_array, 'Outputs', obj.gi.getAliasById(obj.var_matched_ids));
+                        catch e
+                            rethrow(e);
+                        end
                     else  % This is a residual generator
                         obj.is_res_gen = true; % No pre-solved expression to store, we just need to evaluate it
                         obj.expressions_solved_handle = matlabFunction(obj.expressions, 'Vars', obj.sym_var_input_array);
@@ -87,7 +111,22 @@ classdef Evaluator < handle
                         obj.is_dynamic = true;
                         error('DAEs should be handled by a DAESolver object');
                     else  % This is an algebraic SCC
-                        obj.expressions_solved = vpasolve(obj.expressions, obj.sym_var_matched_array);
+                        
+                        % State some exceptional cases to avoid
+                        if isempty(setdiff(scc,[16 32 160 166 182 228 252 270 317 323]))
+                            error('vpasolve cannot solve this equation set');
+                        end
+                            
+                        try
+                            obj.expressions_solved = vpasolve(obj.expressions, obj.sym_var_matched_array, 'random', true);
+                        catch e
+%                             try
+%                                 obj.expressions_solved = solve(obj.expressions, obj.sym_var_matched_array);
+%                             catch e
+                                if obj.debug; fprintf('Evaluator: Failed to solve non-singular SCC\n'); end
+                                rethrow(e);  %This equation cannot be solved at all with MATLAB's computer methods
+%                             end
+                        end
                         % Since vpasolve sorts the output arguments, I have to
                         % re-sort them in the order of their var_matched_ids
                         field_names = obj.gi.getAliasById(obj.var_matched_ids);
@@ -98,7 +137,11 @@ classdef Evaluator < handle
                         for i=1:length(field_names)
                             function_array(permutations(i)) = obj.expressions_solved.(field_names_sorted{i});
                         end
-                        obj.expressions_solved_handle = matlabFunction(function_array, 'Vars', obj.sym_var_input_array, 'Outputs', obj.gi.getAliasById(obj.var_matched_ids));
+                        try
+                            obj.expressions_solved_handle = matlabFunction(function_array, 'Vars', obj.sym_var_input_array, 'Outputs', obj.gi.getAliasById(obj.var_matched_ids));
+                        catch e
+                            rethrow(e);                            
+                        end
                     end
                 end
             end

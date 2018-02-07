@@ -42,9 +42,11 @@ s = '\n';  fprintf(fileID,s);
 % Initialize inputs to 0
 s = '%%Input Initializations\n'; fprintf(fileID,s);
 input_ids = gi.getVarIdByProperty('isInput');
-input_aliases = gi.getAliasById(input_ids);
-for i=1:length(input_ids)
-    s = sprintf('dictionary.setValue(%d, {''%s''}, 0);\n', input_ids(i), input_aliases{i}); fprintf(fileID, s);
+fault_ids = gi.getVarIdByProperty('isFault');
+ids = setdiff(input_ids,fault_ids);  % Leave faults out, will be covered later.
+aliases = gi.getAliasById(ids);
+for i=1:length(ids)
+    s = sprintf('dictionary.setValue(%d, {''%s''}, 0);\n', ids(i), aliases{i}); fprintf(fileID, s);
 end
 s = '\n';  fprintf(fileID,s);
 
