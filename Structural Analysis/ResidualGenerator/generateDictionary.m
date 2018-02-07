@@ -26,11 +26,12 @@ s = sprintf('%%makeDictionary Initialize the dictionary for the %s model\n',gi.n
 
 % Initialize dictionary
 s = 'variable_ids = graphInitial.getVariables();\n'; fprintf(fileID,s);
-s = 'variable_aliases = graphInitial.getAliasById(variableIds);\n'; fprintf(fileID,s);
+s = 'variable_aliases = graphInitial.getAliasById(variable_ids);\n'; fprintf(fileID,s);
 s = 'dictionary = Dictionary(variable_ids, variable_aliases, inf*ones(size(variable_ids)));\n'; fprintf(fileID,s);
 s = '\n';  fprintf(fileID,s);
 
 % Generate parameter set calls
+s = '%%Parameter Initializations\n'; fprintf(fileID,s);
 parameter_ids = gi.getVarIdByProperty('isParameter');
 parameter_aliases = gi.getAliasById(parameter_ids);
 for i=1:length(parameter_ids)
