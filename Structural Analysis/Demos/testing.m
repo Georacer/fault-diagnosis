@@ -67,20 +67,26 @@ for modelIndex=1:length(modelArray)
     % TODO: Must get overconstrained graph first
     graphOver = sgInitial.getOver();
     
+    % For very large models, match 1 rank of variables to reduce the model
+    % size and complexity
     switch model.name
-        case {'g014e', 'g014g'}
+        case {'g014e'}
             matchWERank = 1;
+%             matchWERank = 0;
         otherwise
             matchWERank = 0;
     end
-    matcher = Matcher(graphOver);
-    matcher.setCausality('Realistic');
-    M = matcher.match('WeightedElimination','maxRank',matchWERank);
-    plotter = Plotter(graphOver);
-    % plotter.plotDM;
-    % plotter.plotDot('graphOver_matchedWeighted');
     
-    % return;
+    if matchWERank > 0
+        matcher = Matcher(graphOver);
+        matcher.setCausality('Realistic');
+        M = matcher.match('WeightedElimination','maxRank',matchWERank);
+        plotter = Plotter(graphOver);
+        % plotter.plotDM;
+        % plotter.plotDot('graphOver_matchedWeighted');
+    end
+    
+%     return;
     %%
     
     % clc
