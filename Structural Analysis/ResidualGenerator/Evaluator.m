@@ -39,6 +39,7 @@ classdef Evaluator < handle
             counter = 1;
             for var_id = obj.var_ids
                 obj.sym_var_array(end+1) = sym(obj.gi.getAliasById(var_id));
+                assume(obj.sym_var_array(end),'real'); % Assume real variables
                 counter = counter + 1;
             end
             
@@ -111,11 +112,6 @@ classdef Evaluator < handle
                         obj.is_dynamic = true;
                         error('DAEs should be handled by a DAESolver object');
                     else  % This is an algebraic SCC
-                        
-                        % State some exceptional cases to avoid
-                        if isempty(setdiff(scc,[16 32 159 165 181 227 251 269 316 322]))
-                            error('vpasolve cannot solve this equation set');
-                        end
                             
                         try
                             obj.expressions_solved = vpasolve(obj.expressions, obj.sym_var_matched_array, 'random', true);

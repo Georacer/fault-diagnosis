@@ -39,7 +39,7 @@ classdef Differentiator < Evaluator
                     error('Differentiator must be in either derivative or integral causality');
                 end
             else % The differentiator is a residual generator, use it in differential causality
-                obj.isDifferentiator = true;
+                
             end
             
             % Find the integral and derivative variables

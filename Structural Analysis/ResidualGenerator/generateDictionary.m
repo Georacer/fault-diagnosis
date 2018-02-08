@@ -33,22 +33,26 @@ s = '\n';  fprintf(fileID,s);
 % Generate parameter set calls
 s = '%%Parameter Initializations\n'; fprintf(fileID,s);
 parameter_ids = gi.getVarIdByProperty('isParameter');
-parameter_aliases = gi.getAliasById(parameter_ids);
-for i=1:length(parameter_ids)
-    s = sprintf('dictionary.setValue([], {''%s''}, ?);\n', parameter_aliases{i}); fprintf(fileID, s);
+if ~isempty(parameter_ids)
+    parameter_aliases = gi.getAliasById(parameter_ids);
+    for i=1:length(parameter_ids)
+        s = sprintf('dictionary.setValue([], {''%s''}, ?);\n', parameter_aliases{i}); fprintf(fileID, s);
+    end
+    s = '\n';  fprintf(fileID,s);
 end
-s = '\n';  fprintf(fileID,s);
 
 % Initialize inputs to 0
 s = '%%Input Initializations\n'; fprintf(fileID,s);
 input_ids = gi.getVarIdByProperty('isInput');
 fault_ids = gi.getVarIdByProperty('isFault');
 ids = setdiff(input_ids,fault_ids);  % Leave faults out, will be covered later.
-aliases = gi.getAliasById(ids);
-for i=1:length(ids)
-    s = sprintf('dictionary.setValue(%d, {''%s''}, 0);\n', ids(i), aliases{i}); fprintf(fileID, s);
+if ~isempty(ids)
+    aliases = gi.getAliasById(ids);
+    for i=1:length(ids)
+        s = sprintf('dictionary.setValue(%d, {''%s''}, 0);\n', ids(i), aliases{i}); fprintf(fileID, s);
+    end
+    s = '\n';  fprintf(fileID,s);
 end
-s = '\n';  fprintf(fileID,s);
 
 % Initialize measurements to 0
 s = '%%Measurement Initializations\n'; fprintf(fileID,s);

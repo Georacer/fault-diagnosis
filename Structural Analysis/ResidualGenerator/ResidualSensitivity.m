@@ -13,14 +13,19 @@ classdef ResidualSensitivity < handle
         inner_problem_fault_value
         best_minimum_response_cost
         step_counter = 0;
-        plotCost
         timeDetection
         dt
         
         inner_problem_method;
         
+        plotCost
+        plotSwarm
+        faultIndex  % Which faults to examine for
+        testMin
+        testMax
+        
         debug = true;
-        %         debug = false;
+%         debug = false;
     end
     
     methods
@@ -35,6 +40,10 @@ classdef ResidualSensitivity < handle
             p.addParameter('deltat', 0.01 ,@isnumeric);            
             p.addParameter('innerProblem', 'fminbound' ,@(s) validatestring(s, {'fminbound', 'pso'}));
             p.addParameter('plotCost', false , @islogical);
+            p.addParameter('plotSwarm', false, @islogical);
+            p.addParameter('faultIndex', 0, @isPositiveIntegerValuedNumeric);
+            p.addParameter('testMin', true, @islogical);
+            p.addParameter('testMax', true, @islogical);
             
             p.parse(varargin{:});
             opts = p.Results;
@@ -44,6 +53,9 @@ classdef ResidualSensitivity < handle
             obj.timeDetection = opts.timeDetection;
             obj.dt = opts.deltat;
             obj.plotCost = opts.plotCost;
+            obj.plotSwarm = opts.plotSwarm;
+            obj.testMin = opts.testMin;
+            obj.testMax = opts.testMax;
             
             % Set the inner problem method
             obj.inner_problem_method = opts.innerProblem;
@@ -61,6 +73,16 @@ classdef ResidualSensitivity < handle
             obj.fault_ids = var_ids(fault_mask);
             obj.input_ids = var_ids( (input_mask | measured_mask) & ~fault_mask);
             
+            if opts.faultIndex == 0
+                % Examine all faults
+                obj.faultIndex = 1:length(obj.fault_ids);
+            else
+                if opts.faultIndex>length(obj.fault_ids)
+                    error('Fault index specified is larger than the amount of available faults');
+                end
+                obj.faultIndex = opts.faultIndex;
+            end
+            
         end
         
         function [ cost ] = fitness_function_maximum(obj, pso_input_vec)
@@ -77,6 +99,10 @@ classdef ResidualSensitivity < handle
             
             cost_penalty = obj.constraint_cost(pso_input_vec(1:(end-1)));    % pso_input_vec has the fault at its last position
             cost = cost_initial + cost_penalty;
+            
+            if obj.plotSwarm
+                plotSwarm(pso_input_vec([1, end]),cost_initial,'iter');
+            end
         end
         
         function [ cost ] = fitness_function_minimum_inner(obj, input_vec, fault_value)
@@ -266,137 +292,174 @@ classdef ResidualSensitivity < handle
             
             % Initialize the fault response vectors
             fault_contribution_maximum = zeros(size(obj.fault_ids));
-            fault_contribution_minimum = fault_contribution_maximum;
+            fault_contribution_minimum = inf*ones(size(fault_contribution_maximum));
             
             
             % Iterate over all faults
-            for i=1:length(obj.fault_ids)
+            for i=obj.faultIndex
                 tic;
                 
-                
-                %% Calculate the maximum fault contributions
-                % Reset fault values
-                obj.values.setValue(obj.fault_ids, [], zeros(size(obj.fault_ids)));
-                
-                % Pick one fault and build the input array
-                fault_index = i;
-                obj.fault_id_current = obj.fault_ids(fault_index);
-                obj.pso_input_ids = [obj.input_ids obj.fault_id_current];
-                
-                % Build the input bounds
-                limits = obj.gi.getLimits(obj.pso_input_ids);
-                lower_bounds = limits(:,1);
-                upper_bounds = limits(:,2);
-                
-                if obj.plotCost
-                    PlotFcn = @pswplotbestf;
-                else
-                    PlotFcn = [];
-                end
-                
-                % Setup the problem for particleswarm
-                if obj.debug
-                    display_type = 'iter';
-                else
-                    display_type = 'off';
-                end
-                particleswarm_options = optimoptions('particleswarm',...
-                    'SwarmSize',100, ...
-                    'Display',display_type, ...
-                    'MaxIterations',200, ...
-                    'MaxStallIterations', 10, ...
-                    'OutputFcn', @obj.update_steps, ...
-                    'PlotFcn', PlotFcn ...
-                    );
-                problem.solver = 'particleswarm';
-                problem.objective = @obj.fitness_function_maximum;
-                problem.nvars = length(obj.pso_input_ids);
-                problem.lb = lower_bounds;
-                problem.ub = upper_bounds;
-                problem.options = particleswarm_options;
-                % Run the PSO
-                [args, sensitivity] = particleswarm(problem);
-                
-                obj.values.setValue(obj.pso_input_ids, [], args);
-                obj.res_gen.reset_state();  % Reset the state variables
-                fault_contribution_maximum(i) = abs(obj.res_gen.evaluate(obj.values));
-                
-                if obj.debug
-                    fprintf('Maximum Residual Sensitivity: Solution found at:\n');
-                    for j=1:length(args)
-                        alias = obj.gi.getAliasById(obj.pso_input_ids(j));
-                        fprintf('%5s = %f\n', alias{1}, args(j));
+                if obj.testMax
+                    %% Calculate the maximum fault contributions
+                    % Reset fault values
+                    obj.values.setValue(obj.fault_ids, [], zeros(size(obj.fault_ids)));
+                    
+                    % Pick one fault and build the input array
+                    fault_index = i;
+                    obj.fault_id_current = obj.fault_ids(fault_index);
+                    obj.pso_input_ids = [obj.input_ids obj.fault_id_current];
+                    
+                    % Build the input bounds
+                    limits = obj.gi.getLimits(obj.pso_input_ids);
+                    lower_bounds = limits(:,1);
+                    upper_bounds = limits(:,2);
+                    
+                    if obj.plotCost
+                        PlotFcn = @pswplotbestf;
+                    else
+                        PlotFcn = [];
                     end
                     
-                    fprintf('with output: \n')
-                    obj.values.setValue(obj.pso_input_ids, [], args);
-                    obj.res_gen.evaluate(obj.values);
-                    disp(obj.values);
-                end
-                
-                %% Calculate the minimum fault contributions
-                
-                obj.inner_problem_fault_value = nan;
-                obj.best_minimum_response_cost = inf;
-                
-                % Build the input bounds
-                limits = obj.gi.getLimits(obj.input_ids);
-                lower_bounds = limits(:,1);
-                upper_bounds = limits(:,2);
-                
-                % Setup the problem for particleswarm
-                if obj.debug
-                    display_type = 'iter';
-                else
-                    display_type = 'off';
-                end
+                    % Setup the problem for particleswarm
+                    if obj.debug
+                        display_type = 'iter';
+                    else
+                        display_type = 'off';
+                    end
+                    if obj.plotSwarm
+                        plotSwarm([0 0],0,'init');
+                    end
+                    particleswarm_options = optimoptions('particleswarm',...
+                        'SwarmSize',300, ...
+                        'Display',display_type, ...
+                        'MaxIterations',200, ...
+                        'MaxStallIterations', 10, ...
+                        'OutputFcn', @obj.update_steps, ...
+                        'PlotFcn', PlotFcn ...
+                        );
+                    problem.solver = 'particleswarm';
+                    problem.objective = @obj.fitness_function_maximum;
+                    problem.nvars = length(obj.pso_input_ids);
+                    problem.lb = lower_bounds;
+                    problem.ub = upper_bounds;
+                    problem.options = particleswarm_options;
+                    % Run the PSO
+                    [args, sensitivity] = particleswarm(problem);
                     
-                particleswarm_options = optimoptions('particleswarm',...
-                    'SwarmSize',30, ...
-                    'Display',display_type, ...
-                    'MaxIterations',200, ...
-                    'MaxStallIterations', 10, ...
-                    'OutputFcn', @obj.update_steps, ...
-                    'PlotFcn', PlotFcn ...
-                    );
-                problem.solver = 'particleswarm';
-                problem.objective = @obj.fitness_function_minimum;
-                problem.nvars = length(obj.input_ids);
-                problem.lb = lower_bounds;
-                problem.ub = upper_bounds;
-                problem.options = particleswarm_options;
+                    obj.values.setValue(obj.pso_input_ids, [], args);
+                    obj.res_gen.reset_state();  % Reset the state variables
+                    fault_contribution_maximum(i) = abs(obj.res_gen.evaluate(obj.values));
+                    
+                    if obj.debug
+                        fprintf('Maximum Residual Sensitivity: Solution found at:\n');
+                        for j=1:length(args)
+                            alias = obj.gi.getAliasById(obj.pso_input_ids(j));
+                            fprintf('%5s = %f;\n', alias{1}, args(j));
+                        end
+                        
+                        fprintf('with response: %g\n', fault_contribution_maximum(i));
+                        
+                        obj.values.setValue(obj.pso_input_ids, [], args);
+                        obj.res_gen.reset_state();
+                        obj.res_gen.evaluate(obj.values);
+                        %                     disp(obj.values);
+                        fprintf('Residual generator state: \n')
+                        disp(obj.res_gen.values);
+                        
+                        obj.values.setValue(obj.fault_ids, [], zeros(size(obj.fault_ids)));
+                        obj.res_gen.reset_state();
+                        fprintf('Residual consistency: %g\n', obj.res_gen.evaluate(obj.values));
+                        disp(obj.res_gen.values);
+                    end
+                end
                 
-                % Run the PSO
-                [args, sensitivity] = particleswarm(problem);
-                
-                % Add the discovered fault value
-                args = [args obj.inner_problem_fault_value];
-                obj.values.setValue(obj.pso_input_ids, [], args);
-                obj.res_gen.reset_state();  % Reset the state variables
-                fault_contribution_minimum(i) = abs(obj.res_gen.evaluate(obj.values));
-                
-                if obj.debug
-                    fprintf('Minimum Residual Sensitivity: Solution found at:\n');
-                    for j=1:length(args)
-                        alias = obj.gi.getAliasById(obj.pso_input_ids(j));
-                        fprintf('%5s = %f\n', alias{1}, args(j));
+                if obj.testMin
+                    %% Calculate the minimum fault contributions
+                    
+                    obj.inner_problem_fault_value = nan;
+                    obj.best_minimum_response_cost = inf;
+                    
+                    % Pick one fault and build the input array
+                    fault_index = i;
+                    obj.fault_id_current = obj.fault_ids(fault_index);
+                    obj.pso_input_ids = [obj.input_ids obj.fault_id_current];
+                    
+                    % Build the input bounds
+                    limits = obj.gi.getLimits(obj.input_ids);
+                    lower_bounds = limits(:,1);
+                    upper_bounds = limits(:,2);
+                    
+                    if obj.plotCost
+                        PlotFcn = @pswplotbestf;
+                    else
+                        PlotFcn = [];
                     end
                     
-                    fprintf('with output: \n')
+                    % Setup the problem for particleswarm
+                    if obj.debug
+                        display_type = 'iter';
+                    else
+                        display_type = 'off';
+                    end
+                    
+                    particleswarm_options = optimoptions('particleswarm',...
+                        'SwarmSize',30, ...
+                        'Display',display_type, ...
+                        'MaxIterations',200, ...
+                        'MaxStallIterations', 10, ...
+                        'OutputFcn', @obj.update_steps, ...
+                        'PlotFcn', PlotFcn ...
+                        );
+                    problem.solver = 'particleswarm';
+                    problem.objective = @obj.fitness_function_minimum;
+                    problem.nvars = length(obj.input_ids);
+                    problem.lb = lower_bounds;
+                    problem.ub = upper_bounds;
+                    problem.options = particleswarm_options;
+                    
+                    % Run the PSO
+                    [args, sensitivity] = particleswarm(problem);
+                    
+                    % Add the discovered fault value
+                    args = [args obj.inner_problem_fault_value];
                     obj.values.setValue(obj.pso_input_ids, [], args);
-                    obj.res_gen.evaluate(obj.values);
-                    disp(obj.values);
+                    obj.res_gen.reset_state();  % Reset the state variables
+                    fault_contribution_minimum(i) = abs(obj.res_gen.evaluate(obj.values));
+                    
+                    if obj.debug
+                        fprintf('Minimum Residual Sensitivity: Solution found at:\n');
+                        for j=1:length(args)
+                            alias = obj.gi.getAliasById(obj.pso_input_ids(j));
+                            fprintf('%5s = %f;\n', alias{1}, args(j));
+                        end
+                        
+                        fprintf('with response: %g\n', fault_contribution_minimum(i));
+                        
+                        obj.values.setValue(obj.pso_input_ids, [], args);
+                        obj.res_gen.reset_state();
+                        obj.res_gen.evaluate(obj.values);
+                        %                     disp(obj.values);
+                        fprintf('Residual generator state: \n')
+                        disp(obj.res_gen.values);
+                        
+                        obj.values.setValue(obj.fault_ids, [], zeros(size(obj.fault_ids)));
+                        obj.res_gen.reset_state();
+                        fprintf('Residual consistency: %g\n', obj.res_gen.evaluate(obj.values));
+                        disp(obj.res_gen.values);
+                    end
+                    
+                    
+                    toc
+                    %                 pause();
                 end
-                
-                
-                toc
-                %                 pause();
-            end
+
             
             fault_contribution = [fault_contribution_minimum; fault_contribution_maximum];
             
         end
         
+        end
+    
     end
     
 end

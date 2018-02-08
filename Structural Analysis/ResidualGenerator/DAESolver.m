@@ -33,6 +33,10 @@ classdef DAESolver < Evaluator
             % Add evaluators for explicit integrations
             sub_evaluators_dynamic = create_evaluators(gi, digraph, num2cell(dynamic_equ_ids), obj.values, obj.dt);
             obj.sub_evaluators = [sub_evaluators_static sub_evaluators_dynamic];
+            % Check if all evaluators instantiated correctly
+            if any(cellfun(@isempty,obj.sub_evaluators))
+                error('One of the subevaluators of the DAE did not instantiate');
+            end
             
         end
 
