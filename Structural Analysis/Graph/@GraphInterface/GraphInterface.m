@@ -870,17 +870,25 @@ classdef GraphInterface < handle
                 
             end
             
-        end
-        function [ limits ] = getLimits( gh, ids)
+        end     
+        function [ limits ] = getLimits( gh, ids, aliases)
             % Get the domain of variables
             % Returns a Nx2 array
+            if nargin<3
+                aliases = [];
+            end
+            
+            if isempty(ids)
+                ids = gh.getVarIdByAlias(aliases);
+            end
+            
             if any(~gh.isVariable(ids))
                 error('getLimits only applies to variables');
             end
             
             var_indices = gh.getIndexById(ids);
             limits = gh.graph.getLimits(var_indices);
-        end
+        end      
         function [ ids ] = getMatchedEqus(gh, varIds)
             if nargin==1
                 ids = gh.getEquIdByProperty('isMatched',true);
@@ -1039,13 +1047,31 @@ classdef GraphInterface < handle
             varIds = unique(varIds);
             
         end
-        function [ id ] = getVarIdByAlias( this, alias )
+        function [ id_array ] = getVarIdByAlias( this, alias_cell )
             %GETVARIDBYALIAS Summary of this function goes here
             %   Detailed explanation goes here
             
-            varIndex = find(strcmp(this.reg.varAliasArray,alias));
-            id = this.reg.varIdArray(varIndex);
+            if ~iscell(alias_cell)
+                alias_cell = {alias_cell};
+            end
             
+            id_array = zeros(1,length(alias_cell));
+            
+            for i=1:length(id_array)
+                varIndex = find(strcmp(this.reg.varAliasArray,alias_cell{i}));
+                if isempty(varIndex)  % alias was not found
+                    id_array(i)=0;
+                else
+                    id_array(i) = this.reg.varIdArray(varIndex);
+                end
+            end
+            
+            % Handle legacy case where id_array would return empty
+            if length(id_array)==1
+                if id_array==0
+                    id_array = [];
+                end
+            end
         end
         function [ id ] = getVarIdByProperty( gh,property,value,operator )
             %GETVARIDBYPROPERTY Summary of gh function goes here
@@ -1375,6 +1401,22 @@ classdef GraphInterface < handle
             indices = gh.getIndexById(ids);
             gh.graph.setEdgeWeight(indices,weights);
             
+        end    
+        function [ ] = setLimits(gh, ids, aliases, limits)
+            % Set the domain of variables
+            % limits is a Nx2 array. First col is lower limits,
+            % second is upper limits
+            
+            if isempty(ids)
+                ids = gh.getVarIdByAlias(aliases);
+            end
+            
+            if any(~gh.isVariable(ids))
+                error('setLimits only applies to variables');
+            end
+            
+            var_indices = gh.getIndexById(ids);
+            gh.graph.setLimits(var_indices, limits);
         end
         function resp = setMatched( gh, ids,  value )
             %SETPROPERTYOR Summary of gh function goes here
