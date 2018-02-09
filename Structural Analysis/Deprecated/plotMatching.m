@@ -1,5 +1,6 @@
 function plotMatching( gh )
 %PLOTMATCHING Generate dot code for plotting the matched graph
+%   DEPRECATED by Plotter class
 %   Detailed explanation goes here
 
 fileID = fopen('mygraphmatched.dot','w');

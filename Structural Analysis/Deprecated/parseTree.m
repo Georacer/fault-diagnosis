@@ -1,5 +1,5 @@
 function [ map ] = parseTree( argname, map, Graph, matching )
-%PARSETREE Summary of this function goes here
+%PARSETREE DEPRECATED, keeping for reference
 %   Fills the map data structure which has members
 %   varData = [varID, varRank]
 %   conData = [conID, conRank]

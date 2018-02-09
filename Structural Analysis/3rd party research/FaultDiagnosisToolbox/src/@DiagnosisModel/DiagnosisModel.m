@@ -20,6 +20,7 @@ classdef DiagnosisModel < handle
     Pfault = []; % Which sensor locations may be faulty
     syme = {}; % Symbolic equations
     parameters = {}; % List of model parameter names
+    parameter_values = []; % Struct with parameter values
 
     x_latex = {}; % Unknown variables, LaTeX representation
     f_latex = {}; % Fault variables, LaTeX representation
@@ -81,6 +82,9 @@ classdef DiagnosisModel < handle
           
           if isfield(modelDef, 'parameters')
             obj.parameters = modelDef.parameters;
+            if isfield(modelDef, 'parameter_values')
+              obj.parameter_values = modelDef.parameter_values;
+            end
           end
         else
           error('Incorrect model specification');
@@ -366,6 +370,8 @@ classdef DiagnosisModel < handle
     % Methods implemented in separate files
     m2 = copy( model ) 
     m2 = SubModel( model, eqs, varargin )
+    [v,idx] = DynamicVariables( model )
+    [v,idx] = AlgebraicVariables( model )
     ms = AddSensors( model, s, varargin )
     ms = AddEquations( model, eq, xvars, zvars, fvars, params, varargin )
     ms = RemoveFaultVariables( model, fvars )
@@ -376,12 +382,12 @@ classdef DiagnosisModel < handle
     r = Redundancy( model, m )
     r = MTESRedundancy( model )    
     [p,q,P] = PlotDM( model, varargin )
-    [df, ndf] = DetectabilityAnalysis( model )    
+    [df, ndf] = DetectabilityAnalysis( model, varargin )    
     [im,df,ndf] = IsolabilityAnalysis( model, varargin )
     [im,df,ndf] = IsolabilityAnalysisArrs( model, arrs, varargin )
     [im,df,ndf] = IsolabilityAnalysisFSM( model, fsm, varargin )    
     [s, sIdx] = SensorPlacementDetectability( model, fdet )
-    [s, sIdx] = SensorPlacementIsolability( model )
+    [s, sIdx] = SensorPlacementIsolability( model, varargin )
     
     r = MSOCausalitySweep( model, msos, varargin )
     r = TestSelection( model, arr, varargin )
@@ -431,15 +437,17 @@ end
 function [X,F,Z,x,f,z] = ModelXFZ(model, idGen)
   
   X = model.X;
+  ne = size(X,1);
+  
   if isfield(model,'F')
     F = model.F;
   else
-    F = [];
+    F = zeros(ne,0);
   end
   if isfield(model,'Z')
     Z = model.Z;
   else
-    Z = [];
+    Z = zeros(ne,0);
   end
   x = {};
   f = {};

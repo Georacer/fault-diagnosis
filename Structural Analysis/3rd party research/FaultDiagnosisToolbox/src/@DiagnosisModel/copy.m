@@ -26,6 +26,7 @@ function m2 = copy( model )
   m2.idGen.setState( model.idGen.state() );
   m2.syme = model.syme;
   m2.parameters = model.parameters;
+  m2.parameter_values = model.parameter_values;
 
   m2.x_latex = model.x_latex;
   m2.f_latex = model.f_latex;

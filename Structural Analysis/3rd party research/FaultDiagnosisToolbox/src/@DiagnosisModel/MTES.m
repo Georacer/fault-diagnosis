@@ -122,7 +122,7 @@ function [n,row] = LumpExt(m,row)
 
     n.e = [m.e(remRows(row_over(1:rowinsert-1))) {[m.e{eqcls}]}...
         m.e(remRows(row_over(rowinsert:end)))];
-
+      
     n.f = [m.f(remRowsf(row_overf(1:rowinsert-1))) {[m.f{eqclsf}]}...
         m.f(remRowsf(row_overf(rowinsert:end)))];
 

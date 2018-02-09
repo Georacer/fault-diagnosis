@@ -30,7 +30,8 @@ function Gamma=Matching(model,eq)
       derCausal = true;
       Gamma.matching{n-h+1}.row = eqi;
       Gamma.matching{n-h+1}.col = vi;
-      Gamma.matching{n-h+1}.derState = vi;
+      %Gamma.matching{n-h+1}.derState = vi;
+      Gamma.matching{n-h+1}.derState = find(model.X(eqi,:)==2);
     elseif length(eqi)==1 && intEdge % Trivial I Hall component
       Gamma.matching{n-h+1}.type = 'int';
       intCausal = true;
@@ -78,7 +79,7 @@ function [Gammai, derCausal, intCausal] = MatchMixedCausality(X,eqi,vi)
       Gammai.intState(end+1) = vi(gamma(k,2));
       intCausal = true;
     elseif X0(gamma(k,1),gamma(k,2))==3 % Differentiate
-      Gammai.derState(end+1) = find(X0(gamma(k,1),:)==2);
+      Gammai.derState(end+1) = vi(find(X0(gamma(k,1),:)==2));
       derCausal = true;
     end
   end

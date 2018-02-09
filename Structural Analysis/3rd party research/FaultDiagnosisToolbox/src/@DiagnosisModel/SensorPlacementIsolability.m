@@ -1,7 +1,7 @@
-function [s, sIdx] = SensorPlacementIsolability( model )
+function [s, sIdx] = SensorPlacementIsolability( model, varargin )
 % SensorPlacementIsolability  Determine minimal set of sensors to achieve maximal fault isolability
 %
-%    [res,idx] = model.SensorPlacementIsolability()
+%    [res,idx] = model.SensorPlacementIsolability(options)
 %
 %  Computes all minimal sensor sets that achieves maximal fault isolability
 %  of the faults in the model. 
@@ -9,6 +9,21 @@ function [s, sIdx] = SensorPlacementIsolability( model )
 %    Krysander, Mattias, and Erik Frisk, "Sensor placement for fault 
 %    diagnosis." Systems, Man and Cybernetics, Part A: Systems and Humans, 
 %    IEEE Transactions on 38.6 (2008): 1398-1410.
+%
+%  Options are key/value pairs
+%
+%  Key                         Value
+%    isolabilityspecification  Isolability specification, a 0/1-matrix with
+%                              a 0 in position (i,j) if fault fi should be
+%                              isolable from fault fj; 1 otherwise. Structural
+%                              isolability is a symmetric relation; and if
+%                              the specification is not symmetric; the
+%                              specification is made symmetric. Defaults to
+%                              the identity matrix, i.e., full isolability
+%                              among faults.
+%
+%   isolatenewfaults           Should new faults also be isolated (default:
+%                              true)
 %
 %  Outputs:
 %    res      - cell array of all minimal sensor sets, represented with
@@ -20,6 +35,20 @@ function [s, sIdx] = SensorPlacementIsolability( model )
 % (See accompanying file LICENSE or copy at
 %  http://opensource.org/licenses/MIT)
   
+  n = numel(model.f);
+
+  p = inputParser;
+  p.addOptional('isolabilityspecification',eye(n));
+  p.addOptional('isolatenewfaults', true);
+  p.parse(varargin{:});
+  opts = p.Results;
+    
+  Ispec = opts.isolabilityspecification;
+  if ~all(all(Ispec-Ispec'==0))
+    warning('Isolability specification need to be symmetric, making it so...');
+    Ispec = (Ispec + Ispec')>0;
+  end
+  
   s = {};
   sIdx = {};
   nx = size(model.X,2);
@@ -29,7 +58,6 @@ function [s, sIdx] = SensorPlacementIsolability( model )
   if ~isempty(dm.Mm.row)
     error('Sorry, sensor placement algorithm only works for models with no underdetermined part');
   end
-
   
   % Determine sensor sets to make non-detectable faults detectable
   [~, sIdxDet] = SensorPlacementDetectability( model );
@@ -38,12 +66,19 @@ function [s, sIdx] = SensorPlacementIsolability( model )
     for ii=1:numel(sIdxDet)
       % Create the extended model
       [Xs,Fs,fs] = SensorEqs( sIdxDet{ii}, nx, nf, model.Pfault );
-      Xe = [model.X;Xs];
-      Fe = [model.F zeros(size(model.F,1),numel(fs));Fs];
-      Fe = Fe(:,any(Fe,1));
-
+      Xe = [model.X;Xs];            
+      if opts.isolatenewfaults
+        Fe = [model.F zeros(size(model.F,1),numel(fs));Fs];
+        Fe = Fe(:,any(Fe,1));
+        Ispecii = [Ispec zeros(size(Ispec,1),numel(fs));...
+          zeros(numel(fs),size(Ispec,2)), eye(numel(fs))];
+      else
+        Fe = [model.F;zeros(size(Xs,1),size(model.F,2))];
+        Ispecii = Ispec;
+      end
+      
       % Compute sensor sets for the isolation problem
-      D = IsolabilitySets(Xe, Fe, model.P);
+      D = IsolabilitySets(Xe, Fe, model.P, Ispecii);
       SiIdx = model.mhs( D );
 
       % Add sets to solution
@@ -53,7 +88,7 @@ function [s, sIdx] = SensorPlacementIsolability( model )
       sIdx = [sIdx SiIdx{:}];
     end
   else
-    D = IsolabilitySets(model.X, model.F, model.P);
+    D = IsolabilitySets(model.X, model.F, model.P, Ispec);
     sIdx = model.mhs( D );    
   end
   
@@ -87,7 +122,7 @@ function [Xs, Fs, fs] = SensorEqs( s, nx, nf, Pfault )
     if ismember( s(ii), Pfault )
       fs(end+1) = s(ii);
       Fs(:,end+1) = zeros(ns,1);
-      Fs(ns,end)  = 1;
+      Fs(ii,end)  = 1;
     end
   end
 end

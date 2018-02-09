@@ -15,11 +15,14 @@ classdef Equation < Vertex
         isNonLinear = false;
         isResGenerator = false;
         isFaultable = false;
+        expressionStr = [];
+        expression = [];
+        subsystem = [];
     end
    
     methods
         
-        function obj = Equation(id, alias, description)
+        function obj = Equation(id, alias, expressionStr, description)
             % Constructor
             obj = obj@Vertex(id);
             
@@ -38,6 +41,9 @@ classdef Equation < Vertex
             
             % If a description is provided
             if nargin>=3
+                obj.expressionStr = expressionStr;
+            end
+            if nargin>=4
                 obj.description = description;
             end
         end
@@ -60,6 +66,9 @@ classdef Equation < Vertex
         function setFaultable(obj,tf_value)
             obj.isFaultable = tf_value;
         end
+        function setSubsystem(obj,name)
+            obj.subsystem = name;
+        end
         
         %%
         function disp(obj)
@@ -67,6 +76,7 @@ classdef Equation < Vertex
             fprintf('Equation object:\n');
             fprintf('ID = %d\n',obj.id);
             fprintf('name = %s\n',obj.alias);
+            fprintf('subsystem = %s\n',obj.subsystem);
         end
 
     end

@@ -68,12 +68,12 @@ function ms = AddSensors( model, s, varargin )
   else
     sPos = 0;
   end
+  if nargout==0
+    ms = model;
+  else 
+    ms = model.copy();
+  end
   if any(sPos > 0)
-    if nargout==0
-      ms = model;
-    else 
-      ms = model.copy();
-    end
     
     nx = size(ms.X,2);
     nf = size(ms.F,2);
@@ -151,7 +151,7 @@ function ms = AddSensors( model, s, varargin )
         nz = nz + 1;
       end
     end
-  else
+  elseif numel(s)>0
     warning('Incorrect sensor position');
   end
 end
