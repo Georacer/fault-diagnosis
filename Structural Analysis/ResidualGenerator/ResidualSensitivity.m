@@ -41,7 +41,7 @@ classdef ResidualSensitivity < handle
             p.addParameter('innerProblem', 'fminbound' ,@(s) validatestring(s, {'fminbound', 'pso'}));
             p.addParameter('plotCost', false , @islogical);
             p.addParameter('plotSwarm', false, @islogical);
-            p.addParameter('faultIndex', 0, @isPositiveIntegerValuedNumeric);
+            p.addParameter('faultIndex', 0, @isnumeric);
             p.addParameter('testMin', true, @islogical);
             p.addParameter('testMax', true, @islogical);
             
