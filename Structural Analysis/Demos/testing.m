@@ -1,3 +1,7 @@
+%% Testing
+% TESTING Test script for the residual discovery capabilitites.
+
+
 % close all
 clear
 clc
@@ -23,16 +27,24 @@ stats = [];
 % * SmallLinear(FDT)(g026)
 % * Fravolini(g005a)
 
-% modelArray{end+1} = g014e();
-modelArray{end+1} = g014g();
+% modelArray{end+1} = g014g();
+% modelArray{end+1} = g014h();
 % modelArray{end+1} = g008();
 % modelArray{end+1} = g021();
 % modelArray{end+1} = g022();
 % modelArray{end+1} = g023();
 % modelArray{end+1} = g024();
+% modelArray{end+1} = g024a();
 % modelArray{end+1} = g025();
 % modelArray{end+1} = g026();
+% modelArray{end+1} = g005();
 % modelArray{end+1} = g005a();
+% modelArray{end+1} = g027();
+% modelArray{end+1} = g028();
+% modelArray{end+1} = g029();
+% modelArray{end+1} = g030();
+% modelArray{end+1} = g031();
+modelArray{end+1} = g032();
 
 matchMethod = 'BBILP';
 % matchMethod = 'Exhaustive';
@@ -54,7 +66,7 @@ for modelIndex=1:length(modelArray)
     graphInitial.createAdjacency();
     plotter = Plotter(graphInitial);
     % plotter.plotDM;
-    % plotter.plotDot('initial');
+%     plotter.plotDot('initial');
     fprintf('Done building model %s\n',graphInitial.name);
     name = graphInitial.name;
     
@@ -115,54 +127,100 @@ for modelIndex=1:length(modelArray)
             % Keep only faultable ones
             initialMSONum = length(ResGenSets);
             stats.(name).initialMSONum = initialMSONum;
-            for i=initialMSONum:-1:1;
-                if ~any(graphRemaining.isFaultable(ResGenSets{i}));
+            for i=initialMSONum:-1:1
+                if ~any(graphRemaining.isFaultable(ResGenSets{i}))
                     ResGenSets(i) = [];
                 end
             end
         case 'MTES'
             % Generate the subgraphs corresponding to the MTESs
             sgRemaining.buildMTESs();
-            ResGenSets = sgRemaining.getMTESs();
+            ResGenSets = sgRemaining.getMTESs();            
     end
     timeSetGen = toc
     stats.(name).ResGenSets = ResGenSets;
     fprintf('Done finding MSOs/MTESs\n');
     
     stats.(name).timeSetGen = timeSetGen;
-    
+%%     
     tic
     SOSubgraphs = GraphInterface.empty;
     plotters = Plotter.empty;
     h = waitbar(0,'Building MTES Subgraphs');
-    for i=1:length(ResGenSets)
+        
+    % Sorting of PSOs by size
+    PSOSize = cellfun(@(x) length(x), ResGenSets);
+    [~, sortIndices] = sort(PSOSize);
+    % OR
+%     sortIndices = 1:length(SOSubgraphs);
+    
+    for i=1:length(sortIndices)
+        index = sortIndices(i);
         waitbar(i/length(ResGenSets),h);
-        SOSubgraphs(i) = sgRemaining.buildSubgraph(ResGenSets{i},'pruneKnown',true,'postfix','_MTES');
+        
+        SOSubgraphs(i) = sgRemaining.buildSubgraph(ResGenSets{index},'pruneKnown',true,'postfix','_MTES');
         SOSubgraphs(i).createAdjacency();
+        
+        if SOType == 'MTES'            
+            % Only keep the connected component of each MTES which is
+            % faultable
+            tempArray =  SOSubgraphs(i).adjacency.V2E;
+            matrix = [zeros(size(tempArray,1)) tempArray ; tempArray' zeros(size(tempArray,2)) ];
+            conn_comps = find_conn_comp(matrix); % Find all connected components
+            equIds = SOSubgraphs(i).reg.equIdArray;
+            varIds = SOSubgraphs(i).reg.varIdArray;
+            counterFaultable = 0;
+            for j=1:length(conn_comps)
+                currentEquIndices = conn_comps{j}(conn_comps{j}>length(varIds))-length(varIds);
+                currentEquIds = equIds(currentEquIndices);
+                if any(SOSubgraphs(i).isFaultable(currentEquIds))
+                    counterFaultable = counterFaultable + 1;
+                end
+            end
+            if j>1
+                warning('MTES %d found with more than one connected component', i);
+            end
+            if counterFaultable == 0 
+                warning('MTES %d found with no faultable connected component', i);
+            end
+            if counterFaultable > 1
+                warning('MTES %d found with more than one faultable connected component', i);
+            end
+        end
+        
         stats.(name).subsystems(i) = {SOSubgraphs(i).reg.subsystems}; % Populate subsystems data
-        %     plotters(i) = Plotter(MTESsubgraphs(i));
-        %     plotters(i).plotDot(sprintf('subgraph_%d',i));
+%         plotters(i) = Plotter(SOSubgraphs(i));
+%         plotters(i).plotDot(sprintf('subgraph_%d',i));
     end
     close(h)
     timeMakeSG = toc
     stats.(name).timeMakeSG = timeMakeSG;
     
     
-    % return
+%     return
     %% Matching Procedure
-    % clc
+%     clc
     
     matchers = Matcher.empty;
     plotters = Plotter.empty;
+    counter = 1;
     % For each subgraph
     h = waitbar(0,'Examining SOs');
     
     tic
     profile on
-    for i=1:length(SOSubgraphs)
+    
+    % Sorting of PSOs by size
+%     PSOSize = cellfun(@(x) length(x), ResGenSets);
+%     [~, sortIndices] = sort(PSOSize);
+%     % OR
+    sortIndices = 1:length(SOSubgraphs);
+    
+    for i=1:length(sortIndices)
+        index = sortIndices(i);
         fprintf('\n');
         disp('Examining another SOs')
-        tempGI = SOSubgraphs(i);
+        tempGI = SOSubgraphs(index);
         matchers(i) = Matcher(tempGI);
         switch matchMethod
             case 'BBILP'
@@ -172,8 +230,12 @@ for modelIndex=1:length(modelArray)
         end
         waitbar(i/length(SOSubgraphs),h);
         % Plot resulting matchings
-        %     plotters(i) = Plotter(tempGI);
-        %     plotters(i).plotDot(sprintf('MSO_%d_matched',i));
+        if ~isempty(matching)
+            SOSubgraphs(index).adjacency.parseModel();
+            plotters(counter) = Plotter(tempGI);
+            plotters(counter).plotDot(sprintf('PSO_%d_matched',index));
+            counter = counter + 1;
+        end
     end
     
     timeSolveILP = toc
