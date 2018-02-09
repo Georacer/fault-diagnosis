@@ -20,6 +20,7 @@ classdef ResidualSensitivity < handle
         
         plotCost
         plotSwarm
+        plotSwarmIds
         faultIndex  % Which faults to examine for
         testMin
         testMax
@@ -41,6 +42,7 @@ classdef ResidualSensitivity < handle
             p.addParameter('innerProblem', 'fminbound' ,@(s) validatestring(s, {'fminbound', 'pso'}));
             p.addParameter('plotCost', false , @islogical);
             p.addParameter('plotSwarm', false, @islogical);
+            p.addParameter('plotSwarmIds', [], @isnumeric);  % Array of 1 or 2 ids which will be plotted through plotSwarm
             p.addParameter('faultIndex', 0, @isnumeric);
             p.addParameter('testMin', true, @islogical);
             p.addParameter('testMax', true, @islogical);
@@ -54,6 +56,7 @@ classdef ResidualSensitivity < handle
             obj.dt = opts.deltat;
             obj.plotCost = opts.plotCost;
             obj.plotSwarm = opts.plotSwarm;
+            obj.plotSwarmIds = opts.plotSwarmIds;
             obj.testMin = opts.testMin;
             obj.testMax = opts.testMax;
             
@@ -101,7 +104,7 @@ classdef ResidualSensitivity < handle
             cost = cost_initial + cost_penalty;
             
             if obj.plotSwarm
-                plotSwarm(pso_input_vec([1, end]),cost_initial,'iter');
+                plotSwarm(obj.plotSwarmIds,cost_initial,'iter');
             end
         end
         
