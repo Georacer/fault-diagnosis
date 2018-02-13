@@ -44,7 +44,8 @@ stats = [];
 % modelArray{end+1} = g029();
 % modelArray{end+1} = g030();
 % modelArray{end+1} = g031();
-modelArray{end+1} = g032();
+% modelArray{end+1} = g032();
+modelArray{end+1} = g033();
 
 matchMethod = 'BBILP';
 % matchMethod = 'Exhaustive';
@@ -66,7 +67,7 @@ for modelIndex=1:length(modelArray)
     graphInitial.createAdjacency();
     plotter = Plotter(graphInitial);
     % plotter.plotDM;
-%     plotter.plotDot('initial');
+    plotter.plotDot('initial');
     fprintf('Done building model %s\n',graphInitial.name);
     name = graphInitial.name;
     
@@ -114,9 +115,19 @@ for modelIndex=1:length(modelArray)
     fprintf('Done creating LiUSM model\n');
     
     plotterGR = Plotter(graphRemaining);
-    % plotterGR.plotDM;
+%     plotterGR.plotDM;
     
-    % return;
+    % Make a rough estimate on the number of MTES that will be generated
+    sum = 0;
+    for k=0:(sgRemaining.liUSM.Redundancy-1)
+        if k <= sgRemaining.liUSM.nf
+            sum = sum + nchoosek(sgRemaining.liUSM.nf, k);
+        end
+    end
+    fprintf('Expecting to generate up to %d MTESs\n',sum);
+   
+    return;
+        
     
     tic
     switch SOType
