@@ -1696,6 +1696,10 @@ classdef GraphInterface < handle
                             this.setProperty(equId,'subsystem',word);
                         elseif isExpression % expr keyword met previously
                             isExpression = false;
+                            if strcmp(word,'equal')  % The reserved work equal is met. This means that the expression is a two-variable equality
+                                varAliases = this.getAliasById(this.getVariables(equId));  % This will ONLY work if expr is met LAST in the structural expression
+                                word = sprintf('-%s+%s',varAliases{1},varAliases{2});  % Write the equality explicitly
+                            end
                             if has_fault
                                 word = [word '+f' prefix alias];  % Add the fault to the symbolic equation
                             end
