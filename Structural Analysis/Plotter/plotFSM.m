@@ -12,6 +12,8 @@ set(gca,'XTickLabel',FSStruct.fault_aliases);
 set(gca,'YTickLabel',1:5:length(FSStruct.residual_constraints));
 xtickangle(90);
 
+xlabel('');
+
 title('Isolability Matrix');
 
 end

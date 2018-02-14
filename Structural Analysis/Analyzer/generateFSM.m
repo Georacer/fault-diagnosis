@@ -50,12 +50,18 @@ for i=1:size(FSM,1)
     FSM(i,:) = ismember(fault_ids, variable_ids);
 end
 
+% Find detectable faults
+detectable_fault_ids = fault_ids(any(FSM,1));
+non_detectable_fault_ids = setdiff(fault_ids, detectable_fault_ids);
+
 % Build the output
 FSStruct.FSM = FSM;
 FSStruct.residual_constraints = valid_residual_constraints;
 FSStruct.matchings = valid_matchings;
 FSStruct.fault_ids = fault_ids;
 FSStruct.fault_aliases = fault_aliases;
+FSStruct.detectable_fault_ids = detectable_fault_ids;
+FSStruct.non_detectable_fault_ids = non_detectable_fault_ids;
 
 end
 
