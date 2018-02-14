@@ -124,7 +124,8 @@ for modelIndex=1:length(modelArray)
     % Preallocate container structures
     graphs_conn = getDisconnected(graphRemaining);  % Get the Weakly Connected Componentss
     SOSubgraphs_set = cell(1,length(graphs_conn));
-    matchers_set = cell(1,length(graphs_conn));
+    res_gens_set = cell(1,length(graphs_conn));
+    matchings_set = cell(1,length(graphs_conn));
     
     % For each WCC
     for graph_index=1:length(graphs_conn)
@@ -132,18 +133,18 @@ for modelIndex=1:length(modelArray)
         % This is the currently examined graph
         graph = graphs_conn{graph_index};
         plotter = Plotter(graph);
-        plotter.plotDot(sprintf('wcc_%d',graph_index));
+%         plotter.plotDot(sprintf('wcc_%d',graph_index));
         sg = SubgraphGenerator(graph);
         sg.buildLiUSM();
         
         % Make a rough estimate on the number of MTES that will be generated
-        sum = 0;
+        mtes_sum = 0;
         for k=0:(sg.liUSM.Redundancy-1)
             if k <= sg.liUSM.nf
-                sum = sum + nchoosek(sg.liUSM.nf, k);
+                mtes_sum = mtes_sum + nchoosek(sg.liUSM.nf, k);
             end
         end
-        fprintf('Expecting to generate up to %d MTESs\n',sum);
+        fprintf('Expecting to generate up to %d MTESs\n',mtes_sum);
         
         tic
         %% Find the PSOs of each graph, depending on selected method
@@ -167,23 +168,23 @@ for modelIndex=1:length(modelArray)
         end
         timeSetGen = toc
         stats.(name).ResGenSets{graph_index} = ResGenSets;
+        res_gens_set{graph_index} = ResGenSets;
         fprintf('Done finding MSOs/MTESs\n');
         
         stats.(name).timeSetGen(graph_index) = timeSetGen;
         %% Build the subgraphs corresponding to each PSO (the SOSubgraphs array)
         tic
         SOSubgraphs = GraphInterface.empty;
-        plotters = Plotter.empty;
         h = waitbar(0,'Building MTES Subgraphs');
         
         % Sorting of PSOs by size
-        PSOSize = cellfun(@(x) length(x), ResGenSets);
-        [~, sortIndices] = sort(PSOSize);
+%         PSOSize = cellfun(@(x) length(x), ResGenSets);
+%         [~, sortIndices] = sort(PSOSize);
         % OR
-        %     sortIndices = 1:length(SOSubgraphs);
+        SOindices = 1:length(ResGenSets);
         
-        for i=1:length(sortIndices)
-            index = sortIndices(i);
+        for i=1:length(SOindices)
+            index = SOindices(i);
             waitbar(i/length(ResGenSets),h);
             
             SOSubgraphs(i) = sg.buildSubgraph(ResGenSets{index},'pruneKnown',true,'postfix','_MTES');
@@ -217,8 +218,8 @@ for modelIndex=1:length(modelArray)
             end
             
             stats.(name).subsystems(graph_index) = {SOSubgraphs(i).reg.subsystems}; % Populate subsystems data
-            %         plotters(i) = Plotter(SOSubgraphs(i));
-            %         plotters(i).plotDot(sprintf('subgraph_%d',i));
+            %         plotter = Plotter(SOSubgraphs(i));
+            %         plotter.plotDot(sprintf('subgraph_%d',i));
         end
         close(h)
         timeMakeSG = toc
@@ -230,7 +231,6 @@ for modelIndex=1:length(modelArray)
         %     clc
         
         matchers = Matcher.empty;
-        plotters = Plotter.empty;
         counter = 1;
         % For each subgraph
         h = waitbar(0,'Examining SOs');
@@ -242,10 +242,10 @@ for modelIndex=1:length(modelArray)
         %     PSOSize = cellfun(@(x) length(x), ResGenSets);
         %     [~, sortIndices] = sort(PSOSize);
         %     % OR
-        sortIndices = 1:length(SOSubgraphs);
+        SOindices = 1:length(SOSubgraphs);
         
-        for i=1:length(sortIndices)
-            index = sortIndices(i);
+        for i=1:length(SOindices)
+            index = SOindices(i);
             fprintf('\n');
             disp('Examining another SOs')
             tempGI = SOSubgraphs(index);
@@ -260,9 +260,9 @@ for modelIndex=1:length(modelArray)
             % Plot resulting matchings
             if ~isempty(matching)
                 SOSubgraphs(index).adjacency.parseModel();
-                plotters(counter) = Plotter(tempGI);
+                plotter = Plotter(tempGI);
                 plotName = sprintf('%s_pso_%d_matched',SOSubgraphs(index).name, index);
-%                 plotters(counter).plotDot(plotName);
+%                 plotter.plotDot(plotName);
                 counter = counter + 1;
             end
         end
@@ -277,11 +277,11 @@ for modelIndex=1:length(modelArray)
             disp(matchers(i).matchingSet);
             stats.(name).matchingSets{graph_index}(i) = {matchers(i).matchingSet};
             %     printMatching(MTESsubgraphs(i),matchers(i).matchingSet);
+            matchings_set{graph_index}(i) = {matchers(i).matchingSet};
         end
         
         % Store the results for the container across all WCC graphs
         SOSubgraphs_set{graph_index} = SOSubgraphs;
-        matchers_set{graph_index} = matchers;
         
 %         input('Press Enter to continue');
         
@@ -294,9 +294,9 @@ end
 
 % Display the total number of residual generators found
 counter = 0;
-for i=1:length(matchers_set)
-    for j=1:length(matchers_set{i})
-        if ~isempty(matchers_set{i}(j).matchingSet)
+for i=1:length(matchings_set)
+    for j=1:length(matchings_set{i})
+        if ~isempty(matchings_set{i}(j))
             counter = counter + 1;
         end
     end
