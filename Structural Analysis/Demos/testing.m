@@ -46,6 +46,7 @@ stats = [];
 % modelArray{end+1} = g031();
 % modelArray{end+1} = g032();
 modelArray{end+1} = g033();
+% modelArray{end+1} = g034();
 
 matchMethod = 'BBILP';
 % matchMethod = 'Exhaustive';
@@ -57,7 +58,9 @@ SOType = 'MTES';
 branchMethod = 'DFS';
 % branchMethod = 'BFS';
 
+% For each model
 for modelIndex=1:length(modelArray)
+    % Read the model description and create the initial graph
     clc
     clearvars -except stats modelIndex modelArray SOType branchMethod matchMethod
     model = modelArray{modelIndex};
@@ -67,7 +70,7 @@ for modelIndex=1:length(modelArray)
     graphInitial.createAdjacency();
     plotter = Plotter(graphInitial);
     % plotter.plotDM;
-    plotter.plotDot('initial');
+%     plotter.plotDot('initial');
     fprintf('Done building model %s\n',graphInitial.name);
     name = graphInitial.name;
     
@@ -76,16 +79,15 @@ for modelIndex=1:length(modelArray)
     sgInitial = SubgraphGenerator(graphInitial);
     sgInitial.buildLiUSM();
     fprintf('Done creating LiUSM model\n');
-    
-    % TODO: Must get overconstrained graph first
     graphOver = sgInitial.getOver();
     
+    %% Perform weighted matching up to a rank, if needed
     % For very large models, match 1 rank of variables to reduce the model
     % size and complexity
     switch model.name
         case {'g014e'}
             matchWERank = 1;
-%             matchWERank = 0;
+            %             matchWERank = 0;
         otherwise
             matchWERank = 0;
     end
@@ -97,175 +99,210 @@ for modelIndex=1:length(modelArray)
         plotter = Plotter(graphOver);
         % plotter.plotDM;
         % plotter.plotDot('graphOver_matchedWeighted');
-    end
-    
-%     return;
-    %%
-    
-    % clc
-    
-    % Generate the remaining graph
-    sgOver = SubgraphGenerator(graphOver);
-    graphRemaining = sgOver.buildSubgraph(graphOver.getEquIdByProperty('isMatched',false),'postfix','_weightMatched');
-    sgOver.buildLiUSM();
-    fprintf('Done building submodel\n');
-    
-    sgRemaining = SubgraphGenerator(graphRemaining);
-    sgRemaining.buildLiUSM();
-    fprintf('Done creating LiUSM model\n');
-    
-    plotterGR = Plotter(graphRemaining);
-%     plotterGR.plotDM;
-    
-    % Make a rough estimate on the number of MTES that will be generated
-    sum = 0;
-    for k=0:(sgRemaining.liUSM.Redundancy-1)
-        if k <= sgRemaining.liUSM.nf
-            sum = sum + nchoosek(sgRemaining.liUSM.nf, k);
-        end
-    end
-    fprintf('Expecting to generate up to %d MTESs\n',sum);
-   
-    return;
+                
+        % Generate the remaining graph
+        sgOver = SubgraphGenerator(graphOver);
+        graphRemaining = sgOver.buildSubgraph(graphOver.getEquIdByProperty('isMatched',false),'postfix','_weightMatched');
+        sgOver.buildLiUSM();
+        fprintf('Done building submodel\n');
         
+        sgRemaining = SubgraphGenerator(graphRemaining);
+        sgRemaining.buildLiUSM();
+        fprintf('Done creating LiUSM model\n');
+        
+        plotterGR = Plotter(graphRemaining);
+        %     plotterGR.plotDM;
+        
+    else
+        graphRemaining = graphOver;
+        
+    end
     
-    tic
-    switch SOType
-        case 'MSO'
-            % Generate the subgraphs corresponding to the MSOs
-            sgRemaining.buildMSOs();
-            ResGenSets = sgRemaining.getMSOs();
-            % Keep only faultable ones
-            initialMSONum = length(ResGenSets);
-            stats.(name).initialMSONum = initialMSONum;
-            for i=initialMSONum:-1:1
-                if ~any(graphRemaining.isFaultable(ResGenSets{i}))
-                    ResGenSets(i) = [];
+    %% Break the graph down into its weakly connected components
+    % This makes the parsing cheaper
+    
+    % Preallocate container structures
+    graphs_conn = getDisconnected(graphRemaining);  % Get the Weakly Connected Componentss
+    SOSubgraphs_set = cell(1,length(graphs_conn));
+    matchers_set = cell(1,length(graphs_conn));
+    
+    % For each WCC
+    for graph_index=1:length(graphs_conn)
+        
+        % This is the currently examined graph
+        graph = graphs_conn{graph_index};
+        plotter = Plotter(graph);
+        plotter.plotDot(sprintf('wcc_%d',graph_index));
+        sg = SubgraphGenerator(graph);
+        sg.buildLiUSM();
+        
+        % Make a rough estimate on the number of MTES that will be generated
+        sum = 0;
+        for k=0:(sg.liUSM.Redundancy-1)
+            if k <= sg.liUSM.nf
+                sum = sum + nchoosek(sg.liUSM.nf, k);
+            end
+        end
+        fprintf('Expecting to generate up to %d MTESs\n',sum);
+        
+        tic
+        %% Find the PSOs of each graph, depending on selected method
+        switch SOType
+            case 'MSO'
+                % Generate the subgraphs corresponding to the MSOs
+                sg.buildMSOs();
+                ResGenSets = sg.getMSOs();
+                % Keep only faultable ones
+                initialMSONum = length(ResGenSets);
+                stats.(name).initialMSONum(graph_index) = initialMSONum;
+                for i=initialMSONum:-1:1
+                    if ~any(graph.isFaultable(ResGenSets{i}))
+                        ResGenSets(i) = [];
+                    end
+                end
+            case 'MTES'
+                % Generate the subgraphs corresponding to the MTESs
+                sg.buildMTESs();
+                ResGenSets = sg.getMTESs();
+        end
+        timeSetGen = toc
+        stats.(name).ResGenSets{graph_index} = ResGenSets;
+        fprintf('Done finding MSOs/MTESs\n');
+        
+        stats.(name).timeSetGen(graph_index) = timeSetGen;
+        %% Build the subgraphs corresponding to each PSO (the SOSubgraphs array)
+        tic
+        SOSubgraphs = GraphInterface.empty;
+        plotters = Plotter.empty;
+        h = waitbar(0,'Building MTES Subgraphs');
+        
+        % Sorting of PSOs by size
+        PSOSize = cellfun(@(x) length(x), ResGenSets);
+        [~, sortIndices] = sort(PSOSize);
+        % OR
+        %     sortIndices = 1:length(SOSubgraphs);
+        
+        for i=1:length(sortIndices)
+            index = sortIndices(i);
+            waitbar(i/length(ResGenSets),h);
+            
+            SOSubgraphs(i) = sg.buildSubgraph(ResGenSets{index},'pruneKnown',true,'postfix','_MTES');
+            SOSubgraphs(i).createAdjacency();
+            
+            if SOType == 'MTES'
+                % Only keep the connected component of each MTES which is
+                % faultable
+                tempArray =  SOSubgraphs(i).adjacency.V2E;
+                matrix = [zeros(size(tempArray,1)) tempArray ; tempArray' zeros(size(tempArray,2)) ];
+                conn_comps = find_conn_comp(matrix); % Find all connected components
+                equIds = SOSubgraphs(i).reg.equIdArray;
+                varIds = SOSubgraphs(i).reg.varIdArray;
+                counterFaultable = 0;
+                for j=1:length(conn_comps)
+                    currentEquIndices = conn_comps{j}(conn_comps{j}>length(varIds))-length(varIds);
+                    currentEquIds = equIds(currentEquIndices);
+                    if any(SOSubgraphs(i).isFaultable(currentEquIds))
+                        counterFaultable = counterFaultable + 1;
+                    end
+                end
+                if j>1
+                    warning('MTES %d found with more than one connected component', i);
+                end
+                if counterFaultable == 0
+                    warning('MTES %d found with no faultable connected component', i);
+                end
+                if counterFaultable > 1
+                    warning('MTES %d found with more than one faultable connected component', i);
                 end
             end
-        case 'MTES'
-            % Generate the subgraphs corresponding to the MTESs
-            sgRemaining.buildMTESs();
-            ResGenSets = sgRemaining.getMTESs();            
-    end
-    timeSetGen = toc
-    stats.(name).ResGenSets = ResGenSets;
-    fprintf('Done finding MSOs/MTESs\n');
-    
-    stats.(name).timeSetGen = timeSetGen;
-%%     
-    tic
-    SOSubgraphs = GraphInterface.empty;
-    plotters = Plotter.empty;
-    h = waitbar(0,'Building MTES Subgraphs');
+            
+            stats.(name).subsystems(graph_index) = {SOSubgraphs(i).reg.subsystems}; % Populate subsystems data
+            %         plotters(i) = Plotter(SOSubgraphs(i));
+            %         plotters(i).plotDot(sprintf('subgraph_%d',i));
+        end
+        close(h)
+        timeMakeSG = toc
+        stats.(name).timeMakeSG(graph_index) = timeMakeSG;
         
-    % Sorting of PSOs by size
-    PSOSize = cellfun(@(x) length(x), ResGenSets);
-    [~, sortIndices] = sort(PSOSize);
-    % OR
-%     sortIndices = 1:length(SOSubgraphs);
-    
-    for i=1:length(sortIndices)
-        index = sortIndices(i);
-        waitbar(i/length(ResGenSets),h);
         
-        SOSubgraphs(i) = sgRemaining.buildSubgraph(ResGenSets{index},'pruneKnown',true,'postfix','_MTES');
-        SOSubgraphs(i).createAdjacency();
+        %     return
+        %% Matching Procedure
+        %     clc
         
-        if SOType == 'MTES'            
-            % Only keep the connected component of each MTES which is
-            % faultable
-            tempArray =  SOSubgraphs(i).adjacency.V2E;
-            matrix = [zeros(size(tempArray,1)) tempArray ; tempArray' zeros(size(tempArray,2)) ];
-            conn_comps = find_conn_comp(matrix); % Find all connected components
-            equIds = SOSubgraphs(i).reg.equIdArray;
-            varIds = SOSubgraphs(i).reg.varIdArray;
-            counterFaultable = 0;
-            for j=1:length(conn_comps)
-                currentEquIndices = conn_comps{j}(conn_comps{j}>length(varIds))-length(varIds);
-                currentEquIds = equIds(currentEquIndices);
-                if any(SOSubgraphs(i).isFaultable(currentEquIds))
-                    counterFaultable = counterFaultable + 1;
-                end
+        matchers = Matcher.empty;
+        plotters = Plotter.empty;
+        counter = 1;
+        % For each subgraph
+        h = waitbar(0,'Examining SOs');
+        
+        tic
+        profile on
+        
+        % Sorting of PSOs by size
+        %     PSOSize = cellfun(@(x) length(x), ResGenSets);
+        %     [~, sortIndices] = sort(PSOSize);
+        %     % OR
+        sortIndices = 1:length(SOSubgraphs);
+        
+        for i=1:length(sortIndices)
+            index = sortIndices(i);
+            fprintf('\n');
+            disp('Examining another SOs')
+            tempGI = SOSubgraphs(index);
+            matchers(i) = Matcher(tempGI);
+            switch matchMethod
+                case 'BBILP'
+                    matching = matchers(i).match('BBILP','branchMethod',branchMethod);
+                case 'Exhaustive'
+                    matching = matchers(i).match('Valid2');
             end
-            if j>1
-                warning('MTES %d found with more than one connected component', i);
-            end
-            if counterFaultable == 0 
-                warning('MTES %d found with no faultable connected component', i);
-            end
-            if counterFaultable > 1
-                warning('MTES %d found with more than one faultable connected component', i);
+            waitbar(i/length(SOSubgraphs),h);
+            % Plot resulting matchings
+            if ~isempty(matching)
+                SOSubgraphs(index).adjacency.parseModel();
+                plotters(counter) = Plotter(tempGI);
+                plotName = sprintf('%s_pso_%d_matched',SOSubgraphs(index).name, index);
+%                 plotters(counter).plotDot(plotName);
+                counter = counter + 1;
             end
         end
         
-        stats.(name).subsystems(i) = {SOSubgraphs(i).reg.subsystems}; % Populate subsystems data
-%         plotters(i) = Plotter(SOSubgraphs(i));
-%         plotters(i).plotDot(sprintf('subgraph_%d',i));
-    end
-    close(h)
-    timeMakeSG = toc
-    stats.(name).timeMakeSG = timeMakeSG;
-    
-    
-%     return
-    %% Matching Procedure
-%     clc
-    
-    matchers = Matcher.empty;
-    plotters = Plotter.empty;
-    counter = 1;
-    % For each subgraph
-    h = waitbar(0,'Examining SOs');
-    
-    tic
-    profile on
-    
-    % Sorting of PSOs by size
-%     PSOSize = cellfun(@(x) length(x), ResGenSets);
-%     [~, sortIndices] = sort(PSOSize);
-%     % OR
-    sortIndices = 1:length(SOSubgraphs);
-    
-    for i=1:length(sortIndices)
-        index = sortIndices(i);
-        fprintf('\n');
-        disp('Examining another SOs')
-        tempGI = SOSubgraphs(index);
-        matchers(i) = Matcher(tempGI);
-        switch matchMethod
-            case 'BBILP'
-                matching = matchers(i).match('BBILP','branchMethod',branchMethod);
-            case 'Exhaustive'
-                matching = matchers(i).match('Valid2');
+        timeSolveILP = toc
+        stats.(name).timeSolveILP(graph_index) = timeSolveILP;
+        close(h)
+        profile off
+        
+        fprintf('\nResulting valid matchings:\n');
+        for i=1:length(matchers)
+            disp(matchers(i).matchingSet);
+            stats.(name).matchingSets{graph_index}(i) = {matchers(i).matchingSet};
+            %     printMatching(MTESsubgraphs(i),matchers(i).matchingSet);
         end
-        waitbar(i/length(SOSubgraphs),h);
-        % Plot resulting matchings
-        if ~isempty(matching)
-            SOSubgraphs(index).adjacency.parseModel();
-            plotters(counter) = Plotter(tempGI);
-            plotters(counter).plotDot(sprintf('PSO_%d_matched',index));
+        
+        % Store the results for the container across all WCC graphs
+        SOSubgraphs_set{graph_index} = SOSubgraphs;
+        matchers_set{graph_index} = matchers;
+        
+%         input('Press Enter to continue');
+        
+%         return
+        
+    end
+    
+    
+end
+
+% Display the total number of residual generators found
+counter = 0;
+for i=1:length(matchers_set)
+    for j=1:length(matchers_set{i})
+        if ~isempty(matchers_set{i}(j).matchingSet)
             counter = counter + 1;
         end
     end
-    
-    timeSolveILP = toc
-    stats.(name).timeSolveILP = timeSolveILP;
-    close(h)
-    profile off
-    
-    fprintf('\nResulting valid matchings:\n');
-    for i=1:length(matchers)
-        disp(matchers(i).matchingSet);
-        stats.(name).matchingSets(i) = {matchers(i).matchingSet};
-        %     printMatching(MTESsubgraphs(i),matchers(i).matchingSet);
-    end
-    
-    % input('Press Enter to continue');
-    
-    % return
-    
 end
+
+fprintf('Total number of valid residuals found: %d\n',counter);
 
 return
 
@@ -304,8 +341,8 @@ stats = oldStats;
 save(fileName,'stats');
 
 % stats.g008
-stats.g005a
-stats.g014e
+% stats.g005a
+% stats.g014e
 
 return
 
