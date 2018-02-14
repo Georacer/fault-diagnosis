@@ -12,3 +12,4 @@ addpath(genpath('Plotter'));
 addpath(genpath('ResidualGenerator'));
 addpath(genpath('SubgraphGenerator'));
 addpath(genpath('Demos'));
+addpath(genpath('Analyzer'));
