@@ -834,13 +834,20 @@ classdef GraphInterface < handle
             end
             
         end
-        function [ expr ] = getExpressionById(gh, id)
+        function [ expr ] = getExpressionById(gh, ids)
             % getExpressionById Retun the symbolic expression
-            if ~gh.isEquation(id)
-                error('%d is not an equation',id);
+            for id=ids
+                if ~gh.isEquation(id)
+                    error('%d is not an equation',id);
+                end
             end
-            index = gh.getIndexById(id);
-            expr = gh.graph.equations(index).expression;
+            indices = gh.getIndexById(ids);
+            
+            expr = cell(length(ids),1);
+            for i=1:length(indices)
+                index = indices(i);
+                expr{i} = gh.graph.equations(index).expression;
+            end
             
         end
         function [ index, type ] = getIndexById( gh, ids )
