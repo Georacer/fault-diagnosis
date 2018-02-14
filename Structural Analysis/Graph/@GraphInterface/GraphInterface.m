@@ -1343,6 +1343,20 @@ classdef GraphInterface < handle
                 resp(i) = gh.graph.edges(edgeIndex).isNonSolvable;            
             end
         end
+        function [ resp ] = isFault( gh, ids )
+            %ISFAULT Decide if the variables are faults
+            if ~gh.isVariable(ids)
+                error('Only variables can be faults');
+            end
+            
+            indices = gh.getIndexById(ids);
+            
+            resp = zeros(size(indices));
+            
+            for i=1:length(resp)
+                resp(i) = gh.graph.variables(indices(i)).isFault;
+            end
+        end
         function [ resp ] = isFaultable( gh, ids )
             %ISMATCHED Summary of this function goes here
             %   Detailed explanation goes here
@@ -1704,7 +1718,11 @@ classdef GraphInterface < handle
                         elseif isExpression % expr keyword met previously
                             isExpression = false;
                             if strcmp(word,'equal')  % The reserved work equal is met. This means that the expression is a two-variable equality
-                                varAliases = this.getAliasById(this.getVariables(equId));  % This will ONLY work if expr is met LAST in the structural expression
+                                varIds = this.getVariables(equId);  % This may contain a fault variable
+                                varIds_nf = varIds(~this.isFault(varIds));
+                                varAliases = this.getAliasById(varIds_nf);
+                                assert(length(varAliases)==2,'Equality expression needs exactly 2 contributing variables');
+                                % This will ONLY work if expr is met LAST in the structural expression
                                 word = sprintf('-%s+%s',varAliases{1},varAliases{2});  % Write the equality explicitly
                             end
                             if has_fault
