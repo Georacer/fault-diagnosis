@@ -36,8 +36,8 @@ modelArray = {};
 % modelArray{end+1} = g029();
 % modelArray{end+1} = g030();
 % modelArray{end+1} = g031();
-% modelArray{end+1} = g032();
-modelArray{end+1} = g033();
+modelArray{end+1} = g032();
+% modelArray{end+1} = g033();
 % modelArray{end+1} = g034();
 
 matchMethod = 'BBILP';
@@ -50,10 +50,10 @@ SOType = 'MTES';
 branchMethod = 'DFS';
 % branchMethod = 'BFS';
 
-SAsettings.matchMethod = matchMethod;
-SAsettings.SOType = SOType;
-SAsettings.branchMethod = branchMethod;
-SAsettings.plotGraphs = false;
+SA_settings.matchMethod = matchMethod;
+SA_settings.SOType = SOType;
+SA_settings.branchMethod = branchMethod;
+SA_settings.plotGraphs = false;
 
 % For each model
 for modelIndex=1:length(modelArray)
@@ -61,13 +61,13 @@ for modelIndex=1:length(modelArray)
     % Read the model description and create the initial graph
     model = modelArray{modelIndex};
     
-    results = structural_analysis(modelArray{modelIndex}, SAsettings);
+    SA_results = structural_analysis(modelArray{modelIndex}, SA_settings);
     
     %% Display the total number of residual generators found
     counter = 0;
-    for i=1:length(results.matchings_set)
-        for j=1:length(results.matchings_set{i})
-            if ~isempty(results.matchings_set{i}(j))
+    for i=1:length(SA_results.matchings_set)
+        for j=1:length(SA_results.matchings_set{i})
+            if ~isempty(SA_results.matchings_set{i}(j))
                 counter = counter + 1;
             end
         end
@@ -76,11 +76,11 @@ for modelIndex=1:length(modelArray)
     fprintf('Total number of valid residuals found: %d\n',counter);
     
     fprintf('Faults not covered:\n');
-    FSMStruct = generateFSM(results.gi, results.res_gens_set, results.matchings_set);
-    results.gi.getExpressionById(results.gi.getEquations(FSMStruct.non_detectable_fault_ids))
+    FSMStruct = generateFSM(SA_results.gi, SA_results.res_gens_set, SA_results.matchings_set);
+    SA_results.gi.getExpressionById(SA_results.gi.getEquations(FSMStruct.non_detectable_fault_ids))
     
     %% Do isolability analysis
-    IMStruct = generateIM(results.gi, FSMStruct);
+    IMStruct = generateIM(SA_results.gi, FSMStruct);
     plotIM(IMStruct)
     
     %% Process statistics and save
@@ -119,6 +119,40 @@ for modelIndex=1:length(modelArray)
     stats = oldStats;
     save(fileName,'stats');
     %}
+    
+    %% Build the residual generators
+    
+    RG_settings.dt = 0.1;  % Select the time step, if needed
+    
+    RG_results = get_res_gens(SA_results, RG_settings);
+    
+    
+    %% Find which of the residual generators are dynamic
+    
+    res_gen_cell = RG_results.res_gen_cell;
+    
+    dynamic_vector = zeros(1,length(res_gen_cell));
+    for i=1:length(dynamic_vector)
+        if ~isempty(res_gen_cell{i})
+            dynamic_vector(i) = res_gen_cell{i}.is_dynamic;
+        else
+            dynamic_vector(i) = -1;
+        end
+    end
+    
+    % disp(dynamic_vector);
+    fprintf('Number of valid res_gens: %g\n', sum(dynamic_vector>=0));
+    fprintf('Percentage of valid res_gens: %g\n', sum(dynamic_vector>=0)/length(dynamic_vector));
+    fprintf('Percentage of dynamic over valid res_gens: %g\n', sum(dynamic_vector>0)/sum(dynamic_vector>=0));
+    
+    % return
+    
+    clc
+    
+    %% Calculate the Fault Response Vector of each residual generator
+    
+    fault_response_vector_set = getFaultResponseVector( RG_results.res_gen_cell, [], [] ); % Run all tests, with no pre-calculated fault response vector
+    
     
 end
 
