@@ -36,8 +36,8 @@ modelArray = {};
 % modelArray{end+1} = g029();
 % modelArray{end+1} = g030();
 % modelArray{end+1} = g031();
-modelArray{end+1} = g032();
-% modelArray{end+1} = g033();
+% modelArray{end+1} = g032();
+modelArray{end+1} = g033();
 % modelArray{end+1} = g034();
 
 matchMethod = 'BBILP';
@@ -79,9 +79,11 @@ for modelIndex=1:length(modelArray)
     FSMStruct = generateFSM(SA_results.gi, SA_results.res_gens_set, SA_results.matchings_set);
     SA_results.gi.getExpressionById(SA_results.gi.getEquations(FSMStruct.non_detectable_fault_ids))
     
+%     return
+    
     %% Do isolability analysis
     IMStruct = generateIM(SA_results.gi, FSMStruct);
-    plotIM(IMStruct)
+    plotIM(IMStruct);
     
     %% Process statistics and save
     %{
@@ -122,10 +124,11 @@ for modelIndex=1:length(modelArray)
     
     %% Build the residual generators
     
-    RG_settings.dt = 0.1;  % Select the time step, if needed
+    RG_settings.dt = 1;  % Select the time step, if needed
     
+    tic
     RG_results = get_res_gens(SA_results, RG_settings);
-    
+    time_generate_residual_generators = toc
     
     %% Find which of the residual generators are dynamic
     
@@ -145,14 +148,20 @@ for modelIndex=1:length(modelArray)
     fprintf('Percentage of valid res_gens: %g\n', sum(dynamic_vector>=0)/length(dynamic_vector));
     fprintf('Percentage of dynamic over valid res_gens: %g\n', sum(dynamic_vector>0)/sum(dynamic_vector>=0));
     
-    % return
+    return
     
-    clc
+%     clc
     
     %% Calculate the Fault Response Vector of each residual generator
-    
+    %{
     fault_response_vector_set = getFaultResponseVector( RG_results.res_gen_cell, [], [] ); % Run all tests, with no pre-calculated fault response vector
+    %}
     
+    %% Read a log file and play it back onto the residuals
+    
+    resampleData_g033;  % Read the dataset and resample it to have uniform data
+    
+    residuals = evaluate_residuals(res_gen_cell, data_resampled);  % Evaluate the residual generator bank
     
 end
 

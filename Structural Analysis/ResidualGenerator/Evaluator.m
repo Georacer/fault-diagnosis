@@ -101,11 +101,17 @@ classdef Evaluator < handle
                         try
                             obj.expressions_solved_handle = matlabFunction(obj.expressions_solved, 'Vars', obj.sym_var_input_array, 'Outputs', obj.gi.getAliasById(obj.var_matched_ids));
                         catch e
+                            if obj.debug; fprintf('Evaluator: Failed to instantiate singular SCC evaluation'); end
                             rethrow(e);
                         end
                     else  % This is a residual generator
                         obj.is_res_gen = true; % No pre-solved expression to store, we just need to evaluate it
-                        obj.expressions_solved_handle = matlabFunction(obj.expressions, 'Vars', obj.sym_var_input_array);
+                        try
+                            obj.expressions_solved_handle = matlabFunction(obj.expressions, 'Vars', obj.sym_var_input_array);
+                        catch e
+                            if obj.debug; fprintf('Evaluator: Failed to instantiate residual generator'); end
+                            rethrow(e);
+                        end
                     end
                 else  % This is a non-singular SCC
                     if any(obj.gi.getPropertyById(obj.scc,'isDynamic'))
