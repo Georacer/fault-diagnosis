@@ -1721,7 +1721,9 @@ classdef GraphInterface < handle
                                 varIds = this.getVariables(equId);  % This may contain a fault variable
                                 varIds_nf = varIds(~this.isFault(varIds));
                                 varAliases = this.getAliasById(varIds_nf);
-                                assert(length(varAliases)==2,'Equality expression needs exactly 2 contributing variables');
+                                if length(varAliases)~=2
+                                    fprintf('Expression "%s" should have exactly 2 contributing variables\n',exprStr);
+                                end
                                 % This will ONLY work if expr is met LAST in the structural expression
                                 word = sprintf('-%s+%s',varAliases{1},varAliases{2});  % Write the equality explicitly
                             end
