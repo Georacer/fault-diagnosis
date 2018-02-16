@@ -42,11 +42,14 @@ valid_residual_constraints = residual_constraints(valid_matchings_mask);
 valid_matchings = matchings(valid_matchings_mask);
 
 % Initialize the FSM
-FSM = zeros(sum(valid_matchings_mask),length(fault_ids));
+FSM = zeros(length(matchings),length(fault_ids));
 
 % Generate the fault signature for each residual
 for i=1:size(FSM,1)
-    variable_ids = gi.getVariables(valid_residual_constraints{i});
+    if ~valid_matchings_mask(i)
+        continue;
+    end
+    variable_ids = gi.getVariables(residual_constraints{i});
     FSM(i,:) = ismember(fault_ids, variable_ids);
 end
 
@@ -56,8 +59,10 @@ non_detectable_fault_ids = setdiff(fault_ids, detectable_fault_ids);
 
 % Build the output
 FSStruct.FSM = FSM;
-FSStruct.residual_constraints = valid_residual_constraints;
-FSStruct.matchings = valid_matchings;
+FSStruct.residual_constraints = residual_constraints;
+FSStruct.valid_residual_constraints = valid_residual_constraints;
+FSStruct.valid_matchings = valid_matchings;
+FSStruct.valid_matchings_mask = valid_matchings_mask;
 FSStruct.fault_ids = fault_ids;
 FSStruct.fault_aliases = fault_aliases;
 FSStruct.detectable_fault_ids = detectable_fault_ids;
