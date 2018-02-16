@@ -1,9 +1,10 @@
-%% Read a log file and generate the required resampled data series
+function [ data_resampled ] = resampleData( fileName, SA_results )
+%% resampleDaata Read a log file and generate the required resampled data series
 % Intended for the g033 model
 
 %% Read the dataset
 
-dataset_orig = load('afrika.mat');
+dataset_orig = load(fileName);
 
 % Convert it to a more amenable structure
 
@@ -68,6 +69,7 @@ for i=1:length(datarates)
 end
 
 bins = 0:0.25:5;
+h1 = figure();
 hist(datarates, bins);
 xlim([0, max(bins)+0.5]);
 
@@ -79,6 +81,8 @@ xlim([0, max(bins)+0.5]);
 % We'll go with 1Hz
 dt = 1;
 
+% Decide on min/max plot time
+% Find the maximum/minimum values for the time domain
 t_min = inf;
 t_max = -inf;
 for i=1:length(timestamps)
@@ -91,7 +95,39 @@ for i=1:length(timestamps)
         t_max = t_max_temp;
     end
 end
-time_vector = t_min:dt:t_max;
+
+% Draw an interval graph to inpspect the timestamp intervals
+thickness = 1;
+X_arg = zeros(4,length(timestamps));
+Y_arg = zeros(4,length(timestamps));
+for i=1:length(timestamps)
+    t_min_temp = min(timestamps{i})-t_min;
+    t_max_temp = max(timestamps{i})-t_min;
+    X_arg(1:2,i) = t_min_temp;
+    X_arg(3:4,i) = t_max_temp;
+    Y_arg([1 4],i) = i;
+    Y_arg([2 3],i) = i-thickness;
+end
+
+h2 = figure();
+patch(X_arg,Y_arg,'b');
+xlabel('timestamps (zeroed)');
+xlim([0,t_max-t_min])
+yticks(linspace(thickness/2, i+thickness/2,i));
+yticklabels(timestamps_names);
+set(gca,'TickLabelInterpreter','none');
+
+pause();
+close(h1);
+close(h2);
+
+t_min_user = 2000;
+t_max_user = 2332;
+
+% t_min_user = 0;
+% t_max_user = t_max-t_min;
+
+time_vector = t_min_user+t_min:dt:t_max_user+t_min;
 
 %% Sample all variables against the selected time vector
 
@@ -105,6 +141,8 @@ required_variable_names = input_var_aliases;
 available_variables = fieldnames(data);
 
 data_resampled = struct();
+data_resampled.timestamp = time_vector;
+
 latest_timestamp = '';
 identical_time_instances = [];
 
