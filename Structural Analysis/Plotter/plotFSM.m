@@ -14,7 +14,7 @@ xtickangle(90);
 
 xlabel('');
 
-title('Isolability Matrix');
+title('Fault Signature Matrix');
 
 end
 

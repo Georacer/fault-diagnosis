@@ -1010,6 +1010,21 @@ classdef GraphInterface < handle
             expr = gh.graph.equations(equIndex).expressionStr;
             
         end
+        function [ subsystems ] = getSubsystems( gh, ids )
+            % GETSUBSYSTEMS Get the subsystems of the input equations
+            subsystems = cell(size(ids));
+            for i=1:length(ids)
+                id = ids(i);
+                if gh.isVariable(id)
+                    id = gh.getEquations(id);
+                elseif gh.isEdge(id)
+                    id = gh.getEquations(id);                    
+                end
+                
+                equ_index = gh.getIndexById(id);
+                subsystems{i} = gh.graph.equations(equ_index).subsystem;
+            end
+        end
         function [ varIds ] = getVariablesKnown( gh, id )
             %GETVARIABLESKNOWN Return the known variables of a constraint
             %   Detailed explanation goes here
