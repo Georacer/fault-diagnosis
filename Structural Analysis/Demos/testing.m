@@ -148,7 +148,7 @@ for modelIndex=1:length(modelArray)
     fprintf('Percentage of valid res_gens: %g\n', sum(dynamic_vector>=0)/length(dynamic_vector));
     fprintf('Percentage of dynamic over valid res_gens: %g\n', sum(dynamic_vector>0)/sum(dynamic_vector>=0));
     
-    return
+%     return
     
 %     clc
     
@@ -159,9 +159,51 @@ for modelIndex=1:length(modelArray)
     
     %% Read a log file and play it back onto the residuals
     
-    resampleData_g033;  % Read the dataset and resample it to have uniform data
+    fprintf('Resampling data\n');
+    data_resampled = resampleData('afrika.mat', SA_results);  % Read the dataset and resample it to have uniform data
+%     data_resampled = resampleData('Arduplane_test.mat', SA_results);  % Read the dataset and resample it to have uniform data
     
-    residuals = evaluate_residuals(res_gen_cell, data_resampled);  % Evaluate the residual generator bank
+    RE_results = evaluateResiduals(SA_results, RG_results, data_resampled);  % Evaluate the residual generator bank
+    
+    %% Attempt to threshold the residuals
+    
+    triggered_residuals = thresholdResiduals(RE_results, [322:333]);
+    FSStruct = generateFSM(SA_results.gi, SA_results.res_gens_set, SA_results.matchings_set);
+    
+    %% Attempt to isolate the fault
+    
+    % Attempt to find a single fault
+    single_faults = findSingleFault(FSStruct, triggered_residuals);
+    % Exclude faults
+    faults_excluded = excludeFaults(FSStruct, triggered_residuals);
+    % State the rest of the faults
+    candidate_fault_ids = cell(1,length(faults_excluded));
+    candidate_fault_aliases = cell(1,length(faults_excluded));
+    for i=1:length(candidate_fault_ids)
+        candidate_fault_ids{i} = setdiff(FSStruct.fault_ids,faults_excluded{i});
+        candidate_fault_aliases{i} = SA_results.gi.getAliasById(candidate_fault_ids{i});
+    end
+    % Find the offending expressions
+    candidate_faulty_expressions = cell(size(candidate_fault_ids));
+    for i=1:length(candidate_fault_ids)
+        fault_equ_ids = SA_results.gi.getEquations(candidate_fault_ids{i});
+        candidate_faulty_expressions{i} = SA_results.gi.getExpressionById(fault_equ_ids);
+    end
+    
+    % Find the offending subsystems
+    candidate_faulty_subsystems = cell(size(candidate_fault_ids));
+    for i=1:length(candidate_fault_ids)
+        equ_ids = SA_results.gi.getEquations(candidate_fault_ids{i});
+        candidate_faulty_subsystems{i} = SA_results.gi.getSubsystems(equ_ids);
+    end
+    
+    % Try to make a nice plot
+    plotFaultOccurence(candidate_faulty_expressions, [322:333]);
+    
+    %% Analyze residuals
+    
+    plotResiduals(RE_results, RG_results, data_resampled.timestamp, [])
+%     plotResiduals(RE_results, RG_results, data_resampled.timestamp, 100:120)
     
 end
 
