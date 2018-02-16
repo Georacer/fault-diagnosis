@@ -89,6 +89,9 @@ classdef Evaluator < handle
                     if ~isempty(obj.var_matched_ids)  % If this is not a residual generator
                         try
                             obj.expressions_solved = vpasolve(obj.expressions, obj.sym_var_matched_array); % Store the pre-solved expressions
+                            if isempty(obj.expressions_solved)
+                                error('vpasolve could not solve for expression');
+                            end
                         catch e
                             warning('vpasolve could not solve for expression');
                             try
@@ -170,11 +173,19 @@ classdef Evaluator < handle
 %                     answer = subs(obj.expressions, lexicon);
                     argument_cell = num2cell(values_vector);
                     answer = obj.expressions_solved_handle(argument_cell{:});
+                    answer = real(answer);  %TODO: must decide about the answer domain policy
+                    if length(answer)>1
+                        answer = answer(1);
+                    end
                     if obj.debug; fprintf('Evaluator: Residual evaluated to %g\n',answer); end
                 else
 %                     answer = subs(obj.expressions_solved, lexicon);
                     argument_cell = num2cell(values_vector);
                     answer = obj.expressions_solved_handle(argument_cell{:});
+                    answer = real(answer);  %TODO: must decide about the answer domain policy
+                    if length(answer)>1
+                        answer = answer(1);
+                    end
                     obj.values.setValue(obj.var_matched_ids, [], answer);
                 end
                 
@@ -193,6 +204,7 @@ classdef Evaluator < handle
 %                     obj.values.parse_lexicon(answer);
                     argument_cell = num2cell(values_vector);
                     answer = obj.expressions_solved_handle(argument_cell{:});
+                    answer = real(answer);  %TODO: must decide about the answer domain policy
                     obj.values.setValue(obj.var_matched_ids, [], answer);
                 end
             end
