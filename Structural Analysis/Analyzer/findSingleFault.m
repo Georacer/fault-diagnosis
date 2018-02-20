@@ -10,6 +10,10 @@ fault_ids = FSStruct.fault_ids;
 for i=1:length(single_fault_ids)
     fault_signature = triggered_residuals(:,i);
     
+    if ~any(fault_signature)
+        continue;
+    end
+    
     explaining_faults = [];
     % For each fault signature
     for j=1:size(FSM,2)
