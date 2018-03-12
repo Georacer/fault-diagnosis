@@ -1,4 +1,4 @@
-function [ triggered_residuals ] = thresholdResiduals( RE_results, interval)
+function [ triggered_residuals ] = thresholdResiduals( RE_results, interval, threshold_norm)
 %THRESHOLDRESIDUALS Attempt to threshold batch residual signals
 %   Detailed explanation goes here
 
@@ -7,6 +7,10 @@ if nargin <2
 end
 if isempty(interval)
     interval = 1:size(RE_results.residuals,2);
+end
+
+if nargin < 3
+    threshold_norm = 0.95;
 end
 
 if interval(1)<1
@@ -25,7 +29,7 @@ for i=1:size(triggered_residuals,1)
     % Sort the residual signal
     temp_res = sort(abs(RE_results.residuals(i,:)));
     % Find the 95% value
-    index = floor(length(temp_res)*0.95);
+    index = floor(length(temp_res)*threshold_norm);
     threshold = temp_res(index);
     for j=1:length(interval) 
         if abs(RE_results.residuals(i,interval(j)))>threshold
