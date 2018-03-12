@@ -27,8 +27,8 @@ dictionary.setValue([], {'vibration_z_max'}, 2);
 dictionary.setValue([], {'temperature_min'}, 0);
 dictionary.setValue([], {'temperature_max'}, 85);
 dictionary.setValue([], {'v_air_min'}, 12);
-dictionary.setValue([], {'error_v_air_min'}, -4);
-dictionary.setValue([], {'error_v_air_max'}, 4);
+dictionary.setValue([], {'error_v_air_min'}, -3);
+dictionary.setValue([], {'error_v_air_max'}, 3);
 dictionary.setValue([], {'h_total'}, 27.851);
 dictionary.setValue([], {'g'}, 9.81);
 
@@ -110,7 +110,7 @@ dictionary.setValue(660, {'yaw_ahrs3'}, 0);
 dictionary.setValue(666, {'altitude_ahrs3'}, 0);
 dictionary.setValue(672, {'lat_ahrs3'}, 0);
 dictionary.setValue(678, {'lng_ahrs3'}, 0);
-dictionary.setValue(684, {'tion_x_vibration'}, 0);
+dictionary.setValue(684, {'vibration_x_vibration'}, 0);
 dictionary.setValue(690, {'vibration_y_vibration'}, 0);
 dictionary.setValue(696, {'vibration_z_vibration'}, 0);
 
@@ -358,7 +358,7 @@ graphInitial.setLimits([], {'yaw_ahrs3'}, [-1 1]);
 graphInitial.setLimits([], {'altitude_ahrs3'}, [-1 1]);
 graphInitial.setLimits([], {'lat_ahrs3'}, [-1 1]);
 graphInitial.setLimits([], {'lng_ahrs3'}, [-1 1]);
-graphInitial.setLimits([], {'tion_x_vibration'}, [-1 1]);
+graphInitial.setLimits([], {'vibration_x_vibration'}, [-1 1]);
 graphInitial.setLimits([], {'vibration_y_vibration'}, [-1 1]);
 graphInitial.setLimits([], {'vibration_z_vibration'}, [-1 1]);
 
