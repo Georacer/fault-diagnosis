@@ -1,27 +1,10 @@
-function [ ] = plotFaultOccurence( SA_results, candidate_fault_ids, interval )
+function [ ] = plotFaultOccurence( SA_results, candidate_fault_ids, interval, sample_mask )
 %PLOTFAULTOCCURENCE Summary of this function goes here
-%   Detailed explanation goes here
+%   sample_mask: select for which samples the faults will be plotted
 
-% % Find the offending expressions
-% candidate_faulty_expressions = cell(size(candidate_fault_ids));
-% for i=1:length(candidate_fault_ids)
-%     fault_equ_ids = SA_results.gi.getEquations(candidate_fault_ids{i});
-%     candidate_faulty_expressions{i} = SA_results.gi.getExpressionById(fault_equ_ids);
-% end
-%
-% % Find the offending subsystems
-% candidate_faulty_subsystems = cell(size(candidate_fault_ids));
-% for i=1:length(candidate_fault_ids)
-%     equ_ids = SA_results.gi.getEquations(candidate_fault_ids{i});
-%     candidate_faulty_subsystems{i} = SA_results.gi.getSubsystems(equ_ids);
-% end
-%
-% % Gather all the faulty expressions
-% expressions_flattened = {};
-% for i=1:length(candidate_faulty_expressions)
-%     expressions_flattened = [expressions_flattened; candidate_faulty_expressions{i}];
-% end
-% expressions_flattened = unique(expressions_flattened);
+if nargin < 4
+    sample_mask = ones(size(interval));
+end
 
 % Flatten all the faulty ids
 ids_flattened = [];
@@ -54,10 +37,16 @@ C_arg = [];
 % Iterate within the interval
 counter = 1;
 for i=1:length(candidate_fault_ids)
+    if ~sample_mask(i)
+        continue;
+    end
     for j=1:length(candidate_fault_ids{i})
         id = candidate_fault_ids{i}(j);
         %         expression = SA.gi.getExpression(ids);
         id_index = find(ismember(ids_flattened,id));
+        if isempty(id_index)
+            continue;
+        end
         
         X_arg(1:2,counter) = interval(i);
         X_arg(3:4,counter) = interval(i)+1;
@@ -94,6 +83,7 @@ xlabel('timestamps (zeroed)');
 xlim([interval(1) interval(end)+1])
 yticks(linspace(thickness/2, length(expressions_flattened)+thickness/2-1,length(expressions_flattened)));
 yticklabels(expressions_flattened);
+ylim([0 length(expressions_flattened)+thickness/2]);
 set(gca,'TickLabelInterpreter','none');
 
 grid on
