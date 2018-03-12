@@ -8,9 +8,12 @@ SOType = SAsettings.SOType;
 branchMethod = SAsettings.branchMethod;
 plotGraphs = SAsettings.plotGraphs;
 
+tic;
 graphInitial = GraphInterface();
 graphInitial.readModel(model);
 graphInitial.createAdjacency();
+timeCreateGI = toc;
+
 
 % Create a GraphViz plot in the model folder
 if plotGraphs
@@ -22,6 +25,7 @@ fprintf('Done building initial model %s\n',graphInitial.name);
 name = graphInitial.name;
 
 stats.(name).name = name;
+stats.(name).timeCreateGI = timeCreateGI;
 
 %% Create the overconstrained graph
 
@@ -65,14 +69,30 @@ if matchWERank > 0
     
 else
     graphRemaining = graphOver;
-    
+    sgRemaining = SubgraphGenerator(graphRemaining);
+    sgRemaining.buildLiUSM();    
 end
+
+% Make a rough estimate on the number of MTES that will be generated
+mtes_sum = 0;
+for k=0:(sgRemaining.liUSM.Redundancy-1)
+    if k <= sgRemaining.liUSM.nf
+        mtes_sum = mtes_sum + nchoosek(sgRemaining.liUSM.nf, k);
+    end
+end
+fprintf('Expecting to generate up to %d MTESs\n',mtes_sum);
+
+% return; 
 
 %% Break the graph down into its weakly connected components
 % This makes the parsing cheaper
 
 % Preallocate container structures
+tic
 graphs_conn = getDisconnected(graphRemaining);  % Get the Weakly Connected Componentss
+timeGetDisconnected = toc;
+fprintf('Found disconnected subsystems in %gs\n',timeGetDisconnected);
+stats.(name).timeGetDisconnected = timeGetDisconnected;
 SOSubgraphs_set = cell(1,length(graphs_conn));
 res_gens_set = cell(1,length(graphs_conn));
 matchings_set = cell(1,length(graphs_conn));
