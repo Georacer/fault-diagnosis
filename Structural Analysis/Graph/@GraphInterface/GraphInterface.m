@@ -776,13 +776,31 @@ classdef GraphInterface < handle
             end
             
         end
-        function [ id ] = getEquIdByAlias( this, alias )
+        function [ id_array ] = getEquIdByAlias( this, alias_cell )
             %GETEQUIDBYALIAS Summary of this function goes here
             %   Detailed explanation goes here
             
-            equIndex = find(strcmp(this.reg.equAliasArray,alias));
-            id = this.reg.equIdArray(equIndex);
+            if ~iscell(alias_cell)
+                alias_cell = {alias_cell};
+            end
             
+            id_array = zeros(1,length(alias_cell));
+            
+            for i=1:length(id_array)
+                equIndex = find(strcmp(this.reg.equAliasArray,alias_cell{i}));
+                if isempty(equIndex)  % alias was not found
+                    id_array(i)=0;
+                else
+                    id_array(i) = this.reg.equIdArray(equIndex);
+                end
+            end
+            
+            % Handle legacy case where id_array would return empty
+            if length(id_array)==1
+                if id_array==0
+                    id_array = [];
+                end
+            end
         end
         function [ id ] = getEquIdByProperty(gh,property,value,operator)
             %GETIDBYPROPERTY Return an ID array with objects with requested property
