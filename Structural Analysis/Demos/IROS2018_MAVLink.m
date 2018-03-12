@@ -1,64 +1,46 @@
-%% Testing
-% TESTING Test script for the residual discovery capabilitites.
+%% IROS2018_MAVLink
+% Script performing all the graph processing and calculations for the
+% IROS2018 submission, involving an ArduPlane MAVLink log model.
+
+% This demo script involves
+% * Generation of the Structural Model
+% * Extraction of PSOs for maximum fault isolation
+% * Finding valid matchings for each subgraph
+% * Implementation of every residual generator
+% * Calculation of the residuals using a stored log
 
 % close all
 clear
 clc
 
 modelArray = {};
-
-% Benchmarks:
-% ---------------------
-% * g014e(weR1)
-% * ThreeTankAnalysis(FDT)(g008)
-% * Commault(FDT)(g021)
-% * Damadics(FDT)(g022)
-% * ElectricMotor(FDT)(g023)
-% * InductionMotor(FDT)(g024)
-% * Raghuraj(FDT)(g025)
-% * SmallLinear(FDT)(g026)
-% * Fravolini(g005a)
-
-% modelArray{end+1} = g014g();
-% modelArray{end+1} = g014h();
-% modelArray{end+1} = g008();
-% modelArray{end+1} = g021();
-% modelArray{end+1} = g022();
-% modelArray{end+1} = g023();
-% modelArray{end+1} = g024();
-% modelArray{end+1} = g024a();
-% modelArray{end+1} = g025();
-% modelArray{end+1} = g026();
-% modelArray{end+1} = g005();
-% modelArray{end+1} = g005a();
-% modelArray{end+1} = g027();
-% modelArray{end+1} = g028();
-% modelArray{end+1} = g029();
-% modelArray{end+1} = g030();
-% modelArray{end+1} = g031();
-% modelArray{end+1} = g032();
 modelArray{end+1} = g033();
-% modelArray{end+1} = g034();
 
+% Specify the graph matching method
 matchMethod = 'BBILP';
-% matchMethod = 'Exhaustive';
 
+% Specify the desired PSO type
 SOType = 'MTES';
-% SOType = 'MSO';
 
-% branchMethod = 'cheap';
+% Specify the Brand & Bound ILP branching method
 branchMethod = 'DFS';
-% branchMethod = 'BFS';
 
+% Build the options structure
 SA_settings.matchMethod = matchMethod;
 SA_settings.SOType = SOType;
 SA_settings.branchMethod = branchMethod;
-SA_settings.plotGraphs = true;
+SA_settings.plotGraphInitial = true;
+SA_settings.plotGraphOver = true;
+SA_settings.plotGraphRemaining = true;
+SA_settings.plotGraphDisconnected = true;
+SA_settings.plotGraphPSO = true;
+SA_settings.plotGraphMatched = true;
 
-% For each model
+% For each model in modelArray (Only 1 loop for this particular example)
 for modelIndex=1:length(modelArray)
     
-    % Read the model description and create the initial graph
+    %% Structural graph generation
+    % Read the model description and create the initial MAVLink graph
     model = modelArray{modelIndex};
     
     SA_results = structural_analysis(modelArray{modelIndex}, SA_settings);
