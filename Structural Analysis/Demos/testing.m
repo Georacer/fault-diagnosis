@@ -1,69 +1,63 @@
-%% Testing
-% TESTING Test script for the residual discovery capabilitites.
+%% testing
+% TESTING Template script to test the various capabilities of the Fault Diagnosis software
+% DO NOT RUN AS-IS!
+
+% This script involves
+% * Generation of the Structural Model
+% * Extraction of PSOs for maximum fault isolation
+% * Finding valid matchings for each subgraph
+% * Implementation of every residual generator
+% * Calculation of the residuals using a stored log
 
 % close all
 clear
 clc
 
+%% Setup program execution
+
+% Select the mode of operation
+opMode = 'continuous';
+opMode = 'breaking';
+
+% Select the MAVLink model for processing
 modelArray = {};
 
-% Benchmarks:
-% ---------------------
-% * g014e(weR1)
-% * ThreeTankAnalysis(FDT)(g008)
-% * Commault(FDT)(g021)
-% * Damadics(FDT)(g022)
-% * ElectricMotor(FDT)(g023)
-% * InductionMotor(FDT)(g024)
-% * Raghuraj(FDT)(g025)
-% * SmallLinear(FDT)(g026)
-% * Fravolini(g005a)
+modelArray{end+1} = g032();
 
-% modelArray{end+1} = g014g();
-% modelArray{end+1} = g014h();
-% modelArray{end+1} = g008();
-% modelArray{end+1} = g021();
-% modelArray{end+1} = g022();
-% modelArray{end+1} = g023();
-% modelArray{end+1} = g024();
-% modelArray{end+1} = g024a();
-% modelArray{end+1} = g025();
-% modelArray{end+1} = g026();
-% modelArray{end+1} = g005();
-% modelArray{end+1} = g005a();
-% modelArray{end+1} = g027();
-% modelArray{end+1} = g028();
-% modelArray{end+1} = g029();
-% modelArray{end+1} = g030();
-% modelArray{end+1} = g031();
-% modelArray{end+1} = g032();
-modelArray{end+1} = g033();
-% modelArray{end+1} = g034();
-
+% Specify the graph matching method
 matchMethod = 'BBILP';
 % matchMethod = 'Exhaustive';
 
+% Specify the desired PSO type
 SOType = 'MTES';
 % SOType = 'MSO';
 
+% Specify the Brand & Bound ILP branching method
 % branchMethod = 'cheap';
 branchMethod = 'DFS';
 % branchMethod = 'BFS';
 
+% Build the options structure
 SA_settings.matchMethod = matchMethod;
 SA_settings.SOType = SOType;
 SA_settings.branchMethod = branchMethod;
-SA_settings.plotGraphs = true;
+SA_settings.plotGraphInitial = true;
+SA_settings.plotGraphOver = true;
+SA_settings.plotGraphRemaining = true;
+SA_settings.plotGraphDisconnected = true;
+SA_settings.plotGraphPSO = true;
+SA_settings.plotGraphMatched = true;
 
-% For each model
+%% For each model
 for modelIndex=1:length(modelArray)
     
     % Read the model description and create the initial graph
     model = modelArray{modelIndex};
     
+    % Perform Structural Analsysis and Matching, extract residual generators
     SA_results = structural_analysis(modelArray{modelIndex}, SA_settings);
     
-    %% Display the total number of residual generators found
+    % Inspection: Display the total number of residual generators found
     counter = 0;
     for i=1:length(SA_results.matchings_set)
         for j=1:length(SA_results.matchings_set{i})
@@ -75,18 +69,31 @@ for modelIndex=1:length(modelArray)
     
     fprintf('Total number of valid residuals found: %d\n',counter);
     
-    fprintf('Faults not covered:\n');
-    FSMStruct = generateFSM(SA_results.gi, SA_results.res_gens_set, SA_results.matchings_set);
-    SA_results.gi.getExpressionById(SA_results.gi.getEquations(FSMStruct.non_detectable_fault_ids))
+    if strcmp(opMode,'breaking')
+        input('Press Enter to proceed to the next step...');
+        clc
+    end
     
-%     return
+    %% Do detectability analysis
+    
+    % Create the Fault Signature Matrix and related information
+    FSStruct = generateFSM(SA_results.gi, SA_results.res_gens_set, SA_results.matchings_set);
+    
+    fprintf('Faults not covered:\n');
+    SA_results.gi.getExpressionById(SA_results.gi.getEquations(FSStruct.non_detectable_fault_ids))
     
     %% Do isolability analysis
-    IMStruct = generateIM(SA_results.gi, FSMStruct);
+    
+    % Create the Isolation Matrix and related information
+    IMStruct = generateIM(SA_results.gi, FSStruct);
     plotIM(IMStruct);
     
+    if strcmp(opMode,'breaking')
+        input('Press Enter to proceed to the next step...');
+        clc
+    end
+    
     %% Process statistics and save
-    %{
     stats = results.stats;
     fileName = sprintf('%s_%s_%s.mat',matchMethod, branchMethod,SOType);
     
@@ -120,7 +127,6 @@ for modelIndex=1:length(modelArray)
     end
     stats = oldStats;
     save(fileName,'stats');
-    %}
     
     %% Build the residual generators
     
@@ -153,6 +159,7 @@ for modelIndex=1:length(modelArray)
 %     clc
     
     %% Calculate the Fault Response Vector of each residual generator
+    % TO BE ADDED
     %{
     fault_response_vector_set = getFaultResponseVector( RG_results.res_gen_cell, [], [] ); % Run all tests, with no pre-calculated fault response vector
     %}
@@ -201,14 +208,20 @@ for modelIndex=1:length(modelArray)
     % Try to make a nice plot
     plotFaultOccurence(SA_results, candidate_fault_ids, interval_of_interest-1);
     
-    %% Analyze residuals
+    %% Visualize residuals
     
-    fault_id = SA_results.gi.getVarIdByAlias('fseq43');
-%     fault_id = SA_results.gi.getVarIdByAlias('fseq41');
+    % Select the fault IDs whose residuals you want to plot
+    % e.g.
+%     fault_id = SA_results.gi.getVarIdByAlias('fseq43');
+    % or
+    fault_id = FSStruct.fault_ids(1);
+    % Get the corresponding indices of the selected faults
     residual_indices = findRelatedResiduals(SA_results, FSStruct, fault_id);
+    
+    % OR, plot all residuals
 %     residual_indices = [];
+
     plotResiduals(RE_results, RG_results, data_resampled.timestamp, residual_indices)
-%     plotResiduals(RE_results, RG_results, data_resampled.timestamp, 100:120)
     
 end
 

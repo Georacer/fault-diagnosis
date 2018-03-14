@@ -28,6 +28,7 @@ octave-workspace
 
 # log files
 *.log
+logs
 
 # GraphViz model files
 Structural\ Analysis/GraphPool/*/graphs

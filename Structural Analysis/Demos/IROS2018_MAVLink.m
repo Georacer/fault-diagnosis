@@ -1,6 +1,12 @@
 %% IROS2018_MAVLink
-% Script performing all the graph processing and calculations for the IROS2018 submission, involving an
+% IROS2018_MAVLink - Script performing all the graph processing and calculations for the IROS2018 submission, involving an
 % ArduPlane MAVLink log model.
+% Author: George Zogopoulos-Papaliakos
+% Control Systems Laboratories, School of Mechanical Engineering, National
+% Technical University of Athens
+% email: gzogop@mail.ntua.gr
+% Website: https://github.com/Georacer
+% March 2018; Last revision: -
 
 % This demo script involves
 % * Generation of the Structural Model
