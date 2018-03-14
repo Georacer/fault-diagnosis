@@ -1,5 +1,5 @@
 function [ data_resampled ] = resampleData( fileName, SA_results )
-%% resampleDaata Read a log file and generate the required resampled data series
+% RESAMPLEDATA Read a log file and generate the required resampled data series
 % Intended for the g033 model
 
 %% Read the dataset
@@ -23,6 +23,7 @@ end
 clear dataset_orig
 
 %% Populate the variables
+% Create the 'data' structure which contains all the 'variablename_fieldname' variables from the dataset
 
 data = struct();  % Initialize the data container
 
@@ -39,6 +40,7 @@ for i=1:length(messages)
 end
 
 %% Verify that all model measurement variables exist in the dataset
+% This check is done against the 'input_var_ids' set, as specified in the structural model
 
 input_var_ids = SA_results.gi.getVarIdByProperty('isMeasured');
 input_var_aliases = SA_results.gi.getAliasById(input_var_ids);
@@ -51,9 +53,9 @@ if ~all(variable_exists)
     end
 end
 
-%% Decide on a time vector
+%% Decide on a resampling time vector
 
-% Gather all the timestamps
+% Gather all the timestamps variables
 variables = fieldnames(data);
 timestamps_mask = startsWith(variables,'timestamp');
 timestamps_names = variables(timestamps_mask);
@@ -68,6 +70,7 @@ for i=1:length(datarates)
     datarates(i) = mean(diff(timestamps{i}));
 end
 
+% Plot a historgram to visualize the message publication rates
 bins = 0:0.25:5;
 h1 = figure();
 hist(datarates, bins);
@@ -78,11 +81,11 @@ xlim([0, max(bins)+0.5]);
 % 1 telemetry message comes at around 0.75Hz
 % 3 telemetry messages come at around 1Hz
 
-% We'll go with 1Hz
+% CHANGE AT WILL: We'll go with 1Hz
 dt = 1;
 
 % Decide on min/max plot time
-% Find the maximum/minimum values for the time domain
+% Find the maximum/minimum values of the given time domain
 t_min = inf;
 t_max = -inf;
 for i=1:length(timestamps)
@@ -117,16 +120,21 @@ yticks(linspace(thickness/2, i+thickness/2,i));
 yticklabels(timestamps_names);
 set(gca,'TickLabelInterpreter','none');
 
-pause();
+fprintf('Inspect the timestamp plots to verify your dt, t_min_user and t_max_user options.\n');
+fprintf('Cancel execution and change their values accordingly in the resampleData script, if needed\n');
+input('Press Enter to continue...');
 close(h1);
 close(h2);
 
+% Manually specify your resampled time interval
 t_min_user = 2000;
 t_max_user = 2332;
 
+% OR Use the entire datalog
 % t_min_user = 0;
 % t_max_user = t_max-t_min;
 
+% Construct the time vector to be used for resamping
 time_vector = t_min_user+t_min:dt:t_max_user+t_min;
 
 %% Sample all variables against the selected time vector
@@ -140,22 +148,27 @@ required_variable_names = input_var_aliases;
 
 available_variables = fieldnames(data);
 
+% Initialize the resampled data structure
 data_resampled = struct();
 data_resampled.timestamp = time_vector;
 
-latest_timestamp = '';
+latest_timestamp = ''; % Holds the most recent timestamp variable met
 identical_time_instances = [];
 
+% Iterate over all the available measurements/variables
 for i=1:length(available_variables)
     variable_name = available_variables{i};
+    
+    % If this variable is a timestamp
     if startsWith(variable_name,'timestamp')
-        latest_timestamp = variable_name;
+        latest_timestamp = variable_name; % Store its name
         identical_time_instances = find(diff(data.(latest_timestamp))==0); % Find identical timestamps
-        continue;
+        continue; % Do not include it in the resampled variable set
     end
     
+    % If this variable is to be resampled
     if ismember(variable_name, required_variable_names)
-        time_vector_original = data.(latest_timestamp);
+        time_vector_original = data.(latest_timestamp); % The timestamp of each MAVLink message is assumed (and is) the first field in each message
         time_vector_original(identical_time_instances) = []; % Remove identical timestaps
         variable_data = data.(variable_name);
         variable_data(identical_time_instances) = [];

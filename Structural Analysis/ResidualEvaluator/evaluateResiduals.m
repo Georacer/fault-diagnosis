@@ -1,23 +1,26 @@
 function [ RE_results ] = evaluateResiduals(SA_results, RG_results, data )
-%% EVALUATERESIDUALS Read a log file and play it back onto the residuals
+% EVALUATERESIDUALS Read a log file and play it back onto the residuals
+% INPUTS:
+% SA_results    : Structural Analysis results, as returned by strctural_analysis()
+% RG_results    : Residual generation results, as retunred by get_res_gens()
+% data          : Resampled, aligned data containing all required variables
+% OUTPUTS:
+% RE_results    : Residual evaluation results
 
 fprintf('Evaluating residual generators\n');
 
-% Get the initial graph interface
-gi = SA_results.gi;
-
-time_vector = data.timestamp;
-values = RG_results.values;
-res_gen_cell = RG_results.res_gen_cell;
-
-residuals = zeros(length(res_gen_cell), length(time_vector));
+gi = SA_results.gi; % Get the initial graph interface
+time_vector = data.timestamp; % Get the time vector
+values = RG_results.values; % Get the variables dictionary
+res_gen_cell = RG_results.res_gen_cell; % Get the residual generators set
+residuals = zeros(length(res_gen_cell), length(time_vector)); % Initialize the residuals array
 
 %% Build the variable ids and aliases
 
 var_aliases = setdiff(fieldnames(data),{'timestamp'});
 var_ids = gi.getVarIdByAlias(var_aliases);
 
-%% Iterate over each time instant
+%% Iterate over each time sample
 
 h = waitbar(0,'Evaluating log data');
 for i=1:length(time_vector)
@@ -42,7 +45,7 @@ for i=1:length(time_vector)
             continue;
         end
         
-        % Pass the dictionary to each evaluator
+        % Pass the dictionary to each evaluator and evaluate
         residuals(j,i) = res_gen.evaluate(values);
         
     end

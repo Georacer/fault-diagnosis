@@ -1,6 +1,13 @@
-function [ results ] = get_res_gens( SA_results, RG_settings )
-%GET_RES_GENS Summary of this function goes here
-%   Detailed explanation goes here
+function [ RE_results ] = get_res_gens( SA_results, RG_settings )
+%GET_RES_GENS Implement the residual generators induced from a fully-directed structural graph
+%   INPUTS:
+%   SA_results  : The Structural Analysis results, as produced by structural_analysis()
+%   RG_settings : The algorithm settings structure
+%       dt          : The time-stemp used when implementing dynamic residuals
+%   OUTPUTS:
+%   RE_results  : The results structure
+%       res_gen_cell: ResidualGenerator objects set
+%       values      : Dictionary object, containing parameters for the model and variable values
 
 %% Unpack the input argument
 
@@ -62,7 +69,7 @@ res_gen_cell = cell(1,length(solutionOrder));
 warning('off', 'symbolic:sym:sym:DeprecateExpressions');
 
 tic
-h = waitbar(0,'Creating residual generators');
+h = waitbar(0,'Implementing residual generators');
 % Iterate over all solutionOrders
 for i=1:length(solutionOrder)
     % Skip problematic SCCs
@@ -92,8 +99,8 @@ toc
 
 %% Build results
 
-results.res_gen_cell = res_gen_cell;
-results.values = values;
+RE_results.res_gen_cell = res_gen_cell;
+RE_results.values = values;
 
 return
 

@@ -1,6 +1,10 @@
 function [ ] = plotFaultOccurence( SA_results, candidate_fault_ids, interval, sample_mask )
-%PLOTFAULTOCCURENCE Summary of this function goes here
-%   sample_mask: select for which samples the faults will be plotted
+%PLOTFAULTOCCURENCE Generate the Fault Occurrence Grid
+%   INPUTS:
+% SA_results            : Structural Analysis results, generated from structural_analysis()
+% candidate_fault_ids   : Sets containing fault IDs to be plotted. Has one set for each time sample
+% interval              : Time interval over which to generate the plot
+% sample_mask           : Select for which samples within the time interval the faults will be plotted
 
 if nargin < 4
     sample_mask = ones(size(interval));
@@ -13,11 +17,11 @@ for i=1:length(candidate_fault_ids)
 end
 ids_flattened = unique(ids_flattened);
 
-% Get the expressions for use as labels
+% Get the expressions, use them as fault labels
 fault_equations = SA_results.gi.getEquations(ids_flattened);
 expressions_flattened = SA_results.gi.getExpressionById(fault_equations);
 
-% Setup subsystem colors
+% Setup subsystem colors, hardcoded to the g033 MAVLink model subsystems
 clr_yellow = [1 1 0];
 clr_red = [1 0 0];
 clr_blue = [0 0 1];
@@ -29,25 +33,28 @@ clr_navigation = clr_blue;
 clr_default = clr_green;
 clr_os = clr_black;
 
-% Draw an interval graph to inpspect the timestamp intervals
 thickness = 1;
+% Initialize the graph block arrays
 X_arg = [];
 Y_arg = [];
 C_arg = [];
-% Iterate within the interval
+
 counter = 1;
+% Iterate over the time samples
 for i=1:length(candidate_fault_ids)
+    % Check if this time sample is to be plotted
     if ~sample_mask(i)
         continue;
     end
+    % For each fault to be plotted in this time sample
     for j=1:length(candidate_fault_ids{i})
         id = candidate_fault_ids{i}(j);
-        %         expression = SA.gi.getExpression(ids);
-        id_index = find(ismember(ids_flattened,id));
+        id_index = find(ismember(ids_flattened,id)); % Find the row where this fault is to be plotted in
         if isempty(id_index)
             continue;
         end
         
+        % Create the rectangle representing this fault at this time sample
         X_arg(1:2,counter) = interval(i);
         X_arg(3:4,counter) = interval(i)+1;
         Y_arg([1 4],counter) = id_index;
@@ -77,6 +84,7 @@ for i=1:length(candidate_fault_ids)
     end
 end
 
+% Generate the patch figure
 h2 = figure();
 patch(X_arg,Y_arg,C_arg);
 xlabel('timestamps (zeroed)');

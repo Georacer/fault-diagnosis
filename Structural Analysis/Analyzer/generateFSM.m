@@ -2,10 +2,8 @@ function [ FSStruct ] = generateFSM( gi, res_gens_set, matchings_set )
 %GENERATEFSM Generate the fault signature matrix and related data
 %   INPUTS          :
 %   gi              : The intial graph interface
-%   ResGenSets_cell : A cell array containing all equations which contribute
-%       to residual generators
-%   matchings_set    : A cell array containing all matchings. Used to verify
-%   that a residual generator is feasible.
+%   ResGenSets_cell : A cell array containing all equations which contribute to residual generators
+%   matchings_set    : A cell array containing all matchings. Used to verify that a residual generator is feasible.
 %   OUTUPTS         :
 %   FSStruct        : The struct containing the FSM and other data
 

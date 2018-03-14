@@ -39,7 +39,7 @@ graphInitial.createAdjacency(); % Also create the adjacency matrix
 timeCreateGI = toc; % Save the creattion time
 
 % Create a GraphViz plot of the initial graph in the model folder
-if plotGraphInit
+if plotGraphInitial
     plotter = Plotter(graphInitial);
     plotter.plotDot('initial');
 end
@@ -106,9 +106,8 @@ for k=0:(sgRemaining.liUSM.Redundancy-1)
         mtes_sum = mtes_sum + nchoosek(sgRemaining.liUSM.nf, k);
     end
 end
-fprintf('Expecting to generate up to %d MTESs\n',mtes_sum);
-
-% return; 
+fprintf('The original graph could contain up to %d MTESs\n',mtes_sum);
+fprintf('Proceeding to break it up into non-connected subgraphs...\n');
 
 %% Break the graph down into its weakly connected components
 % This makes the parsing and matching cheaper
