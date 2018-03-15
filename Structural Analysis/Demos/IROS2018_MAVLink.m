@@ -20,7 +20,7 @@ clear
 clc
 
 % Select the mode of operation
-opMode = 'continuous';
+% opMode = 'continuous';
 opMode = 'breaking';
 
 % Select the MAVLink model for processing
