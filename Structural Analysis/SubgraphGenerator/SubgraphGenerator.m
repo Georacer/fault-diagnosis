@@ -60,12 +60,12 @@ classdef SubgraphGenerator < matlab.mixin.Copyable
             
             p = inputParser;
             
-            p.addRequired('this',@(x) true);
-            p.addRequired('equIds',@(x) all(isnumeric(x)));
-            p.addOptional('varIds',[],@(x) all(isnumeric(x)));
-            p.addParameter('postfix', '_submodel' ,@isstr);
-            p.addParameter('pruneKnown',false,@islogical);
-            p.addParameter('pruneUnmatched',false,@islogical);
+            p.addRequired('this', @(x) true);
+            p.addRequired('equIds', @(x) all(isnumeric(x)));
+            p.addOptional('varIds', [], @(x) all(isnumeric(x)));
+            p.addParameter('postfix', '_submodel', @isstr);
+            p.addParameter('pruneKnown', false, @islogical);
+            p.addParameter('pruneUnmatched', false, @islogical);
             
             p.parse(this, varargin{:});
             opts = p.Results;

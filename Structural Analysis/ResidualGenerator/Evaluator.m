@@ -89,6 +89,9 @@ classdef Evaluator < handle
                     if ~isempty(obj.var_matched_ids)  % If this is not a residual generator
                         try
                             obj.expressions_solved = vpasolve(obj.expressions, obj.sym_var_matched_array); % Store the pre-solved expressions
+                            if isempty(obj.expressions_solved)
+                                error('vpasolve could not solve for expression');
+                            end
                         catch e
                             warning('vpasolve could not solve for expression');
                             try
@@ -101,11 +104,17 @@ classdef Evaluator < handle
                         try
                             obj.expressions_solved_handle = matlabFunction(obj.expressions_solved, 'Vars', obj.sym_var_input_array, 'Outputs', obj.gi.getAliasById(obj.var_matched_ids));
                         catch e
+                            if obj.debug; fprintf('Evaluator: Failed to instantiate singular SCC evaluation'); end
                             rethrow(e);
                         end
                     else  % This is a residual generator
                         obj.is_res_gen = true; % No pre-solved expression to store, we just need to evaluate it
-                        obj.expressions_solved_handle = matlabFunction(obj.expressions, 'Vars', obj.sym_var_input_array);
+                        try
+                            obj.expressions_solved_handle = matlabFunction(obj.expressions, 'Vars', obj.sym_var_input_array);
+                        catch e
+                            if obj.debug; fprintf('Evaluator: Failed to instantiate residual generator'); end
+                            rethrow(e);
+                        end
                     end
                 else  % This is a non-singular SCC
                     if any(obj.gi.getPropertyById(obj.scc,'isDynamic'))
@@ -164,11 +173,19 @@ classdef Evaluator < handle
 %                     answer = subs(obj.expressions, lexicon);
                     argument_cell = num2cell(values_vector);
                     answer = obj.expressions_solved_handle(argument_cell{:});
+                    answer = real(answer);  %TODO: must decide about the answer domain policy
+                    if length(answer)>1
+                        answer = answer(1);
+                    end
                     if obj.debug; fprintf('Evaluator: Residual evaluated to %g\n',answer); end
                 else
 %                     answer = subs(obj.expressions_solved, lexicon);
                     argument_cell = num2cell(values_vector);
                     answer = obj.expressions_solved_handle(argument_cell{:});
+                    answer = real(answer);  %TODO: must decide about the answer domain policy
+                    if length(answer)>1
+                        answer = answer(1);
+                    end
                     obj.values.setValue(obj.var_matched_ids, [], answer);
                 end
                 
@@ -187,6 +204,7 @@ classdef Evaluator < handle
 %                     obj.values.parse_lexicon(answer);
                     argument_cell = num2cell(values_vector);
                     answer = obj.expressions_solved_handle(argument_cell{:});
+                    answer = real(answer);  %TODO: must decide about the answer domain policy
                     obj.values.setValue(obj.var_matched_ids, [], answer);
                 end
             end

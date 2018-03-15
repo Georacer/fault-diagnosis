@@ -47,6 +47,11 @@ classdef Adjacency < matlab.mixin.Copyable
                 end
             end
             
+            this.eqIds = this.gi.reg.equIdArray;
+            this.eqNames = this.gi.reg.equAliasArray;
+            this.varIds = this.gi.reg.varIdArray;
+            this.varNames = this.gi.reg.varAliasArray;
+            
         end
 
         function array = get.E2V(obj)

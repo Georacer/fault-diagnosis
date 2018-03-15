@@ -776,13 +776,31 @@ classdef GraphInterface < handle
             end
             
         end
-        function [ id ] = getEquIdByAlias( this, alias )
+        function [ id_array ] = getEquIdByAlias( this, alias_cell )
             %GETEQUIDBYALIAS Summary of this function goes here
             %   Detailed explanation goes here
             
-            equIndex = find(strcmp(this.reg.equAliasArray,alias));
-            id = this.reg.equIdArray(equIndex);
+            if ~iscell(alias_cell)
+                alias_cell = {alias_cell};
+            end
             
+            id_array = zeros(1,length(alias_cell));
+            
+            for i=1:length(id_array)
+                equIndex = find(strcmp(this.reg.equAliasArray,alias_cell{i}));
+                if isempty(equIndex)  % alias was not found
+                    id_array(i)=0;
+                else
+                    id_array(i) = this.reg.equIdArray(equIndex);
+                end
+            end
+            
+            % Handle legacy case where id_array would return empty
+            if length(id_array)==1
+                if id_array==0
+                    id_array = [];
+                end
+            end
         end
         function [ id ] = getEquIdByProperty(gh,property,value,operator)
             %GETIDBYPROPERTY Return an ID array with objects with requested property
@@ -834,13 +852,20 @@ classdef GraphInterface < handle
             end
             
         end
-        function [ expr ] = getExpressionById(gh, id)
+        function [ expr ] = getExpressionById(gh, ids)
             % getExpressionById Retun the symbolic expression
-            if ~gh.isEquation(id)
-                error('%d is not an equation',id);
+            for id=ids
+                if ~gh.isEquation(id)
+                    error('%d is not an equation',id);
+                end
             end
-            index = gh.getIndexById(id);
-            expr = gh.graph.equations(index).expression;
+            indices = gh.getIndexById(ids);
+            
+            expr = cell(length(ids),1);
+            for i=1:length(indices)
+                index = indices(i);
+                expr{i} = gh.graph.equations(index).expression;
+            end
             
         end
         function [ index, type ] = getIndexById( gh, ids )
@@ -1002,6 +1027,21 @@ classdef GraphInterface < handle
             equIndex = find(strcmp(gh.reg.equAliasArray,alias));
             expr = gh.graph.equations(equIndex).expressionStr;
             
+        end
+        function [ subsystems ] = getSubsystems( gh, ids )
+            % GETSUBSYSTEMS Get the subsystems of the input equations
+            subsystems = cell(size(ids));
+            for i=1:length(ids)
+                id = ids(i);
+                if gh.isVariable(id)
+                    id = gh.getEquations(id);
+                elseif gh.isEdge(id)
+                    id = gh.getEquations(id);                    
+                end
+                
+                equ_index = gh.getIndexById(id);
+                subsystems{i} = gh.graph.equations(equ_index).subsystem;
+            end
         end
         function [ varIds ] = getVariablesKnown( gh, id )
             %GETVARIABLESKNOWN Return the known variables of a constraint
@@ -1334,6 +1374,20 @@ classdef GraphInterface < handle
             for i=1:length(resp)
                 edgeIndex = gh.getIndexById(ids(i));
                 resp(i) = gh.graph.edges(edgeIndex).isNonSolvable;            
+            end
+        end
+        function [ resp ] = isFault( gh, ids )
+            %ISFAULT Decide if the variables are faults
+            if ~gh.isVariable(ids)
+                error('Only variables can be faults');
+            end
+            
+            indices = gh.getIndexById(ids);
+            
+            resp = zeros(size(indices));
+            
+            for i=1:length(resp)
+                resp(i) = gh.graph.variables(indices(i)).isFault;
             end
         end
         function [ resp ] = isFaultable( gh, ids )
@@ -1696,6 +1750,16 @@ classdef GraphInterface < handle
                             this.setProperty(equId,'subsystem',word);
                         elseif isExpression % expr keyword met previously
                             isExpression = false;
+                            if strcmp(word,'equal')  % The reserved work equal is met. This means that the expression is a two-variable equality
+                                varIds = this.getVariables(equId);  % This may contain a fault variable
+                                varIds_nf = varIds(~this.isFault(varIds));
+                                varAliases = this.getAliasById(varIds_nf);
+                                if length(varAliases)~=2
+                                    fprintf('Expression "%s" should have exactly 2 contributing variables\n',exprStr);
+                                end
+                                % This will ONLY work if expr is met LAST in the structural expression
+                                word = sprintf('-%s+%s',varAliases{1},varAliases{2});  % Write the equality explicitly
+                            end
                             if has_fault
                                 word = [word '+f' prefix alias];  % Add the fault to the symbolic equation
                             end

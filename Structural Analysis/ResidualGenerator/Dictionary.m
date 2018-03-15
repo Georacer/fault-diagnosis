@@ -47,7 +47,9 @@ classdef Dictionary < handle
             %   Detailed explanation goes here
             
             if ~isempty(ids)
-                assert(length(ids)==length(values));
+                if (length(ids)~=length(values))
+                    error('Number of ids and values must be the same');
+                end
                 id_indices = obj.getIdIndex(ids);
                 obj.values_array(id_indices) = values;
             elseif ~isempty(aliases)

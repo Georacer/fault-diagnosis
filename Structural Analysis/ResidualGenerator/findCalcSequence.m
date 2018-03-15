@@ -51,7 +51,8 @@ if opts.asResGenerator
     
     % It should normally be only 1
     if length(RGids)>1
-        error('I expected only 1 residual generator');
+        warning('I expected only 1 residual generator, picking the first one'); % TODO: Find a rational example for this case
+        RGids = RGids(1);
     end
     
     % Find all ancestor equations in DFS order

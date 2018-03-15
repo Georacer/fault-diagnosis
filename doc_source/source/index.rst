@@ -25,7 +25,7 @@ The codebase is split into several logical parts. There is dedicated documentati
  * Subgraph Generator
  * Matcher
 
-Demos are available in the dedicated section.
+:ref:`chap-demos` are available in the dedicated section.
 
 System Compatibility
 ====================

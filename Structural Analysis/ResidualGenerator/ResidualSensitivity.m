@@ -21,12 +21,10 @@ classdef ResidualSensitivity < handle
         plotCost
         plotSwarm
         plotSwarmIds
-        faultIndex  % Which faults to examine for
-        testMin
-        testMax
+        testMask  % Which faults to examine for
         
         debug = true;
-%         debug = false;
+        %         debug = false;
     end
     
     methods
@@ -36,29 +34,24 @@ classdef ResidualSensitivity < handle
             p = inputParser;
             
             p.addRequired('res_gen',@(x) isa(x, 'ResidualGenerator'));
-            p.addRequired('gi',@(x) isa(x,'GraphInterface'));
             p.addParameter('timeDetection', 0 ,@isnumeric);
-            p.addParameter('deltat', 0.01 ,@isnumeric);            
+            p.addParameter('deltat', 0.01 ,@isnumeric);
             p.addParameter('innerProblem', 'fminbound' ,@(s) validatestring(s, {'fminbound', 'pso'}));
             p.addParameter('plotCost', false , @islogical);
             p.addParameter('plotSwarm', false, @islogical);
             p.addParameter('plotSwarmIds', [], @isnumeric);  % Array of 1 or 2 ids which will be plotted through plotSwarm
-            p.addParameter('faultIndex', 0, @isnumeric);
-            p.addParameter('testMin', true, @islogical);
-            p.addParameter('testMax', true, @islogical);
+            p.addParameter('testMask', 0, @isnumeric);
             
             p.parse(varargin{:});
             opts = p.Results;
             obj.res_gen = opts.res_gen;
-            obj.gi = opts.gi;
+            obj.gi = opts.res_gen.gi;
             
             obj.timeDetection = opts.timeDetection;
             obj.dt = opts.deltat;
             obj.plotCost = opts.plotCost;
             obj.plotSwarm = opts.plotSwarm;
             obj.plotSwarmIds = opts.plotSwarmIds;
-            obj.testMin = opts.testMin;
-            obj.testMax = opts.testMax;
             
             % Set the inner problem method
             obj.inner_problem_method = opts.innerProblem;
@@ -76,14 +69,10 @@ classdef ResidualSensitivity < handle
             obj.fault_ids = var_ids(fault_mask);
             obj.input_ids = var_ids( (input_mask | measured_mask) & ~fault_mask);
             
-            if opts.faultIndex == 0
-                % Examine all faults
-                obj.faultIndex = 1:length(obj.fault_ids);
+            if isempty(opts.testMask)
+                obj.testMask = ones(2,length(obj.fault_ids));
             else
-                if opts.faultIndex>length(obj.fault_ids)
-                    error('Fault index specified is larger than the amount of available faults');
-                end
-                obj.faultIndex = opts.faultIndex;
+                obj.testMask = opts.testMask;
             end
             
         end
@@ -186,7 +175,7 @@ classdef ResidualSensitivity < handle
                 obj.res_gen.reset_state();  % Reset the state variables
                 [fault_value, inner_cost] = particleswarm(problem);
                 
-            %% Maximum fault response search using fminbound
+                %% Maximum fault response search using fminbound
             elseif strcmp(obj.inner_problem_method, 'fminbound')
                 
                 % Build the input bounds
@@ -251,17 +240,17 @@ classdef ResidualSensitivity < handle
             end
             
             % Set gamma
-%             if q < 1
+            %             if q < 1
             if q < 0.1
                 gamma = 1;
             else
                 gamma = 2;
             end
             
-%             k = obj.step_counter; % Adaptive penalty cannot work with
-%             this implementation, because particleswarm() does not update
-%             its best fit value on each iteration: The old, cheaper
-%             position fix persists.
+            %             k = obj.step_counter; % Adaptive penalty cannot work with
+            %             this implementation, because particleswarm() does not update
+            %             its best fit value on each iteration: The old, cheaper
+            %             position fix persists.
             k=1;
             
             penalty = sqrt(k) * theta*q^gamma;
@@ -299,10 +288,10 @@ classdef ResidualSensitivity < handle
             
             
             % Iterate over all faults
-            for i=obj.faultIndex
+            for i=1:size(obj.testMask,2)
                 tic;
                 
-                if obj.testMax
+                if obj.testMask(2,i)
                     %% Calculate the maximum fault contributions
                     % Reset fault values
                     obj.values.setValue(obj.fault_ids, [], zeros(size(obj.fault_ids)));
@@ -376,7 +365,7 @@ classdef ResidualSensitivity < handle
                     end
                 end
                 
-                if obj.testMin
+                if obj.testMask(1,i)
                     %% Calculate the minimum fault contributions
                     
                     obj.inner_problem_fault_value = nan;
@@ -455,14 +444,14 @@ classdef ResidualSensitivity < handle
                     toc
                     %                 pause();
                 end
-
-            
-            fault_contribution = [fault_contribution_minimum; fault_contribution_maximum];
+                
+                
+                fault_contribution = [fault_contribution_minimum; fault_contribution_maximum];
+                
+            end
             
         end
         
-        end
-    
     end
     
 end
