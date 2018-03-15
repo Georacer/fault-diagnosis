@@ -1,4 +1,4 @@
-.. _mavlink:
+.. _chap-mavlink:
 
 =====================================
 Residual Generation for a MAVLink UAV
