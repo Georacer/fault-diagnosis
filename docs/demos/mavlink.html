@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Residual Generation for a MAVLink UAV &mdash; fault-diangosis 0.5 documentation</title>
+  <title>Residual Generation for a MAVLink UAV &mdash; fault-diangosis 0.6 documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   
 
   
-    <link rel="top" title="fault-diangosis 0.5 documentation" href="../index.html"/>
+    <link rel="top" title="fault-diangosis 0.6 documentation" href="../index.html"/>
         <link rel="up" title="Demos" href="index.html"/>
         <link rel="next" title="Contributors" href="../contributors.html"/>
         <link rel="prev" title="Introduction to matching" href="matching_intro.html"/> 
@@ -60,7 +60,7 @@
           
           
             <div class="version">
-              0.5
+              0.6
             </div>
           
         
@@ -147,7 +147,7 @@
            <div itemprop="articleBody">
             
   <div class="section" id="residual-generation-for-a-mavlink-uav">
-<span id="mavlink"></span><h1>Residual Generation for a MAVLink UAV<a class="headerlink" href="#residual-generation-for-a-mavlink-uav" title="Permalink to this headline">¶</a></h1>
+<span id="chap-mavlink"></span><h1>Residual Generation for a MAVLink UAV<a class="headerlink" href="#residual-generation-for-a-mavlink-uav" title="Permalink to this headline">¶</a></h1>
 <p>This demo showcases the usage of <cite>fault-diagnosis</cite> to perform FDI in <a class="reference external" href="https://mavlink.io/en/getting_started/">MAVLink</a>-enabled fixed-wing UAVs.</p>
 <p>We shall present step-by-step the procedure which involves:</p>
 <blockquote>
@@ -234,7 +234,7 @@ Indicatively, the initial MAVLink model is of large size and also has a large st
 </div>
 <p>A typical structural subgraph looks like</p>
 <img alt="../_images/wcc_2.png" src="../_images/wcc_2.png" />
-<p>The MTES <a class="footnote-reference" href="#krysander" id="id2">[1]</a> algorithm is used to extract all the minimum structurally overdetermined sets of equations.</p>
+<p>The MTES <a class="footnote-reference" href="#krysander" id="id1">[1]</a> algorithm is used to extract all the minimum structurally overdetermined sets of equations.</p>
 <div class="highlight-matlab"><div class="highlight"><pre><span class="n">sg</span><span class="p">.</span><span class="n">buildMTESs</span><span class="p">();</span> <span class="c">% Use the LiUSM algorithm to find the MTESs</span>
 <span class="n">ResGenSets</span> <span class="p">=</span> <span class="n">sg</span><span class="p">.</span><span class="n">getMTESs</span><span class="p">();</span> <span class="c">% Get the equations sets corresponding to the MTESs</span>
 </pre></div>
@@ -250,7 +250,7 @@ Indicatively, the initial MAVLink model is of large size and also has a large st
 <div class="section" id="finding-valid-matchings-for-each-subgraph">
 <h2>Finding valid matchings for each subgraph<a class="headerlink" href="#finding-valid-matchings-for-each-subgraph" title="Permalink to this headline">¶</a></h2>
 <p>Next, a matching procedure is applied to each Proper Structurally Overconstrained subgraph (PSO). The goal is to take advantage of the graph-based encoding of each PSO and employ graph-based methods to discover a matching which represents a valid sequence of calculations leading to the evaluation of a residual generator.</p>
-<p>Older matching algorithms, such as the Ranking Matching <a class="footnote-reference" href="#blanke" id="id3">[2]</a> and the efficient Hungarian algorithm and its derivatives <a class="footnote-reference" href="#hopcroft" id="id4">[3]</a>, are not a suitable option for this task. They have multiple deficiencies, such as the inability to cope with calculation loops or ensuring the realisability <a class="footnote-reference" href="#flaugergues" id="id5">[4]</a> of the resulting matching.</p>
+<p>Older matching algorithms, such as the Ranking Matching <a class="footnote-reference" href="#blanke" id="id2">[2]</a> and the efficient Hungarian algorithm and its derivatives <a class="footnote-reference" href="#hopcroft" id="id3">[3]</a>, are not a suitable option for this task. They have multiple deficiencies, such as the inability to cope with calculation loops or ensuring the realisability <a class="footnote-reference" href="#flaugergues" id="id4">[4]</a> of the resulting matching.</p>
 <p>For the above reasons, we employ our own <strong>Branch and Bound Integer Linear Programming (BBILP)</strong> matching algorithm.</p>
 <div class="highlight-matlab"><div class="highlight"><pre><span class="p">[</span><span class="c">...]</span>
 <span class="nb">disp</span><span class="p">(</span><span class="s">&#39;Examining another SO graph&#39;</span><span class="p">)</span>
@@ -265,7 +265,7 @@ Indicatively, the initial MAVLink model is of large size and also has a large st
 <img alt="../_images/wcc_2_so_4_matched.png" src="../_images/wcc_2_so_4_matched.png" />
 <p>The white rectangle to the right represents an unmatched equation which will serve as a residual generator.</p>
 <p>We can perform Isolability Analysis in this stage. We gather all the structural residuals, note which faults are introduced in which residuals and generate the Fault Signature Matrix.</p>
-<img alt="demos/isolability.*" src="demos/isolability.*" />
+<img alt="../_images/isolability.png" src="../_images/isolability.png" />
 <p>As we can see, its structure is mostly diagonal, meaning that all faults are (structurally) isolable, with a single-fault assumption. The non-singular diagnoal elements represent blocks of faults which are not distinguishable from each other, due to lack of surplus information.</p>
 <p>Only 6 faults are non-detectable.</p>
 </div>
@@ -377,7 +377,7 @@ However, further investigation would require analysis of the internal structural
 <table class="docutils footnote" frame="void" id="krysander" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id2">[1]</a></td><td><ol class="first last upperalpha simple" start="13">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td><ol class="first last upperalpha simple" start="13">
 <li>Krysander, J. Aslund, and E. Frisk, “A Structural Algorithm for Finding Testable Sub-models and Multiple Fault Isolability Analysis,”21st International Workshop on the Principles of Diagnosis, 2010</li>
 </ol>
 </td></tr>
@@ -386,7 +386,7 @@ However, further investigation would require analysis of the internal structural
 <table class="docutils footnote" frame="void" id="blanke" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id3">[2]</a></td><td><ol class="first last upperalpha simple" start="13">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td><ol class="first last upperalpha simple" start="13">
 <li>Blanke, M. Kinnaert, J. Lunze, and M. Staroswiecki, Diagnosis and Fault-Tolerant Control, 3rd ed. Berlin, Heidelberg: Springer Berlin Heidelberg, 2016.</li>
 </ol>
 </td></tr>
@@ -395,7 +395,7 @@ However, further investigation would require analysis of the internal structural
 <table class="docutils footnote" frame="void" id="hopcroft" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id4">[3]</a></td><td><ol class="first last upperalpha simple" start="10">
+<tr><td class="label"><a class="fn-backref" href="#id3">[3]</a></td><td><ol class="first last upperalpha simple" start="10">
 <li><ol class="first upperalpha" start="5">
 <li>Hopcroft and R. M. Karp, “An nˆ{5/2} Algorithm for Maximum Matchings in Bipartite Graphs,” SIAM Journal on Computing, vol. 2, no. 4, pp. 225–231, dec 1973.</li>
 </ol>
@@ -407,7 +407,7 @@ However, further investigation would require analysis of the internal structural
 <table class="docutils footnote" frame="void" id="flaugergues" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id5">[4]</a></td><td><ol class="first last upperalpha simple" start="22">
+<tr><td class="label"><a class="fn-backref" href="#id4">[4]</a></td><td><ol class="first last upperalpha simple" start="22">
 <li>Flaugergues, V. Cocquempot, M. Bayart, and M. Pengov, “On non-invertibilities for Structural Analysis,” 21st International Workshop on Principles of Diagnosis (DX’10), pp. 1–8, 2010.</li>
 </ol>
 </td></tr>
@@ -459,7 +459,7 @@ However, further investigation would require analysis of the internal structural
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.5',
+            VERSION:'0.6',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
