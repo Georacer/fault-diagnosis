@@ -13,6 +13,12 @@ classdef Variable < Vertex
         isInput
         isOutput
         isResidual
+        isMatrix
+        isFault
+        isParameter
+        
+        limit_upper = 1;
+        limit_lower = -1;
     end
         
     methods

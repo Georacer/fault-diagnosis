@@ -7,8 +7,8 @@ classdef Vertex < GraphElement
         name
         description = '';
         matchedTo = [];
-        coordinates = [];
-        rank = inf;
+%         coordinates = []; TODO: remove as deprecated
+%         rank = inf; TODO: remove as deprecated
         edgeIdArray = [];
         neighbourIdArray = [];
     end

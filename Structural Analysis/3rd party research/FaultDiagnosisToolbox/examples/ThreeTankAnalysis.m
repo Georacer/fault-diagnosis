@@ -22,6 +22,14 @@ modelDef.z_latex = {'y_1','y_2','y_3'};
 modelDef.parameters = {'Rv1', 'Rv2', 'Rv3', 'CT1', 'CT2', 'CT3'};
 modelDef.parameters_latex = {'R_{v1}', 'R_{v2}', 'R_{v3}', 'C_{T1}', 'C_{T2}', 'C_{T3}'};
 
+params.Rv1 = 1;
+params.Rv2 = 1;
+params.Rv3 = 1;
+params.CT1 = 1;
+params.CT2 = 1;
+params.CT3 = 1;
+modelDef.parameter_values = params;
+
 syms(modelDef.x{:})
 syms(modelDef.f{:})
 syms(modelDef.z{:})
@@ -48,7 +56,7 @@ clear( modelDef.f{:} )
 clear( modelDef.z{:} )
 clear( modelDef.parameters{:} )
 
-clear modelDef
+clear modelDef params
 
 %% Plot model
 figure(10)
@@ -93,16 +101,10 @@ model.SeqResGen(Gamma, mso1(1), 'seqresgen' );
 
 %% Use the second MSO to generate code for observer based residual generator
 mso2 = msos{2};
-params.Rv1 = 1;
-params.Rv2 = 1;
-params.Rv3 = 1;
-params.CT1 = 1;
-params.CT2 = 1;
-params.CT3 = 1;
 linpoint.x0 = [0,0,0,0,0,0];
 linpoint.z0 = [0;0;0];
 
-[A,C] = model.ObserverResGen( mso2, 'obsresgen', 'linpoint', linpoint, 'parameters', params );
+[A,C] = model.ObserverResGen( mso2, 'obsresgen', 'linpoint', linpoint );
 K = place(A',C',[-1,-2])';
 
 

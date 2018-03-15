@@ -52,7 +52,7 @@ classdef GraphBipartite < matlab.mixin.Copyable
         
         % Add methods
         [resp, id] = addEdge(this,id,equId,varId,edgeProps)
-        [resp, id] = addEquation(this,id, alias, description)
+        [resp, id] = addEquation(this,id, alias,expressionStr, description)
         [resp, id] = addVariable(this,id,alias,description,varProps)
         resp = addEdgeToEqu(this,equIndices,edgeIndices)
         resp = addEdgeToVar(this,varIndices,edgeIndices)
@@ -67,11 +67,16 @@ classdef GraphBipartite < matlab.mixin.Copyable
         % Get methods
         [ids] = getEdgesEqu(this,indices)
         [ids] = getEdgesVar(this,indices)
+        [ intervals ] = getLimits(this, indices)
         [ids] = getNeighboursEqu(gh, indices)
         [ids] = getNeighboursVar(gh, indices)
+        [ property ] = getPropertyEqu(gh, index, property)
+        [ property ] = getPropertyVar(gh, index, property)
+        [ property ] = getPropertyEdge(gh, index, property)
         
         % Set methods
         setKnown(this,id, value)
+        setLimits(this, indices, intervals)
         setMatchedVar(this,index, value, equId)
         setMatchedEqu(this,index, value, varId)
         setMatchedEdge(this,index, value)

@@ -4,7 +4,7 @@ classdef Adjacency < matlab.mixin.Copyable
     
     properties
         gi
-        BD
+        BD % Variables indexed first, then equations
         numVars
         numEqs
         eqNames
@@ -46,6 +46,11 @@ classdef Adjacency < matlab.mixin.Copyable
                     this.BD(this.numVars+equIndex,varIndex) = E(i,3);
                 end
             end
+            
+            this.eqIds = this.gi.reg.equIdArray;
+            this.eqNames = this.gi.reg.equAliasArray;
+            this.varIds = this.gi.reg.varIdArray;
+            this.varNames = this.gi.reg.varAliasArray;
             
         end
 

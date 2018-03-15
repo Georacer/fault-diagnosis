@@ -71,14 +71,14 @@ classdef GraphInterface < handle
                 respAdded = true;
                 if debug; fprintf('addEdge: Created new edge from (%d,%d) with ID %d\n',equId,varId,id); end
             else
-                warning('I should not be here');
+                warning('I should not be here: Duplicate edge between %d and %d', equId, varId);
                 gi.setPropertyOR(edgeId,'isMatched',edgeProps.isMatched);
                 gi.setPropertyOR(edgeId,'isDerivative',edgeProps.isDerivative);
                 gi.setPropertyOR(edgeId,'isIntegral',edgeProps.isIntegral);
                 gi.setPropertyOR(edgeId,'isNonSolvable',edgeProps.isNonSolvable);
             end
         end
-        function [respAdded, id] = addEquation( this, id, alias, prefix, description )
+        function [respAdded, id] = addEquation( this, id, alias, prefix, expressionStr, description )
             %ADDEQUATION Add equation to graph
             %   Detailed explanation goes here
             
@@ -92,15 +92,20 @@ classdef GraphInterface < handle
             end
             
             if nargin<5
-                description = '';
+                expressionStr = '';
             end
+            
+            
+            if nargin<6
+                description = '';
+            end            
             
             l1 = length(this.graph.equations);
             l2 = length(this.reg.equAliasArray);
             l3 = length(this.reg.equIdArray);
             
             if (l1==l2) && (l2==l3)
-                this.graph.addEquation(id, [prefix alias],description); %TODO: change expStr for description
+                this.graph.addEquation(id, [prefix alias], expressionStr, description);
                 if debug; fprintf('addEquation: Created new equation with name %s and ID %d\n',[prefix alias],id); end
                 
                 this.reg.equAliasArray{end+1} = [prefix alias];
@@ -120,7 +125,7 @@ classdef GraphInterface < handle
             
             resIds = zeros(size(equIds));
             
-            for i=1:length(equIds);
+            for i=1:length(equIds)
                 equId = equIds(i);
                 
                 alias = sprintf('res_%d',equId);
@@ -191,6 +196,9 @@ classdef GraphInterface < handle
                     this.setPropertyOR(varId,'isInput',varProps.isInput);
                     this.setPropertyOR(varId,'isOutput',varProps.isOutput);
                     this.setPropertyOR(varId,'isMatched',varProps.isMatched);
+                    this.setPropertyOR(varId,'isMatrix',varProps.isMatrix);
+                    this.setPropertyOR(varId,'isFault',varProps.isFault);
+                    this.setPropertyOR(varId,'isParameter',varProps.isParameter);
                     id = varId;
                 end
             else
@@ -216,9 +224,22 @@ classdef GraphInterface < handle
                 error('Requested to delete an edge while passing non-edge Id');
             end
             
+            for id=ids
+                if this.isMatched(id)  % If this edge was matched
+                    if debug; fprintf('deleteEdges: setting edge %d matched value as false\n', id); end
+                    this.setMatched(id,false);  % Unmatch the edge and all related components
+                end
+            end
+            
             edgeIndices = this.getIndexById(ids);
             
-            varIds = this.getVariables(ids);
+            % Build the variable ids one-by one in case two edges refer to
+            % the same variable
+            varIds = zeros(1,length(edgeIndices));
+            for i=1:length(varIds)
+               varIds(i) = this.getVariables(ids(i)); 
+            end
+            
             varIndices = this.getIndexById(varIds);
             this.graph.removeEdgeFromVar(varIndices,edgeIndices);
             
@@ -350,7 +371,7 @@ classdef GraphInterface < handle
             
         end
         
-        %% Get methods        
+        %% Get methods
         function [ equIds ] = getEquations( gh, ids )
             %GETVARIABLES get equations related to a variable or edge
             %   Detailed explanation goes here
@@ -421,6 +442,8 @@ classdef GraphInterface < handle
                 end
                 
             end
+            
+            varIds = unique(varIds);
             
         end
         function E = getEdgeList(gh, option)
@@ -543,10 +566,14 @@ classdef GraphInterface < handle
             %     end
             
             if gh.isEquation(id)
-                if debug; fprintf('getAncestorEqs: Sourcing parent variables of %s\n',gh.getAliasById(id)); end
+                if debug
+                    aliases = gh.getAliasById(id);
+                    fprintf('getAncestorEqs: Sourcing parent variables of %s\n', aliases{1}); end
                 parentVars = gh.getParentVars(id);
                 for i=parentVars
-                    if debug; fprintf('getAncestorEqs: Sourcing parent equation of variable %s\n',gh.getAliasById(i)); end
+                    if debug
+                        aliases = gh.getAliasById(i);
+                        fprintf('getAncestorEqs: Sourcing parent equation of variable %s\n', aliases{1}); end
                     [tally, matching] = gh.getAncestorEqs(i, tally, matching);
                 end
                 
@@ -568,7 +595,9 @@ classdef GraphInterface < handle
                     varIndex = gh.getIndexById(id);
                     equId = gh.graph.variables(varIndex).matchedTo;
                     if ~any(ismember(tally,equId)) % Check if this equation has been previously visited
-                        if debug; fprintf('getAncestorEqs: Adding equation %s and sourcing its ancestors.\n',gh.getAliasById(equId)); end
+                        if debug
+                            aliases = gh.getAliasById(equId);
+                            fprintf('getAncestorEqs: Adding equation %s and sourcing its ancestors.\n',aliases{1}); end
                         tally(end+1) = equId;
                         matching(end+1) = gh.getEdgeIdByVertices(equId,id);
                         [tally, matching] = gh.getAncestorEqs(equId, tally, matching);
@@ -598,7 +627,7 @@ classdef GraphInterface < handle
             
             for i=1:length(ids)
                 
-                if gh.isVariable(ids(i));
+                if gh.isVariable(ids(i))
                     tempVect = gh.graph.variables(indices(i)).edgeIdArray;
                     edgeIds = [edgeIds tempVect];
                     
@@ -712,7 +741,6 @@ classdef GraphInterface < handle
             
             end
             
-            % New implementation
             if isempty(equIds) % Return all edges connected to varIds
                 ids = gh.getEdges(varIds);
             elseif isempty(varIds) % Return all edges connected to equIds
@@ -732,26 +760,6 @@ classdef GraphInterface < handle
                 ids(ids==0) = []; % Delete empty placeholders
             end
             
-            
-%             % Old implementation
-%             for i=1:gh.graph.numEdges
-%                 if isempty(equId)
-%                     if (gh.graph.edges(i).varId == varId)
-%                         id = [id gh.graph.edges(i).id];
-%                     end
-%                 elseif isempty(varId)
-%                     if (gh.graph.edges(i).equId == equId)
-%                         id = [id gh.graph.edges(i).id];
-%                     end
-%                     
-%                 else
-%                     if (gh.graph.edges(i).equId==equId) && (gh.graph.edges(i).varId==varId)
-%                         id = gh.graph.edges(i).id;
-%                         return
-%                     end
-%                 end
-%             end
-            
         end
         function [ w ] = getEdgeWeight( gh, id )
             %GETEDGEWEIGHT Summary of this function goes here
@@ -768,13 +776,31 @@ classdef GraphInterface < handle
             end
             
         end
-        function [ id ] = getEquIdByAlias( this, alias )
+        function [ id_array ] = getEquIdByAlias( this, alias_cell )
             %GETEQUIDBYALIAS Summary of this function goes here
             %   Detailed explanation goes here
             
-            equIndex = find(strcmp(this.reg.equationAliasArray,alias));
-            id = this.reg.equationIdArray(equIndex);
+            if ~iscell(alias_cell)
+                alias_cell = {alias_cell};
+            end
             
+            id_array = zeros(1,length(alias_cell));
+            
+            for i=1:length(id_array)
+                equIndex = find(strcmp(this.reg.equAliasArray,alias_cell{i}));
+                if isempty(equIndex)  % alias was not found
+                    id_array(i)=0;
+                else
+                    id_array(i) = this.reg.equIdArray(equIndex);
+                end
+            end
+            
+            % Handle legacy case where id_array would return empty
+            if length(id_array)==1
+                if id_array==0
+                    id_array = [];
+                end
+            end
         end
         function [ id ] = getEquIdByProperty(gh,property,value,operator)
             %GETIDBYPROPERTY Return an ID array with objects with requested property
@@ -826,39 +852,104 @@ classdef GraphInterface < handle
             end
             
         end
-        function [ index, type ] = getIndexById( gh,id )
+        function [ expr ] = getExpressionById(gh, ids)
+            % getExpressionById Retun the symbolic expression
+            for id=ids
+                if ~gh.isEquation(id)
+                    error('%d is not an equation',id);
+                end
+            end
+            indices = gh.getIndexById(ids);
+            
+            expr = cell(length(ids),1);
+            for i=1:length(indices)
+                index = indices(i);
+                expr{i} = gh.graph.equations(index).expression;
+            end
+            
+        end
+        function [ index, type ] = getIndexById( gh, ids )
             %GETEQINDEXBYID Return object indices for the provided IDs
             %   Also returns the object type:
             %   0: equation
             %   1: variable
             %   2: edge
             
-            index = zeros(1,length(id));
-            type = zeros(1,length(id));
+            index = zeros(1,length(ids));
+            type = zeros(1,length(ids));
             
-            for i=1:length(id)
+            for i=1:length(ids)
                 
-                if gh.isEquation(id(i))
-                    index(i) = gh.reg.equIdToIndexArray(id(i));
+                if gh.isEquation(ids(i))
+                    index(i) = gh.reg.equIdToIndexArray(ids(i));
                     type(i) = 0;
-                elseif gh.isVariable(id(i))
-                    index(i) = gh.reg.varIdToIndexArray(id(i));
+                elseif gh.isVariable(ids(i))
+                    index(i) = gh.reg.varIdToIndexArray(ids(i));
                     type(i) = 1;
-                elseif gh.isEdge(id(i))
-                    index(i) = gh.reg.edgeIdToIndexArray(id(i));
+                elseif gh.isEdge(ids(i))
+                    index(i) = gh.reg.edgeIdToIndexArray(ids(i));
                     type(i) = 2;
                 else
-                    error('Unknown object type with id %d',id(i));
+                    error('Unknown object type with id %d',ids(i));
                 end
                 
             end
             
+        end     
+        function [ limits ] = getLimits( gh, ids, aliases)
+            % Get the domain of variables
+            % Returns a Nx2 array
+            if nargin<3
+                aliases = [];
+            end
+            
+            if isempty(ids)
+                ids = gh.getVarIdByAlias(aliases);
+            end
+            
+            if any(~gh.isVariable(ids))
+                error('getLimits only applies to variables');
+            end
+            
+            var_indices = gh.getIndexById(ids);
+            limits = gh.graph.getLimits(var_indices);
+        end      
+        function [ ids ] = getMatchedEqus(gh, varIds)
+            if nargin==1
+                ids = gh.getEquIdByProperty('isMatched',true);
+            elseif nargin==2
+                if ~all(gh.isVariable(varIds))
+                    error('Only variable Ids accepted');
+                end
+                ids = [];
+                for id=varIds
+                    varIndex = gh.getIndexById(id);
+                    matchedID = gh.graph.variables(varIndex).matchedTo;
+                    if isempty(matchedID)
+                        error('Variable %d is not matched', id);
+                    end
+                    ids(end+1) = matchedID;
+                end
+            end
         end
-        function [ ids ] = getMatchedEqus(gh)
-            ids = gh.getEquIdByProperty('isMatched',true);
-        end
-        function [ ids ] = getMatchedVars(gh)
+        function [ ids ] = getMatchedVars(gh, equIds)
+            if nargin==1
             ids = gh.getVarIdByProperty('isMatched',true);
+            elseif nargin==2
+                if ~all(gh.isEquation(equIds))
+                    error('Only equation Ids accepted');
+                end
+                ids = [];
+                for id=equIds
+                    equIndex = gh.getIndexById(id);
+                    matchedID = gh.graph.equations(equIndex).matchedTo;
+                    if isempty(matchedID)
+                        warning('Equation %d is not matched', id);
+                    else
+                        ids(end+1) = matchedID;
+                    end
+                end
+            end
         end
         function [ ids ] = getMatchedEdges(gh)
             ids = gh.getEdgeIdByProperty('isMatched',true);
@@ -895,34 +986,62 @@ classdef GraphInterface < handle
             end
             
         end
-        function [ value ] = getPropertyById( gh, id, property )
+        function [ values ] = getPropertyById( gh, ids, property )
             %GETPROPERTYBYID Get object property value by id
             %   Detailed explanation goes here
             
-            index = gh.getIndexById(id);
-            if index==0
-                error('Unkown id %d',id);
-            elseif gh.testPropertyExists(id,property)
-                if gh.isEquation(id)
-                    value = gh.graph.equations(index).(property);
-                elseif gh.isVariable(id)
-                    value = gh.graph.variables(index).(property);
-                elseif gh.isEdge(id)
-                    value = gh.graph.edges(index).(property);
-                else
-                    error('Unknown object type with id %d',id);
+            values = zeros(1,length(ids));
+            
+            for i=1:length(ids)
+                id = ids(i);
+                index = gh.getIndexById(id);
+                if index==0
+                    error('Unkown id %d',id);
+                elseif gh.testPropertyExists(id,property)
+                    if gh.isEquation(id)
+                        values(i) = gh.graph.equations(index).(property);
+                    elseif gh.isVariable(id)
+                        values(i) = gh.graph.variables(index).(property);
+                    elseif gh.isEdge(id)
+                        values(i) = gh.graph.edges(index).(property);
+                    else
+                        error('Unknown object type with id %d',id);
+                    end
+                    
                 end
-                
             end
             
+        end
+        function [ expr ] = getStrExprById ( gh, id )
+            %GETSTREXPRBYID Returns the str. expression of the input id
+            if ~gh.isEquation(id)
+                error('%d is not an equation',id);
+            end
+            index = gh.getIndexById(id);
+            expr = gh.graph.equations(index).expressionStr;
         end
         function [ expr ] = getStrExprByAlias( gh, alias )
             %GETSTREXPRBYALIAS Returns the str. expression of input alias
             %   Detailed explanation goes here
             
             equIndex = find(strcmp(gh.reg.equAliasArray,alias));
-            expr = gh.graph.equations(equIndex).expressionStructural;
+            expr = gh.graph.equations(equIndex).expressionStr;
             
+        end
+        function [ subsystems ] = getSubsystems( gh, ids )
+            % GETSUBSYSTEMS Get the subsystems of the input equations
+            subsystems = cell(size(ids));
+            for i=1:length(ids)
+                id = ids(i);
+                if gh.isVariable(id)
+                    id = gh.getEquations(id);
+                elseif gh.isEdge(id)
+                    id = gh.getEquations(id);                    
+                end
+                
+                equ_index = gh.getIndexById(id);
+                subsystems{i} = gh.graph.equations(equ_index).subsystem;
+            end
         end
         function [ varIds ] = getVariablesKnown( gh, id )
             %GETVARIABLESKNOWN Return the known variables of a constraint
@@ -968,13 +1087,31 @@ classdef GraphInterface < handle
             varIds = unique(varIds);
             
         end
-        function [ id ] = getVarIdByAlias( this, alias )
+        function [ id_array ] = getVarIdByAlias( this, alias_cell )
             %GETVARIDBYALIAS Summary of this function goes here
             %   Detailed explanation goes here
             
-            varIndex = find(strcmp(this.reg.varAliasArray,alias));
-            id = this.reg.varIdArray(varIndex);
+            if ~iscell(alias_cell)
+                alias_cell = {alias_cell};
+            end
             
+            id_array = zeros(1,length(alias_cell));
+            
+            for i=1:length(id_array)
+                varIndex = find(strcmp(this.reg.varAliasArray,alias_cell{i}));
+                if isempty(varIndex)  % alias was not found
+                    id_array(i)=0;
+                else
+                    id_array(i) = this.reg.varIdArray(varIndex);
+                end
+            end
+            
+            % Handle legacy case where id_array would return empty
+            if length(id_array)==1
+                if id_array==0
+                    id_array = [];
+                end
+            end
         end
         function [ id ] = getVarIdByProperty( gh,property,value,operator )
             %GETVARIDBYPROPERTY Summary of gh function goes here
@@ -1239,6 +1376,20 @@ classdef GraphInterface < handle
                 resp(i) = gh.graph.edges(edgeIndex).isNonSolvable;            
             end
         end
+        function [ resp ] = isFault( gh, ids )
+            %ISFAULT Decide if the variables are faults
+            if ~gh.isVariable(ids)
+                error('Only variables can be faults');
+            end
+            
+            indices = gh.getIndexById(ids);
+            
+            resp = zeros(size(indices));
+            
+            for i=1:length(resp)
+                resp(i) = gh.graph.variables(indices(i)).isFault;
+            end
+        end
         function [ resp ] = isFaultable( gh, ids )
             %ISMATCHED Summary of this function goes here
             %   Detailed explanation goes here
@@ -1254,6 +1405,38 @@ classdef GraphInterface < handle
             for i=1:length(resp)
                 resp(i) = gh.graph.equations(index(i)).isFaultable;
             end            
+        end
+        function [ resp ] = isOfProperty( gh, ids, property, value)
+            % ISOFPROPERTY Test if the input ids have the stated property
+            if nargin < 4
+                value = true;
+            end
+            
+            % Initialize the answer
+            resp = false(1,length(ids));
+            
+            indices = gh.getIndexById(ids);
+            
+            for i=1:length(ids)
+                if gh.isEquation(ids(i))
+                    if gh.graph.getPropertyEqu(indices(i),property)==value
+                        resp(i) = true;
+                    end
+                elseif gh.isVariable(ids(i))
+                    if gh.graph.getPropertyVar(indices(i),property)==value
+                        resp(i) = true;
+                    end
+                elseif gh.isEdge(ids(i))
+                    if gh.graph.getPropertyEdge(indices(i),property)==value
+                        resp(i) = true;
+                    end
+                else
+                    error('Unknown object with id=%d',ids(i))
+                end
+                
+            end
+            
+            
         end
         
         %% Set methods
@@ -1272,8 +1455,24 @@ classdef GraphInterface < handle
             indices = gh.getIndexById(ids);
             gh.graph.setEdgeWeight(indices,weights);
             
+        end    
+        function [ ] = setLimits(gh, ids, aliases, limits)
+            % Set the domain of variables
+            % limits is a Nx2 array. First col is lower limits,
+            % second is upper limits
+            
+            if isempty(ids)
+                ids = gh.getVarIdByAlias(aliases);
+            end
+            
+            if any(~gh.isVariable(ids))
+                error('setLimits only applies to variables');
+            end
+            
+            var_indices = gh.getIndexById(ids);
+            gh.graph.setLimits(var_indices, limits);
         end
-        function resp = setMatched( gh, id,  value )
+        function resp = setMatched( gh, ids,  value )
             %SETPROPERTYOR Summary of gh function goes here
             %   Detailed explanation goes here
             
@@ -1286,25 +1485,27 @@ classdef GraphInterface < handle
                 value = true;
             end
             
-            if gh.isEquation(id)
-                error('Use edges to match equations');
-            elseif gh.isVariable(id)
-                error('Use edges to match variables');
-            elseif gh.isEdge(id)
-                index = gh.getIndexById(id);
-                equId = gh.graph.edges(index).equId;
-                equIndex = gh.getIndexById(equId);
-                varId = gh.graph.edges(index).varId;
-                varIndex = gh.getIndexById(varId);
-                
-                gh.graph.setMatchedEdge(index,value);
-                gh.graph.setMatchedEqu(equIndex, value, varId);
-                gh.graph.setMatchedVar(varIndex, value, equId);
-                gh.graph.setKnownVar(varIndex); % TODO: Debatable
-                
-                if debug; fprintf('GraphInterface/setMatched: setting as matched the edge %d\n',id); end
-            else
-                error('Unkown object type with id %d',id);
+            for id = ids
+                if gh.isEquation(id)
+                    error('Use edges to match equations');
+                elseif gh.isVariable(id)
+                    error('Use edges to match variables');
+                elseif gh.isEdge(id)
+                    index = gh.getIndexById(id);
+                    equId = gh.graph.edges(index).equId;
+                    equIndex = gh.getIndexById(equId);
+                    varId = gh.graph.edges(index).varId;
+                    varIndex = gh.getIndexById(varId);
+                    
+                    gh.graph.setMatchedEdge(index,value);
+                    gh.graph.setMatchedEqu(equIndex, value, varId);
+                    gh.graph.setMatchedVar(varIndex, value, equId);
+                    gh.graph.setKnownVar(varIndex, value); % TODO: Debatable
+                    
+                    if debug; fprintf('GraphInterface/setMatched: setting as matched the edge %d\n',id); end
+                else
+                    error('Unkown object type with id %d',id);
+                end
             end
             
         end
@@ -1348,12 +1549,15 @@ classdef GraphInterface < handle
                 if gh.isEquation(id)
                     index = gh.getIndexById(id);
                     gh.graph.setPropertyEqu(index,property,value);
+                    resp = true;
                 elseif gh.isVariable(id)
                     index = gh.getIndexById(id);
+                    resp = true;
                     gh.graph.setPropertyVar(index,property,value);
                 elseif gh.isEdge(id)
                     index = gh.getIndexById(id);
                     gh.graph.setPropertyEdge(index,property,value);
+                    resp = true;
                 else
                     error('Unkown object type with id %d',id);
                 end
@@ -1448,7 +1652,7 @@ classdef GraphInterface < handle
             
             % Parse structural expression
             [resp, equId] = this.addEquation([], alias, prefix, exprStr);
-            % this.equations(end+1) = Equation([],alias, prefix, exprStr);
+            has_fault = false;
             
             % legend:
             % {} - normal term
@@ -1459,8 +1663,8 @@ classdef GraphInterface < handle
             % inp - input variable
             % out - output variable
             % msr - measured variable
-            operators = {'dot','int','ni','inp','out','msr','fault'}; % Available operators
-            words = strsplit(exprStr,' '); % Split expression to operands and variables
+            operators = {'dot','int','ni','inp','out','msr','fault', 'sub', 'mat', 'expr', 'par'}; % Available operators
+            words = strsplit(strtrim(exprStr),' '); % Split expression to operands and variables
             linkedVariables = []; % Array with variables linked to this equation
             initProperties = true; % New variable flag for properties initialization
             for i=1:size(words,2)
@@ -1474,6 +1678,10 @@ classdef GraphInterface < handle
                     isDerivative = false;
                     isIntegral = false;
                     isNonSolvable = false;
+                    isSubsystem = false;
+                    isMatrix = false;
+                    isExpression = false;
+                    isParameter = false;
                     initProperties = false;
                     edgeWeight = 1;
                 end
@@ -1483,15 +1691,17 @@ classdef GraphInterface < handle
                     opIndex = -1; % Found a new variable alias
                 end
                 
-                if debug;disp(sprintf('parseExpression: opIndex=%i',opIndex)); end
+                if debug; disp(sprintf('parseExpression: opIndex=%i',opIndex)); end
                 
                 switch opIndex % Test if the word is an operator
                     case 1
                         isIntegral = true;
                         edgeWeight = 100;
+                        this.setProperty(equId,'isDynamic');
                     case 2
                         isDerivative = true;
                         edgeWeight = 100;
+                        this.setProperty(equId,'isDynamic');
                     case 3
                         isNonSolvable = true;
                     case 4
@@ -1503,25 +1713,78 @@ classdef GraphInterface < handle
                         isMeasured = true;
                         isKnown = true;
                     case 7
+                        has_fault = true;
                         this.setProperty(equId,'isFaultable');
-                    otherwise % Found a variable
-                        
-                        varProps.isKnown = isKnown;
-                        varProps.isMeasured = isMeasured;
-                        varProps.isInput = isInput;
-                        varProps.isOutput = isOutput;
-                        varProps.isResidual = isResidual;
-                        varProps.isMatched = isMatched;
-                        [resp, varId] = this.addVariable([],word,varProps);
+                        % Add a virtual fault variable
+                        faultVarProps.isKnown = true;
+                        faultVarProps.isMeasured = false;
+                        faultVarProps.isInput = true;
+                        faultVarProps.isOutput = false;
+                        faultVarProps.isResidual = false;
+                        faultVarProps.isMatched = false;
+                        faultVarProps.isMatrix = false;
+                        faultVarProps.isFault = true;
+                        faultVarProps.isParameter = false;                        
+                        [resp, varId] = this.addVariable([], ['f' prefix alias], faultVarProps);
                         
                         edgeProps.isMatched = false;
-                        edgeProps.isDerivative = isDerivative;
-                        edgeProps.isIntegral = isIntegral;
-                        edgeProps.isNonSolvable = isNonSolvable;
-                        edgeProps.weight = edgeWeight;
+                        edgeProps.isDerivative = false;
+                        edgeProps.isIntegral = false;
+                        edgeProps.isNonSolvable = false;
+                        edgeProps.weight = 1;
                         this.addEdge([],equId,varId,edgeProps);
+                    case 8
+                        isSubsystem = true;
+                    case 9
+                        isMatrix = true;
+                    case 10
+                        isExpression = true;
+                    case 11 % This is a paremeter
+                        isParameter = true;
+                        isNonSolvable = true;
+                        isKnown = true;
+                    otherwise % Found a variable or subsystem designation
                         
-                        initProperties = true;
+                        if isSubsystem % sub keyword met previously
+                            isSubsystem = false;
+                            this.setProperty(equId,'subsystem',word);
+                        elseif isExpression % expr keyword met previously
+                            isExpression = false;
+                            if strcmp(word,'equal')  % The reserved work equal is met. This means that the expression is a two-variable equality
+                                varIds = this.getVariables(equId);  % This may contain a fault variable
+                                varIds_nf = varIds(~this.isFault(varIds));
+                                varAliases = this.getAliasById(varIds_nf);
+                                if length(varAliases)~=2
+                                    fprintf('Expression "%s" should have exactly 2 contributing variables\n',exprStr);
+                                end
+                                % This will ONLY work if expr is met LAST in the structural expression
+                                word = sprintf('-%s+%s',varAliases{1},varAliases{2});  % Write the equality explicitly
+                            end
+                            if has_fault
+                                word = [word '+f' prefix alias];  % Add the fault to the symbolic equation
+                            end
+                            this.setProperty(equId,'expression',word);
+                        else % This is a variable           
+                            varProps.isKnown = isKnown;
+                            varProps.isMeasured = isMeasured;
+                            varProps.isInput = isInput;
+                            varProps.isOutput = isOutput;
+                            varProps.isResidual = isResidual;
+                            varProps.isMatched = isMatched;
+                            varProps.isMatrix = isMatrix;
+                            varProps.isFault = false;  % Faults are generated specifically above
+                            varProps.isParameter = isParameter;
+                            [resp, varId] = this.addVariable([],word,varProps);
+                            
+                            edgeProps.isMatched = false;
+                            edgeProps.isDerivative = isDerivative;
+                            edgeProps.isIntegral = isIntegral;
+                            edgeProps.isNonSolvable = isNonSolvable;
+                            edgeProps.weight = edgeWeight;
+                            this.addEdge([],equId,varId,edgeProps);
+                            
+                            initProperties = true;
+                        end
                         
                 end
             end
@@ -1589,7 +1852,7 @@ classdef GraphInterface < handle
             
             resp = true;
             
-            this.reg.update();
+            this.reg.update(); % Batch update registry
             this.name = this.graph.name;
         end
         function resp = testPropertyExists( gh, ids, property )
@@ -1602,15 +1865,15 @@ classdef GraphInterface < handle
             
             for i=1:length(ids)
                 if gh.isEquation(ids(i))
-                    if gh.graph.testPropertyExistsEqu(indices(i),property);
+                    if gh.graph.testPropertyExistsEqu(indices(i),property)
                         resp(i) = true;
                     end
                 elseif gh.isVariable(ids(i))
-                    if gh.graph.testPropertyExistsVar(indices(i),property);
+                    if gh.graph.testPropertyExistsVar(indices(i),property)
                         resp(i) = true;
                     end
                 elseif gh.isEdge(ids(i))
-                    if gh.graph.testPropertyExistsEdge(indices(i),property);
+                    if gh.graph.testPropertyExistsEdge(indices(i),property)
                         resp(i) = true;
                     end
                 else
@@ -1656,4 +1919,4 @@ classdef GraphInterface < handle
         end
     
     end
-    end
+end

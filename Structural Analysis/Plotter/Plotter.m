@@ -31,10 +31,15 @@ classdef Plotter < matlab.mixin.Copyable
                 compile = true;
             end
             
+            folderName = sprintf('GraphPool/%s/graphs',this.gi.graph.name);
+            if ~exist(folderName,'dir')
+                mkdir(folderName);
+            end
+            
             dotName = sprintf('%s.dot',graphName);
             imageName = sprintf('%s.ps',graphName);
-            dotFilePath = sprintf('GraphPool/%s/%s',this.gi.graph.name,dotName);
-            imageFilePath = sprintf('GraphPool/%s/%s',this.gi.graph.name,imageName);
+            dotFilePath = sprintf('GraphPool/%s/graphs/%s',this.gi.graph.name,dotName);
+            imageFilePath = sprintf('GraphPool/%s/graphs/%s',this.gi.graph.name,imageName);
             
             fileID = fopen(dotFilePath,'w');
             % Write header
@@ -45,17 +50,22 @@ classdef Plotter < matlab.mixin.Copyable
             edgeDef = '';
             
             for i=1:this.gi.graph.numEqs
-                color = 'white';                
+                color = 'white';
+                frameColor = 'black';
                 if this.gi.graph.equations(i).isMatched
                     color = 'lightskyblue';
                 end
-                nodeDef = [nodeDef sprintf('node [shape = box, fillcolor = %s, style = filled, label="%s\n%d"]; %s;\n'...
-                    ,color,this.gi.reg.equAliasArray{i},this.gi.reg.equIdArray(i),this.gi.reg.equAliasArray{i})];
+                if this.gi.graph.equations(i).isFaultable
+                    frameColor = 'red';
+                end
+                nodeDef = [nodeDef sprintf('node [shape = box, color = %s, fillcolor = %s, style = filled, label="%s\n%d"]; %s;\n'...
+                    ,frameColor,color,this.gi.reg.equAliasArray{i},this.gi.reg.equIdArray(i),this.gi.reg.equAliasArray{i})];
             end
             
             for i=1:this.gi.graph.numVars
                 shape = 'circle';
                 color = 'white';
+                frameColor = 'black';
                 if this.gi.graph.variables(i).isKnown
                     % No operation
                 end
@@ -66,14 +76,21 @@ classdef Plotter < matlab.mixin.Copyable
                     color = 'green';
                     shape = 'doublecircle';
                 end
+                if this.gi.graph.variables(i).isFault
+                    color = 'red';
+                    shape = 'doublecircle';
+                end
+                if this.gi.graph.variables(i).isParameter
+                    color = 'orange';
+                end
                 if this.gi.graph.variables(i).isOutput
                     shape = 'Mcircle';
                 end
                 if this.gi.graph.variables(i).isMatched
                     color = 'lightskyblue';
                 end
-                nodeDef = [nodeDef sprintf('node [shape = %s, fillcolor = %s, style = filled, label="%s\n%d"]; %s;\n'...
-                    ,shape,color,this.gi.reg.varAliasArray{i},this.gi.reg.varIdArray(i),this.gi.reg.varAliasArray{i})];
+                nodeDef = [nodeDef sprintf('node [shape = %s, color = %s, fillcolor = %s, style = filled, label="%s\n%d"]; %s;\n'...
+                    ,shape,frameColor,color,this.gi.reg.varAliasArray{i},this.gi.reg.varIdArray(i),this.gi.reg.varAliasArray{i})];
             end
             
             E = this.gi.getEdgeList();

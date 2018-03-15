@@ -21,3 +21,14 @@ octave-workspace
 # Sublime project files
 *.sublime-project
 *.sublime-workspace
+
+# PyCharm and Python files
+*.idea
+*.pyc
+
+# log files
+*.log
+logs
+
+# GraphViz model files
+Structural\ Analysis/GraphPool/*/graphs

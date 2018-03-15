@@ -1,0 +1,55 @@
+digraph G {
+rankdir = LR;
+size ="8.5"
+node [shape = box, color = red, fillcolor = white, style = filled, label="ceq1
+1"]; ceq1;
+node [shape = box, color = red, fillcolor = white, style = filled, label="ceq2
+10"]; ceq2;
+node [shape = box, color = red, fillcolor = white, style = filled, label="ceq3
+17"]; ceq3;
+node [shape = box, color = red, fillcolor = white, style = filled, label="ceq4
+24"]; ceq4;
+node [shape = doublecircle, color = black, fillcolor = red, style = filled, label="fceq1
+2"]; fceq1;
+node [shape = circle, color = black, fillcolor = white, style = filled, label="x1
+4"]; x1;
+node [shape = circle, color = black, fillcolor = white, style = filled, label="x2
+6"]; x2;
+node [shape = doublecircle, color = black, fillcolor = green, style = filled, label="u1
+8"]; u1;
+node [shape = doublecircle, color = black, fillcolor = red, style = filled, label="fceq2
+11"]; fceq2;
+node [shape = doublecircle, color = black, fillcolor = green, style = filled, label="u2
+15"]; u2;
+node [shape = doublecircle, color = black, fillcolor = red, style = filled, label="fceq3
+18"]; fceq3;
+node [shape = circle, color = black, fillcolor = white, style = filled, label="x3
+20"]; x3;
+node [shape = doublecircle, color = black, fillcolor = red, style = filled, label="fceq4
+25"]; fceq4;
+node [shape = circle, color = black, fillcolor = yellow, style = filled, label="s1
+28"]; s1;
+fceq1 -> ceq1 [penwidth = 1, label = "3"];
+ceq1 -> x1 [penwidth = 1, label = "5", color = red4 ];
+x1 -> ceq1 [penwidth = 1, label = "5"];
+ceq1 -> x2 [penwidth = 1, label = "7", color = red4 ];
+x2 -> ceq1 [penwidth = 1, label = "7"];
+u1 -> ceq1 [penwidth = 1, label = "9"];
+fceq2 -> ceq2 [penwidth = 1, label = "12"];
+ceq2 -> x1 [penwidth = 1, label = "13", color = red4 ];
+x1 -> ceq2 [penwidth = 1, label = "13"];
+ceq2 -> x2 [penwidth = 1, label = "14", color = red4 ];
+x2 -> ceq2 [penwidth = 1, label = "14"];
+u2 -> ceq2 [penwidth = 1, label = "16"];
+fceq3 -> ceq3 [penwidth = 1, label = "19"];
+ceq3 -> x3 [penwidth = 1, label = "21", color = red4 ];
+x3 -> ceq3 [penwidth = 1, label = "21"];
+ceq3 -> x1 [penwidth = 1, label = "22", color = red4 ];
+x1 -> ceq3 [penwidth = 1, label = "22"];
+ceq3 -> x2 [penwidth = 1, label = "23", color = red4 ];
+x2 -> ceq3 [penwidth = 1, label = "23"];
+fceq4 -> ceq4 [penwidth = 1, label = "26"];
+ceq4 -> x3 [penwidth = 1, label = "27", color = red4 ];
+x3 -> ceq4 [penwidth = 1, label = "27"];
+s1 -> ceq4 [penwidth = 1, label = "29"];
+}

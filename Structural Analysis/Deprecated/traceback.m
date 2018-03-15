@@ -1,6 +1,7 @@
 function [ output_args ] = traceback( argname, Graph, matching )
-%TRACEBACK Extract the calculation tree for a variable
-%   Detailed explanation goes here
+%TRACEBACK DEPRECATED Extract the calculation tree for a variable
+%   Depends upon PARSETREE(), probably only used for non-looping matchings
+%   Prints onto a MATLAB plot the graph
 
 node = isMatched(argname, Graph, matching);
 

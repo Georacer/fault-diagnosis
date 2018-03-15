@@ -23,4 +23,5 @@ function sm = Structural( model )
   sm.type = 'Structural';
   sm.syme = {};
   sm.parameters = {};
+  sm.parameter_values = [];
 end
