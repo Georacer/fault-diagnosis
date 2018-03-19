@@ -51,10 +51,10 @@ SA_settings.plotGraphMatched = true;
 %% For each model
 for modelIndex=1:length(modelArray)
     
-    % Read the model description and create the initial graph
+    %% Read the model description and create the initial graph
     model = modelArray{modelIndex};
     
-    % Perform Structural Analsysis and Matching, extract residual generators
+    %% Perform Structural Analsysis and Matching, extract residual generators
     SA_results = structural_analysis(modelArray{modelIndex}, SA_settings);
     
     % Inspection: Display the total number of residual generators found
@@ -94,7 +94,7 @@ for modelIndex=1:length(modelArray)
     end
     
     %% Process statistics and save
-    stats = results.stats;
+    stats = SA_results.stats;
     fileName = sprintf('%s_%s_%s.mat',matchMethod, branchMethod,SOType);
     
     if ~exist(fileName)
