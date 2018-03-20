@@ -55,7 +55,7 @@ for modelIndex=1:length(modelArray)
     model = modelArray{modelIndex};
     
     %% Perform Structural Analsysis and Matching, extract residual generators
-    SA_results = structural_analysis(modelArray{modelIndex}, SA_settings);
+    SA_results = structural_analysis(model, SA_settings);
     
     % Inspection: Display the total number of residual generators found
     counter = 0;

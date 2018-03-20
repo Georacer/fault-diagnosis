@@ -68,8 +68,6 @@ for i=1:length(res_gen_cell)
     fprintf('Final Fault Response Vector:\n');
     disp(fault_response_vector_set{i});
     
-    
-    input('Press enter to continue...');
 end
 
 profile off

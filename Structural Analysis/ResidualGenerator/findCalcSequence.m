@@ -1,5 +1,5 @@
 function [ solutionOrder ] = findCalcSequence( digraph, varargin )
-%PRINTMATCHING find the calculation sequence of a directed graph
+%PRINTMATCHING Find the calculation sequence of a directed graph
 %
 %   CAUTION: Supposes that the graph only contains unknown variables. No
 %   input variables must exist
@@ -27,9 +27,9 @@ unknown_vars = digraph.getVarIdByProperty('isKnown',false);
 if isempty(unknown_vars)
     unsolvable_vars_exist = false;
 else
-    unsolvable_vars_exist = digraph.isMatched(unknown_vars);
+    unsolvable_vars_exist = ~digraph.isMatched(unknown_vars);
 end
-if unsolvable_vars_exist
+if any(unsolvable_vars_exist)
     error('Unknown yet unmatched variables exist');
 end
 matchedVars = digraph.getVarIdByProperty('isMatched');
