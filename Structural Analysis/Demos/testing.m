@@ -70,7 +70,7 @@ for modelIndex=1:length(modelArray)
     fprintf('Total number of valid residuals found: %d\n',counter);
     
     if strcmp(opMode,'breaking')
-        input('Press Enter to proceed to the next step...');
+        input('\nPress Enter to proceed to the next step...');
         clc
     end
     
@@ -89,7 +89,7 @@ for modelIndex=1:length(modelArray)
     plotIM(IMStruct);
     
     if strcmp(opMode,'breaking')
-        input('Press Enter to proceed to the next step...');
+        input('\nPress Enter to proceed to the next step...');
         clc
     end
     

@@ -54,8 +54,6 @@ end
 % return
 
 %% Create dictionary with values
-clc
-
 dict_name = sprintf('makeDictionary_%s(gi)',gi.name);
 eval(['values = ' dict_name]);
 
