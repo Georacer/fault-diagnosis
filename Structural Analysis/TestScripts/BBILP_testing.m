@@ -1,12 +1,11 @@
-%% SMSS-BBILP
-% SMSS-BBILP-FRVk - Script showcasing the Branch and Bound Binary ILP and the Fault Response Vector methodoogies, as
-% presented in Systems, Man and Cybernetics: Systems journal
+%% CEP-BBILP
+% CEP-BBILP - Script showcasing the Branch and Bound Binary ILP
 % Author: George Zogopoulos-Papaliakos
 % Control Systems Laboratories, School of Mechanical Engineering, National
 % Technical University of Athens
 % email: gzogop@mail.ntua.gr
 % Website: https://github.com/Georacer
-% March 2018; Last revision: -
+% March 2018; Last revision: May 2018
 
 % This demo script involves: FIXME
 % * Generation of the Structural Model
@@ -41,20 +40,22 @@ modelArray = {};
 % * InductionMotor(FDT)(g024)
 % * Raghuraj(FDT)(g025)
 % * SmallLinear(FDT)(g026)
-% * Fravolini(g005a)
 
-modelArray{end+1} = g008();
-modelArray{end+1} = g021();
-modelArray{end+1} = g022();
-modelArray{end+1} = g023();
-modelArray{end+1} = g024();
-modelArray{end+1} = g025();
-modelArray{end+1} = g026();
+% modelArray{end+1} = g008();
+% modelArray{end+1} = g021();
+% modelArray{end+1} = g022();
+% modelArray{end+1} = g023();
+% modelArray{end+1} = g024();
+% modelArray{end+1} = g025();
+% modelArray{end+1} = g026();
+
+% modelArray{end+1} = g035();
+% modelArray{end+1} = g036();
 
 % modelArray{end+1} = g014g();
-% modelArray{end+1} = g005a();
+modelArray{end+1} = g005a();
 
-% matchMethod = 'BBILP';
+matchMethod = 'BBILP';
 % matchMethod = 'Exhaustive';
 
 SOType = 'MTES';
@@ -68,12 +69,12 @@ branchMethod = 'DFS';
 SA_settings.matchMethod = matchMethod;
 SA_settings.SOType = SOType;
 SA_settings.branchMethod = branchMethod;
-SA_settings.plotGraphInitial = false;
-SA_settings.plotGraphOver = false;
-SA_settings.plotGraphRemaining = false;
-SA_settings.plotGraphDisconnected = false;
-SA_settings.plotGraphPSO = false;
-SA_settings.plotGraphMatched = false;
+SA_settings.plotGraphInitial = true;
+SA_settings.plotGraphOver = true;
+SA_settings.plotGraphRemaining = true;
+SA_settings.plotGraphDisconnected = true;
+SA_settings.plotGraphPSO = true;
+SA_settings.plotGraphMatched = true;
 
 % For each model
 for modelIndex=1:length(modelArray)
@@ -87,21 +88,96 @@ for modelIndex=1:length(modelArray)
     SA_results = structural_analysis(model, SA_settings);
     
     %% Display the total number of residual generators found
+    
+    fprintf('Matching Statistics\n');
+    fprintf('===================\n');
     counter = 0;
     for i=1:length(SA_results.matchings_set)
         for j=1:length(SA_results.matchings_set{i})
-            if ~isempty(SA_results.matchings_set{i}(j))
+            if ~isempty(SA_results.matchings_set{i}{j})
                 counter = counter + 1;
             end
         end
     end
     
     fprintf('Total number of valid residuals found: %d\n',counter);
+    
+%     length(graphInitial.getEdgeIdByProperty('isDerivative'))
+%     length(graphInitial.getEdgeIdByProperty('isNonSolvable'))
+
+    graphName = SA_results.gi.name;
+    
+    % Average PSO size
+    numSets = 0;
+    for i=1:length(SA_results.stats.(graphName).ResGenSets)
+        numSets = numSets + length(SA_results.stats.(graphName).ResGenSets{i});
+    end
+    fprintf('Total number of PSOs: %d\n',numSets);
+    
+    total = 0;
+    for j=1:length(SA_results.stats.(graphName).ResGenSets)    
+        for i=1:length(SA_results.stats.(graphName).ResGenSets{j})
+            total = total+length(SA_results.stats.(graphName).ResGenSets{j}{i});
+        end
+    end
+    avgSize = total/numSets;
+    fprintf('Average PSO size: %g\n',avgSize);
+
+    % Average matching size    
+    total = 0;
+    counterValid = 0;
+    counterEmpty = 0;
+    for i=1:length(SA_results.stats.(graphName).matchingSets)
+        for j=1:length(SA_results.stats.(graphName).matchingSets{i})
+            matching = SA_results.stats.(graphName).matchingSets{i}{j};
+            if ~isempty(matching)
+                total = total+length(matching);
+                counterValid = counterValid + 1;
+            else
+                counterEmpty = counterEmpty + 1;
+            end
+        end
+    end
+    avgSize = total/counterValid;
+    fprintf('Number of valid matchings: %d\n',counterValid);
+    fprintf('Mean matching size: %g\n',avgSize);
+    fprintf('Number of invalid matchings: %d\n',counterEmpty);
 
     if strcmp(opMode,'breaking')
         input('Press Enter to proceed to the next step...');
         clc
     end
+    
+    % Initial PSO matching statistics
+    if exist('offendingInitial','var')
+        validInitial = sum(cellfun(@(x) isempty(x),offendingInitial));
+        fprintf('Number of valid initial, relaxed matchings: %d\n', validInitial);
+        
+        counterInt = 0;
+        counterDer = 0;
+        counterNI = 0;
+        for i=1:length(offendingInitial)
+            edgesOffending = offendingInitial{i};
+            if isempty(edgesOffending)
+                continue;
+            end
+            if any(SA_results.gi.isDerivative(edgesOffending))
+                counterDer = counterDer+1;
+            end
+            if any(SA_results.gi.isIntegral(edgesOffending))
+                counterInt = counterInt+1;
+            end
+            if any(SA_results.gi.isNonSolvable(edgesOffending))
+                counterNI = counterNI+1;
+            end
+        end
+        
+        fprintf('Number of initial matching containing invalid derivative edges: %d\n',counterDer);
+        fprintf('Number of initial matching containing invalid integral edges: %d\n',counterInt);
+        fprintf('Number of initial matching containing invalid non-invertible edges: %d\n',counterNI);
+        
+    end
+    
     
     %% Do detectability analysis
     
@@ -121,6 +197,8 @@ for modelIndex=1:length(modelArray)
         input('Press Enter to proceed to the next step...');
         clc
     end
+    
+    return
     
     %% Process statistics and save
     stats = SA_results.stats;

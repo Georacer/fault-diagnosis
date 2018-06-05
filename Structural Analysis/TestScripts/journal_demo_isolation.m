@@ -1,4 +1,4 @@
-%% Analytical Isolation
+%% DELETEME: Analytical Isolation
 % O Extract structural isolation matrix (existing code)
 % O Extract fault response vectors (max) for all residuals
 % - This is a problem, because we do not have all parameters. Should

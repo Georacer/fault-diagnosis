@@ -11,6 +11,9 @@ close all
 clear
 clc
 
+saveCSV = true;
+% savCSV = false;
+
 %% Setup program execution
 
 % Select the mode of operation
@@ -83,25 +86,25 @@ if strcmp(opMode,'breaking')
     clc
 end
 
-%% Calculate the Fault Response Vector of each residual generator
-
-fault_response_vector_set = getFaultResponseVector( RG_results.res_gen_cell, [], [] ); % Run all tests, with no pre-calculated fault response vector
-
-if strcmp(opMode,'breaking')
-    input('\nPress Enter to proceed to the next step...');
-    clc
-end
-
-%% Run again if you want to run more optimization iterations
-% Watch how further Particle Swarm Optimization iterations may yield better min/max results. The previous result is fed back to
-% compare min/max results
-
-fault_response_vector_set = getFaultResponseVector( RG_results.res_gen_cell, fault_response_vector_set, [] ); % Run all tests, with no pre-calculated fault response vector
-
-if strcmp(opMode,'breaking')
-    input('\nPress Enter to proceed to the next step...');
-    clc
-end
+% %% Calculate the Fault Response Vector of each residual generator
+% 
+% fault_response_vector_set = getFaultResponseVector( RG_results.res_gen_cell, [], [] ); % Run all tests, with no pre-calculated fault response vector
+% 
+% if strcmp(opMode,'breaking')
+%     input('\nPress Enter to proceed to the next step...');
+%     clc
+% end
+% 
+% %% Run again if you want to run more optimization iterations
+% % Watch how further Particle Swarm Optimization iterations may yield better min/max results. The previous result is fed back to
+% % compare min/max results
+% 
+% fault_response_vector_set = getFaultResponseVector( RG_results.res_gen_cell, fault_response_vector_set, [] ); % Run all tests, with no pre-calculated fault response vector
+% 
+% if strcmp(opMode,'breaking')
+%     input('\nPress Enter to proceed to the next step...');
+%     clc
+% end
 
 %% Example using actual log data
 % Showing expected, simulated and measured residual response to the previously examined residual generator:
@@ -214,9 +217,11 @@ diff_Beta = [0; diff(Beta)./dt];
 Beta_est = real(asin(vr_D./Va_D));  % Calculate the AoS estimate
 diff_Beta_est = [0; diff(Beta_est)./dt];
 f1 = Beta-Beta_est;  % Calculate the error between estimated and measured AoS. This is the fault variable
+diff_Va = [0; diff(Va_D)./dt];
+diff_f1 = [0; diff(f1)./dt];
 
 % Calculate the expected residual as a theoretical function of the fault
-res_est = Va_D.*(cos(Beta).*diff_Beta - cos(Beta_est).*diff_Beta_est); 
+res_est = diff_Va.*(sin(Beta) - sin(Beta_est)) + Va_D.*(cos(Beta).*diff_Beta - cos(Beta_est).*diff_Beta_est); 
 
 % vr_D_est = sin(Beta).*Va_D;  % Calculate relative speed from air data
 % v_D = vr_D_est + vw_D;  % Calculate inertial speed from air data
@@ -226,6 +231,36 @@ res_est = Va_D.*(cos(Beta).*diff_Beta - cos(Beta_est).*diff_Beta_est);
 % dot_v = r_D.*u_D+p_D.*w_D+Fy./m;  % Calculate the derivative of the speed from the kinematics
 % res = dot_v - diff_v;  % Calculate the residual as a difference of derivatives
 
+%% Save key quantities in csv
+
+if saveCSV
+    
+    tstart = 2680;
+    tend = 3300;
+    istart = find(timeVec>tstart,1,'first');
+    iend = find(timeVec>tend,1,'first');
+    exportIndex = istart:1:iend;
+    % Export the error data
+    % timestamp, error, error derivative
+    csvwrite('error.csv', [datalog.timestamp(exportIndex) abs(f1(exportIndex)) abs(diff_f1(exportIndex))]);
+    % Export the residual data
+    % timestamp, residual, expected residual
+    csvwrite('residual.csv', [datalog.timestamp(exportIndex) abs(res_auto(exportIndex)) abs(res_est(exportIndex))]);
+    
+end
+%% Save key quantities in csv
+
+if saveCSV
+    
+    Dfactor = 10;
+    % Export the error data
+    % timestamp, error, error derivative
+    csvwrite('error.csv', [decimate(datalog.timestamp,Dfactor) abs(decimate(f1,Dfactor)) abs(decimate(diff_f1,Dfactor))]);
+    % Export the residual data
+    % timestamp, residual, expected residual
+    csvwrite('residual.csv', [decimate(datalog.timestamp,Dfactor) abs(decimate(res_auto,Dfactor)) abs(decimate(res_est,Dfactor))]);
+    
+end
 
 %% Plot stuff
 
@@ -262,11 +297,11 @@ figure();
 entries = {};
 hold on
 grid on
-plot(abs(res_auto),'b');
+plot(timeVec, abs(res_auto),'b');
 entries{end+1} = 'Residual';
-plot(abs(res_est),'g');
+plot(timeVec, abs(res_est),'g');
 entries{end+1} = 'Expected Residual';
-plot(100*abs(f1),'r');
+plot(timeVec, 100*abs(f1),'r');
 entries{end+1} = 'Fault magnitude *100';
 title('Residuals and error');
 legend(entries);

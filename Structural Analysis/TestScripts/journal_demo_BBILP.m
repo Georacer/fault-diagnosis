@@ -1,4 +1,4 @@
-%% Label each PSO by the subsystems it involves
+%% DELETEME: Label each PSO by the subsystems it involves
 % * This will probably involve labeling each model equation - Done
 
 %% Print various stats in text format

@@ -98,10 +98,10 @@ clear
 clc 
 close all 
  
-exhaustive_MSO = 'Exhaustive_cheap_MSO'; 
-exhaustive_MTES = 'Exhaustive_cheap_MTES'; 
-BBILP_MTES = 'BBILP_cheap_MTES'; 
-BBILP_MSO = 'BBILP_cheap_MSO'; 
+exhaustive_MSO = 'Exhaustive_DFS_MSO'; 
+exhaustive_MTES = 'Exhaustive_DFS_MTES'; 
+BBILP_MTES = 'BBILP_DFS_MTES'; 
+BBILP_MSO = 'BBILP_DFS_MSO'; 
  
 files_MTES = {BBILP_MTES, exhaustive_MTES}; 
 files_MSO = {BBILP_MSO, exhaustive_MSO }; 
