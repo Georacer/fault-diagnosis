@@ -36,7 +36,6 @@ modelArray = {};
 
 % Benchmarks:
 % ---------------------
-% * g014e(weR1)
 % * ThreeTankAnalysis(FDT)(g008)
 % * Commault(FDT)(g021)
 % * Damadics(FDT)(g022)
