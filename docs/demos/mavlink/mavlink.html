@@ -1,0 +1,491 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Residual Generation for a MAVLink UAV &mdash; fault-diangosis 0.7 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="fault-diangosis 0.7 documentation" href="../../index.html"/>
+        <link rel="up" title="Demos" href="../index.html"/>
+        <link rel="next" title="Branch-and-Bound ILP Matching Calculation Cost" href="../bbilp_vs_exhaustive/bbilp_vs_exhaustive.html"/>
+        <link rel="prev" title="Introduction to matching" href="../matching_intro/matching_intro.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="../../index.html" class="icon icon-home"> fault-diangosis
+        
+
+        
+        </a>
+
+        
+          
+          
+            <div class="version">
+              0.7
+            </div>
+          
+        
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../model/index.html">Model Input</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../graph/index.html">Graph Representation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../graph_interface/index.html">The graph interface API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../display/index.html">Graph display</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../subgraph_generator/index.html">Subgraph Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../matcher/index.html">Graph matching methods</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Demos</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../basic_functionality/basic_functionality.html">Basic functionality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../matching_intro/matching_intro.html">Introduction to matching</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Residual Generation for a MAVLink UAV</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#generation-of-the-structural-model">Generation of the Structural Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#extraction-of-psos-for-maximum-fault-isolation">Extraction of PSOs for maximum fault isolation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#finding-valid-matchings-for-each-subgraph">Finding valid matchings for each subgraph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#implementation-of-every-residual-generator">Implementation of every residual generator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#calculation-of-the-residuals-using-a-stored-log">Calculation of the residuals using a stored log</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../bbilp_vs_exhaustive/bbilp_vs_exhaustive.html">Branch-and-Bound ILP Matching Calculation Cost</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fault_response/fault_response.html">Estimating Fault Response</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributors.html">Contributors</a></li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">fault-diangosis</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Demos</a> &raquo;</li>
+      
+    <li>Residual Generation for a MAVLink UAV</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="residual-generation-for-a-mavlink-uav">
+<span id="chap-mavlink"></span><h1>Residual Generation for a MAVLink UAV<a class="headerlink" href="#residual-generation-for-a-mavlink-uav" title="Permalink to this headline">¶</a></h1>
+<p>This demo showcases the usage of <cite>fault-diagnosis</cite> to perform FDI in <a class="reference external" href="https://mavlink.io/en/getting_started/">MAVLink</a>-enabled fixed-wing UAVs.</p>
+<p>We shall present step-by-step the procedure which involves:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Generation of the Structural Model</li>
+<li>Extraction of PSOs for maximum fault isolation</li>
+<li>Finding valid matchings for each subgraph</li>
+<li>Implementation of every residual generator</li>
+<li>Calculation of the residuals using a stored log</li>
+</ol>
+</div></blockquote>
+<div class="section" id="generation-of-the-structural-model">
+<h2>Generation of the Structural Model<a class="headerlink" href="#generation-of-the-structural-model" title="Permalink to this headline">¶</a></h2>
+<p>The MAVLink protocol is a standardized message format for use in unmanned vehicles. It is mostly intented for aerial vehicles, but is not limited to them.
+Its robust description allows for a fixed interface between such a vehcile and a generic FDI module.</p>
+<p>Let us construct a structural graph which reflects a MAVLink-enabled fixed-wing UAV.
+The corresponding model in the <code class="docutils literal"><span class="pre">GraphPool</span></code> folder is <code class="docutils literal"><span class="pre">g033</span></code>.</p>
+<p>At the core of the model are the measurement equations:</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="n">msr</span> <span class="p">=</span> <span class="p">[</span><span class="c">...</span>
+  <span class="c">% 0, HEARTBEAT</span>
+  <span class="c">% 1, SYS_STATUS</span>
+     <span class="p">{</span><span class="s">&#39;fault msr load_sys_status load sub autopilot expr -load_sys_status/10+load&#39;</span><span class="p">};</span><span class="c">...</span>
+     <span class="p">{</span><span class="s">&#39;fault msr voltage_battery_sys_status voltage_battery sub autopilot expr -voltage_battery_sys_status/1000+voltage_battery&#39;</span><span class="p">};</span><span class="c">...</span>
+     <span class="p">{</span><span class="s">&#39;fault msr current_battery_sys_status current_battery sub autopilot expr -current_battery_sys_status/100+current_battery&#39;</span><span class="p">};</span><span class="c">...</span>
+     <span class="p">{</span><span class="s">&#39;fault msr drop_rate_comm_sys_status drop_rate_comm sub autopilot expr -drop_rate_comm_sys_status/100+drop_rate_comm&#39;</span><span class="p">};</span><span class="c">...</span>
+  <span class="c">% 2, SYSTEM_TIME</span>
+  <span class="c">% 24, GPS_RAW_INT</span>
+     <span class="p">{</span><span class="s">&#39;fault msr fix_type_gps_raw_int gps_fix_type sub sensors expr equal&#39;</span><span class="p">};</span><span class="c">...</span>
+     <span class="p">{</span><span class="s">&#39;fault msr lat_gps_raw_int latitude sub sensors expr -lat_gps_raw_int/1e7+latitude&#39;</span><span class="p">};</span><span class="c">...</span>
+     <span class="p">{</span><span class="s">&#39;fault msr lon_gps_raw_int longitude sub sensors expr -lon_gps_raw_int/1e7+longitude&#39;</span><span class="p">};</span><span class="c">...</span>
+     <span class="p">{</span><span class="s">&#39;fault msr alt_gps_raw_int alt_msl sub sensors expr -alt_gps_raw_int/1000+alt_msl&#39;</span><span class="p">};</span><span class="c">...</span>
+</pre></div>
+</div>
+<p>Each MAVLink message ID is stated. However, messages which convey state information (e.g. ID=0:Heartbeat) cannot be handled by our Parity-Space-based approach and are ommited. The same holds for event-triggered messages (e.g. any mission-related message).</p>
+<p>The rest of the measurements are assigned a fault each and their analytical expressions are provided. Additionally, each measurement equation is assigned to a subsystem, for later classification.</p>
+<p>If only the information conveyed through MAVLink was used, then only hardware redundancy cross-checking would be possible. Instead, we add a set of equations which hold for all fixed-wing UAVs and act as the &#8220;glue&#8221; among the measurements.</p>
+<p>These equations can act as:</p>
+<blockquote>
+<div><ul class="simple">
+<li>First-principles models</li>
+<li>Limit-checking</li>
+<li>Implicit equalities</li>
+</ul>
+</div></blockquote>
+<p>Naturally, since these equations are meant to be portable from UAV to UAV, they shouldn&#8217;t need any airframe-specific parameters.</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="c">% First-principles equations</span>
+    <span class="n">kin</span> <span class="p">=</span> <span class="p">[</span><span class="c">...</span>
+    <span class="p">{</span><span class="s">&#39;climb v_d expr -climb-v_d&#39;</span><span class="p">};</span><span class="c">...</span>
+    <span class="p">{</span><span class="s">&#39;v_ground ni v_n ni v_e expr -v_ground+sqrt(v_n^2+v_e^2)&#39;</span><span class="p">};</span><span class="c">...</span>
+    <span class="p">{</span><span class="s">&#39;dot_p_n v_n expr equal&#39;</span><span class="p">};</span><span class="c">...</span>
+    <span class="p">{</span><span class="s">&#39;dot_p_e v_e expr equal&#39;</span><span class="p">};</span><span class="c">...</span>
+    <span class="p">{</span><span class="s">&#39;dot_p_d v_d expr equal&#39;</span><span class="p">};</span><span class="c">...</span>
+    <span class="p">{</span><span class="s">&#39;v_w_n ni dir_wind ni v_wind_hor expr -v_w_n+v_wind_hor*cos(dir_wind)&#39;</span><span class="p">};</span><span class="c">...</span>
+    <span class="p">{</span><span class="s">&#39;v_w_e ni dir_wind ni v_wind_hor expr -v_w_e+v_wind_hor*sin(dir_wind)&#39;</span><span class="p">};</span><span class="c">...</span>
+    <span class="p">{</span><span class="s">&#39;ni cog ni v_e ni v_n expr -tan(cog)+v_e/v_n&#39;</span><span class="p">};</span><span class="c">...</span>
+    <span class="p">{</span><span class="s">&#39;v_air press_diff par rho expr -press_diff+0.5*rho*v_air*v_air&#39;</span><span class="p">};</span><span class="c">...</span>
+    <span class="p">{</span><span class="s">&#39;v_air ni v_ground ni v_wind_hor ni cog ni dir_wind expr -v_air+sqrt(v_ground^2+v_wind_hor^2-2*v_ground*v_wind_hor*cos(dir_wind-cog))&#39;</span><span class="p">};</span><span class="c">...</span>
+<span class="c">% Limits on variables</span>
+<span class="n">lim</span> <span class="p">=</span> <span class="p">[</span><span class="c">...</span>
+    <span class="p">{</span><span class="s">&#39;ni load par load_max expr max(load-load_max,0)&#39;</span><span class="p">};</span><span class="c">...</span>
+    <span class="p">[</span><span class="c">...]</span>
+    <span class="p">{</span><span class="s">&#39;ni satellites par satellites_min expr max(satellites_min-satellites,0)&#39;</span><span class="p">};</span><span class="c">...</span>
+    <span class="p">{</span><span class="s">&#39;ni alt_agl par alt_agl_min expr max(alt_agl_min-alt_agl,0)&#39;</span><span class="p">};</span><span class="c">...</span>
+    <span class="p">{</span><span class="s">&#39;ni vcc par vcc_min par vcc_max expr max(max(vcc_min-vcc,0),max(vcc-vcc_max,0))&#39;</span><span class="p">};</span><span class="c">...</span>
+    <span class="p">{</span><span class="s">&#39;ni v_servo par v_servo_min par v_servo_max expr max(max(v_servo_min-v_servo,0),max(v_servo-v_servo_max,0))&#39;</span><span class="p">};</span><span class="c">...</span>
+    <span class="p">{</span><span class="s">&#39;ni freemem par freemem_min expr max(freemem_min-freemem,0)&#39;</span><span class="p">};</span><span class="c">...</span>
+    <span class="p">{</span><span class="s">&#39;ni ratio_v_air par ratio_v_air_min par ratio_v_air_max expr max(max(ratio_v_air_min-ratio_v_air,0),max(ratio_v_air-ratio_v_air_max,0))&#39;</span><span class="p">};</span><span class="c">...</span>
+    <span class="p">[</span><span class="c">...]</span>
+    <span class="p">{</span><span class="s">&#39;ni temperature par temperature_min par temperature_max expr max(max(temperature_min-temperature,0),max(temperature-temperature_max,0))&#39;</span><span class="p">};</span><span class="c">...</span>
+    <span class="p">{</span><span class="s">&#39;ni v_air par v_air_min expr max(v_air_min-v_air,0)&#39;</span><span class="p">};</span><span class="c">...</span>
+    <span class="p">{</span><span class="s">&#39;ni error_v_air par error_v_air_min par error_v_air_max expr max(max(error_v_air_min-error_v_air,0),max(error_v_air-error_v_air_max,0))&#39;</span><span class="p">};</span><span class="c">...</span>
+    <span class="p">];</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="extraction-of-psos-for-maximum-fault-isolation">
+<h2>Extraction of PSOs for maximum fault isolation<a class="headerlink" href="#extraction-of-psos-for-maximum-fault-isolation" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal"><span class="pre">structural_analysis()</span></code> routine bears the majority of the Structural Analysis work. After instantiating the initial structural graph object, it finds its overconstrained part, to limit the scope of the ensuing analysis.</p>
+<p>The next important step is to break down the structural graph into its Weakly Connected Components (WCCs). If such a partitioning exists, it can greatly accelerate the analysis.
+Indicatively, the initial MAVLink model is of large size and also has a large structural redundancy degree of 59. It potentially could contain up to 9.4x10e21 residual generators, a number which is intractable.</p>
+<p>Instead, the initial model can be broken down to 34 subgraphs, which can yield up to 7952 residual generators, a much more amenable number.</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="n">graphs_conn</span> <span class="p">=</span> <span class="n">getDisconnected</span><span class="p">(</span><span class="n">graphRemaining</span><span class="p">);</span>  <span class="c">% Get the Weakly Connected Components</span>
+</pre></div>
+</div>
+<p>A typical structural subgraph looks like</p>
+<img alt="../../_images/wcc_2.png" src="../../_images/wcc_2.png" />
+<p>The MTES <a class="footnote-reference" href="#krysander" id="id1">[1]</a> algorithm is used to extract all the minimum structurally overdetermined sets of equations.</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="n">sg</span><span class="p">.</span><span class="n">buildMTESs</span><span class="p">();</span> <span class="c">% Use the LiUSM algorithm to find the MTESs</span>
+<span class="n">ResGenSets</span> <span class="p">=</span> <span class="n">sg</span><span class="p">.</span><span class="n">getMTESs</span><span class="p">();</span> <span class="c">% Get the equations sets corresponding to the MTESs</span>
+</pre></div>
+</div>
+<p>Then, a new structural graph is generated for each MTES, in order to be examined separately.</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="n">SOSubgraphs</span><span class="p">(</span><span class="nb">i</span><span class="p">)</span> <span class="p">=</span> <span class="n">sg</span><span class="p">.</span><span class="n">buildSubgraph</span><span class="p">(</span><span class="n">ResGenSets</span><span class="p">{</span><span class="nb">i</span><span class="p">},</span> <span class="s">&#39;pruneKnown&#39;</span><span class="p">,</span> <span class="n">true</span><span class="p">,</span> <span class="s">&#39;postfix&#39;</span><span class="p">,</span> <span class="n">postfix</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>One of the PSOs extracted from the previous subgraph is</p>
+<img alt="../../_images/wcc_2_so_4.png" src="../../_images/wcc_2_so_4.png" />
+<p>Known input variables are ommited without loss of generality.</p>
+</div>
+<div class="section" id="finding-valid-matchings-for-each-subgraph">
+<h2>Finding valid matchings for each subgraph<a class="headerlink" href="#finding-valid-matchings-for-each-subgraph" title="Permalink to this headline">¶</a></h2>
+<p>Next, a matching procedure is applied to each Proper Structurally Overconstrained subgraph (PSO). The goal is to take advantage of the graph-based encoding of each PSO and employ graph-based methods to discover a matching which represents a valid sequence of calculations leading to the evaluation of a residual generator.</p>
+<p>Older matching algorithms, such as the Ranking Matching <a class="footnote-reference" href="#blanke" id="id2">[2]</a> and the efficient Hungarian algorithm and its derivatives <a class="footnote-reference" href="#hopcroft" id="id3">[3]</a>, are not a suitable option for this task. They have multiple deficiencies, such as the inability to cope with calculation loops or ensuring the realisability <a class="footnote-reference" href="#flaugergues" id="id4">[4]</a> of the resulting matching.</p>
+<p>For the above reasons, we employ our own <strong>Branch and Bound Integer Linear Programming (BBILP)</strong> matching algorithm.</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="p">[</span><span class="c">...]</span>
+<span class="nb">disp</span><span class="p">(</span><span class="s">&#39;Examining another SO graph&#39;</span><span class="p">)</span>
+<span class="n">tempGI</span> <span class="p">=</span> <span class="n">SOSubgraphs</span><span class="p">(</span><span class="n">index</span><span class="p">);</span>
+<span class="n">matchers</span><span class="p">(</span><span class="nb">i</span><span class="p">)</span> <span class="p">=</span> <span class="n">Matcher</span><span class="p">(</span><span class="n">tempGI</span><span class="p">);</span> <span class="c">% Instantiate the matcher for this SO</span>
+<span class="p">[</span><span class="c">...]</span>
+<span class="n">matching</span> <span class="p">=</span> <span class="n">matchers</span><span class="p">(</span><span class="nb">i</span><span class="p">).</span><span class="n">match</span><span class="p">(</span><span class="s">&#39;BBILP&#39;</span><span class="p">,</span><span class="s">&#39;branchMethod&#39;</span><span class="p">,</span><span class="n">branchMethod</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>If there exists one, the valid matching is used to fully direct the PSO, embedding the residual calculation order.</p>
+<p>The matched and directed PSO from the previous section is presented below:</p>
+<img alt="../../_images/wcc_2_so_4_matched.png" src="../../_images/wcc_2_so_4_matched.png" />
+<p>The white rectangle to the right represents an unmatched equation which will serve as a residual generator.</p>
+<p>We can perform Isolability Analysis in this stage. We gather all the structural residuals, note which faults are introduced in which residuals and generate the Fault Signature Matrix.</p>
+<img alt="../../_images/isolability.png" src="../../_images/isolability.png" />
+<p>As we can see, its structure is mostly diagonal, meaning that all faults are (structurally) isolable, with a single-fault assumption. The non-singular diagnoal elements represent blocks of faults which are not distinguishable from each other, due to lack of surplus information.</p>
+<p>Only 6 faults are non-detectable.</p>
+</div>
+<div class="section" id="implementation-of-every-residual-generator">
+<h2>Implementation of every residual generator<a class="headerlink" href="#implementation-of-every-residual-generator" title="Permalink to this headline">¶</a></h2>
+<p>We can now proceed with implementing each structural residual generator and obtain a numerical function, able to process measured data.</p>
+<p>The analytical expression of each equation was passed during the construction of the model and stored alongside the equation. Now, the Symbolic Toolbox of MATLAB is employed to solve each equation for the specified variable (according to the matching) and use the rest of the equations as arguments.</p>
+<p>The function <code class="docutils literal"><span class="pre">get_res_gens</span></code> is responsible for this task:</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="n">RG_results</span> <span class="p">=</span> <span class="n">get_res_gens</span><span class="p">(</span><span class="n">SA_results</span><span class="p">,</span> <span class="n">RG_settings</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>The edges of the matching are converted to a fully-ordered evaluation list, through knowledge propagation from inputs to the residual generator equation.</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="c">%% Propagate knowledge from inputs to outputs</span>
+
+<span class="n">knownVarIds</span> <span class="p">=</span> <span class="p">[];</span>
+<span class="n">unusedIndices</span> <span class="p">=</span> <span class="mi">1</span><span class="p">:</span><span class="nb">length</span><span class="p">(</span><span class="n">SCCsEquIds</span><span class="p">);</span> <span class="c">% Indices to the equations SCCs cell array</span>
+<span class="c">% Build an active list of equations which are ready to be solved</span>
+<span class="n">activeList</span> <span class="p">=</span> <span class="p">[];</span> <span class="c">% This contains indices to SCCsEquIds</span>
+<span class="k">for</span> <span class="nb">i</span><span class="p">=</span><span class="n">unusedIndices</span>
+    <span class="n">unknownVariables</span> <span class="p">=</span> <span class="n">setdiff</span><span class="p">(</span><span class="n">SCCsVarIds</span><span class="p">{</span><span class="nb">i</span><span class="p">},</span><span class="n">knownVarIds</span><span class="p">);</span>
+    <span class="k">if</span> <span class="nb">isequal</span><span class="p">(</span><span class="n">sort</span><span class="p">(</span><span class="n">unknownVariables</span><span class="p">),</span><span class="n">sort</span><span class="p">(</span><span class="n">SCCsMatchedVarIds</span><span class="p">{</span><span class="nb">i</span><span class="p">}))</span>
+        <span class="n">activeList</span><span class="p">(</span><span class="k">end</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="p">=</span> <span class="nb">i</span><span class="p">;</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+<span class="n">solutionOrder</span> <span class="p">=</span> <span class="p">{};</span>
+
+<span class="k">while</span> <span class="o">~</span><span class="nb">isempty</span><span class="p">(</span><span class="n">activeList</span><span class="p">)</span>
+    <span class="n">unusedIndices</span> <span class="p">=</span> <span class="n">setdiff</span><span class="p">(</span><span class="n">unusedIndices</span><span class="p">,</span> <span class="n">activeList</span><span class="p">);</span> <span class="c">% Do not look in equations already in the list</span>
+    <span class="c">% Pop an item</span>
+    <span class="n">currentIndex</span> <span class="p">=</span> <span class="n">activeList</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="n">solutionOrder</span><span class="p">(</span><span class="k">end</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="p">=</span> <span class="n">SCCsEquIds</span><span class="p">(</span><span class="n">currentIndex</span><span class="p">);</span>
+    <span class="n">activeList</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">=</span> <span class="p">[];</span>
+    <span class="c">% Update the known variables list</span>
+    <span class="n">knownVarIds</span> <span class="p">=</span> <span class="p">[</span><span class="n">knownVarIds</span> <span class="n">SCCsMatchedVarIds</span><span class="p">{</span><span class="n">currentIndex</span><span class="p">}];</span>
+    <span class="c">% Search for new solvable equations to populate the list</span>
+    <span class="k">for</span> <span class="nb">i</span><span class="p">=</span><span class="n">unusedIndices</span>
+        <span class="n">unknownVariables</span> <span class="p">=</span> <span class="n">setdiff</span><span class="p">(</span><span class="n">SCCsVarIds</span><span class="p">{</span><span class="nb">i</span><span class="p">},</span><span class="n">knownVarIds</span><span class="p">);</span>
+        <span class="k">if</span> <span class="nb">isempty</span><span class="p">(</span><span class="n">unknownVariables</span><span class="p">)</span> <span class="c">% This SCC can be solved</span>
+            <span class="n">activeList</span><span class="p">(</span><span class="k">end</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="p">=</span> <span class="nb">i</span><span class="p">;</span>
+        <span class="k">end</span>
+        <span class="k">if</span> <span class="nb">isequal</span><span class="p">(</span><span class="n">sort</span><span class="p">(</span><span class="n">unknownVariables</span><span class="p">),</span><span class="n">sort</span><span class="p">(</span><span class="n">SCCsMatchedVarIds</span><span class="p">{</span><span class="nb">i</span><span class="p">}))</span> <span class="c">% This SCC has unknown variables but it will match all of them</span>
+            <span class="n">activeList</span><span class="p">(</span><span class="k">end</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="p">=</span> <span class="nb">i</span><span class="p">;</span>
+        <span class="k">end</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p><strong>NOTE:</strong> Any Strongly Connected Components (SCCs) existing in the matched subgraph will break the propagation process. Thus, during propagation they are compacted into single equation-variable pairs to allow the process to continue. Later, they each will be treated as a unified equation system during the implementation process, anyway.</p>
+<p>Each equation is turned into an <code class="docutils literal"><span class="pre">Evaluator</span></code> object</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="n">obj</span><span class="p">.</span><span class="n">evaluators_list</span> <span class="p">=</span> <span class="n">create_evaluators</span><span class="p">(</span><span class="n">graphInitial</span><span class="p">,</span> <span class="n">matched_graph</span><span class="p">,</span> <span class="n">SCCs</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">obj</span><span class="p">.</span><span class="n">dt</span><span class="p">);</span>
+<span class="p">[</span><span class="c">...]</span>
+<span class="n">new_evaluator</span> <span class="p">=</span> <span class="n">Evaluator</span><span class="p">(</span><span class="n">gi</span><span class="p">,</span> <span class="n">sub_digraph</span><span class="p">,</span> <span class="n">scc</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>which may be inherited by</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="n">new_evaluator</span> <span class="p">=</span> <span class="n">Differentiator</span><span class="p">(</span><span class="n">gi</span><span class="p">,</span> <span class="n">sub_digraph</span><span class="p">,</span> <span class="n">scc</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">,</span> <span class="n">dt</span><span class="p">);</span>
+<span class="n">new_evaluator</span> <span class="p">=</span> <span class="n">DAESolver</span><span class="p">(</span><span class="n">gi</span><span class="p">,</span> <span class="n">sub_digraph</span><span class="p">,</span> <span class="n">scc</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">,</span> <span class="n">dt</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>depending on the nature of each equation; whether it is a single equation, an explicit integration/differentiation or an SCC representing a Differential-Algebraic Equation set (DAE).</p>
+<p>The equation is solved symbolically once during setup and a numerical function is created. In this manner each subsequent evaluation (e.g. during log parsing) will be as fast as possible.</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="n">obj</span><span class="p">.</span><span class="n">expressions_solved</span> <span class="p">=</span> <span class="n">vpasolve</span><span class="p">(</span><span class="n">obj</span><span class="p">.</span><span class="n">expressions</span><span class="p">,</span> <span class="n">obj</span><span class="p">.</span><span class="n">sym_var_matched_array</span><span class="p">);</span> <span class="c">% Store the pre-solved expressions</span>
+<span class="p">[</span><span class="c">...]</span>
+<span class="n">obj</span><span class="p">.</span><span class="n">expressions_solved_handle</span> <span class="p">=</span> <span class="n">matlabFunction</span><span class="p">(</span><span class="n">obj</span><span class="p">.</span><span class="n">expressions_solved</span><span class="p">,</span> <span class="s">&#39;Vars&#39;</span><span class="p">,</span> <span class="n">obj</span><span class="p">.</span><span class="n">sym_var_input_array</span><span class="p">,</span> <span class="s">&#39;Outputs&#39;</span><span class="p">,</span> <span class="n">obj</span><span class="p">.</span><span class="n">gi</span><span class="p">.</span><span class="n">getAliasById</span><span class="p">(</span><span class="n">obj</span><span class="p">.</span><span class="n">var_matched_ids</span><span class="p">));</span>
+</pre></div>
+</div>
+<p>108 residual generator functions were created in this fashion.</p>
+</div>
+<div class="section" id="calculation-of-the-residuals-using-a-stored-log">
+<h2>Calculation of the residuals using a stored log<a class="headerlink" href="#calculation-of-the-residuals-using-a-stored-log" title="Permalink to this headline">¶</a></h2>
+<p>We have reached a point where we are able to pass a MAVLink log to our algorithm to perform fault diagnosis in real measured data. Our example log file was taken during a mapping mission, performed by a 2m UAV. The UAV experienced sudden loss of control and fell into the ground.</p>
+<img alt="../../_images/afrika.png" src="../../_images/afrika.png" />
+<p>The log is initially converted to an <code class="docutils literal"><span class="pre">.m</span></code> file with the <code class="docutils literal"><span class="pre">mavtomfile.py</span></code> Python script, provided by <em>pymavlink</em>.</p>
+<p>Then, the log file is resampled at a constant rate, which is user selectable. Most MAVLink messages are emitted regularly at 1, 2 and 4Hz. We select 1Hz for our analysis. We can also restrict the examination interval to the last few seconds of the flight.</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="n">data_resampled</span> <span class="p">=</span> <span class="n">resampleData</span><span class="p">(</span><span class="s">&#39;afrika.mat&#39;</span><span class="p">,</span> <span class="n">SA_results</span><span class="p">);</span>  <span class="c">% Read the dataset and resample it to have uniform data</span>
+</pre></div>
+</div>
+<p>Now the data is in a form that can be fed into each residual generator and obtain residual signals. Thresholding is also performed against a constant value (different for each residual).</p>
+<div class="highlight-matlab"><div class="highlight"><pre><span class="n">RE_results</span> <span class="p">=</span> <span class="n">evaluateResiduals</span><span class="p">(</span><span class="n">SA_results</span><span class="p">,</span> <span class="n">RG_results</span><span class="p">,</span> <span class="n">data_resampled</span><span class="p">);</span>  <span class="c">% Evaluate the residual generator bank</span>
+<span class="p">[</span><span class="c">...]</span>
+<span class="n">interval_of_interest</span> <span class="p">=</span> <span class="p">[</span><span class="mi">317</span><span class="p">:</span><span class="mi">333</span><span class="p">];</span> <span class="c">% Select the sample interval you wish to investigate</span>
+<span class="n">triggering_threshold</span> <span class="p">=</span> <span class="mf">0.97</span><span class="p">;</span> <span class="c">% Specify a static threshold</span>
+<span class="c">% Threshold the residual signals</span>
+<span class="n">triggered_residuals</span> <span class="p">=</span> <span class="n">thresholdResiduals</span><span class="p">(</span><span class="n">RE_results</span><span class="p">,</span> <span class="n">interval_of_interest</span><span class="p">,</span> <span class="n">triggering_threshold</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>The result is a binary residual trigger signal, at the resolution of 1 second. One such signal is generated for each residual generator.</p>
+<p>We do not make the single-fault assumption, because in tightly-coupled systems, such as a UAV, one fault can easily cause inconsistencies to other neighbouring subsystems.
+Still, the known fault signatures can be used to exclude which faults are certain to not have happened (using the exoneration assumption).</p>
+<p>This information lets us construct the <strong>Fault Occurrence Grid</strong>. This visualization pattern is a powerful investigation tool, which can help the human investigator have a better picture of the manifested faults and make time correlations.</p>
+<img alt="../../_images/faultOccurence.png" src="../../_images/faultOccurence.png" />
+<p>Loss of control occurred at t = 322 seconds.
+Even before the failure time, we notice a few faults triggering certain residuals. Faults corresponding to 24/lon, 30/yawspeed, 33/lon, 116/zgyro, 182/lat and 182/lng are probably caused by inconsistencies between the direct measurements of the sensors related to the navigation system and the 3 different navigation algorithms which ArduPilot runs simultaneously.</p>
+<p>More concerning is the departure from the airspeed envelope and the airspeed error, occurring at time t = 321 seconds - 325 seconds, as witnessed by the faults 62/airspeed_error and 74/airspeed.
+Plotting the actual airspeed data series we see a significant drop in airspeed at that interval.</p>
+<img alt="../../_images/airspeed.png" src="../../_images/airspeed.png" />
+<p>At the same interval we see residuals related to 3 state control faults trigger. These faults refer to altitude, pitch and roll regulation. In fact, these faults affect only one residual each and are hence isolable.
+Indeed, plotting the roll, pitch and altitude time series, we clearly see that the aircraft has by now entered a downward spiral, leading to the crash.
+Even though the airspeed recovered a few seconds after the initial stall, the autopilot was not able (nor programmed) to perform the maneuver required to exit the spiral.</p>
+<img alt="../../_images/attitude.png" src="../../_images/attitude.png" />
+<p>It is interesting to note that a lot of residuals related to faults of the sensor and navigation subsystems triggered during the downward spiral. This can be attributed to the separate state estimation filters underperforming because of the rapid rotation and producing diverging estimates.</p>
+<p>Regarding the root cause of the accident, we can safely rule out airspeed estimation, since the related residuals did not trigger.
+Instead, the first severe failure was the inability of the autopilot to maintain the airspeed error within a +-3m/s bound.
+This allowed the airspeed to drop below its prescribed envelope, resulting in a tip-stall.
+Past that point, the autopilot was no longer able to control the state of the aircraft.</p>
+<p>The inability of the autopilot to regulate airspeed should probably not be attributed to an external fault. Instead, it is much more likely that the kinetic energy control loop was badly tuned, especially taking into account the high Mean-Sea-Level altitude the aircraft was flying at.
+However, further investigation would require analysis of the internal structural of the controller architecture and implementation, and such information is not conveyed by the MAVLink stream.</p>
+<p class="rubric">References</p>
+<table class="docutils footnote" frame="void" id="krysander" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td><ol class="first last upperalpha simple" start="13">
+<li>Krysander, J. Aslund, and E. Frisk, “A Structural Algorithm for Finding Testable Sub-models and Multiple Fault Isolability Analysis,”21st International Workshop on the Principles of Diagnosis, 2010</li>
+</ol>
+</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="blanke" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td><ol class="first last upperalpha simple" start="13">
+<li>Blanke, M. Kinnaert, J. Lunze, and M. Staroswiecki, Diagnosis and Fault-Tolerant Control, 3rd ed. Berlin, Heidelberg: Springer Berlin Heidelberg, 2016.</li>
+</ol>
+</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="hopcroft" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[3]</a></td><td><ol class="first last upperalpha simple" start="10">
+<li><ol class="first upperalpha" start="5">
+<li>Hopcroft and R. M. Karp, “An nˆ{5/2} Algorithm for Maximum Matchings in Bipartite Graphs,” SIAM Journal on Computing, vol. 2, no. 4, pp. 225–231, dec 1973.</li>
+</ol>
+</li>
+</ol>
+</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="flaugergues" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[4]</a></td><td><ol class="first last upperalpha simple" start="22">
+<li>Flaugergues, V. Cocquempot, M. Bayart, and M. Pengov, “On non-invertibilities for Structural Analysis,” 21st International Workshop on Principles of Diagnosis (DX’10), pp. 1–8, 2010.</li>
+</ol>
+</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../bbilp_vs_exhaustive/bbilp_vs_exhaustive.html" class="btn btn-neutral float-right" title="Branch-and-Bound ILP Matching Calculation Cost" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../matching_intro/matching_intro.html" class="btn btn-neutral" title="Introduction to matching" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>Except where otherwise noted, this documentation is licensed under <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC Attribution-Share Alike 3.0 Unported</a>.</p>
+
+<div style="float:right;"><a href="https://github.com/Georacer/mavlink-inspector/issues/new?title=Residual%20Generation%20for%20a%20MAVLink%20UAV%20-%20&body=URL:%20../../demos/mavlink/mavlink%0ATitle:%20Residual%20Generation%20for%20a%20MAVLink%20UAV%0A%0APlease%20update%20this%20description%20and%20the%20issue%20title">Page bug</a></div>
+
+    <p>
+
+    </p>
+  </div>
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.7',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
