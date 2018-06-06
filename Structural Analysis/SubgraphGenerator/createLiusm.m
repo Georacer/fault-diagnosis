@@ -25,7 +25,9 @@ for id=intId
 end
 
 % Prepare known variable information
-Zid = gh.getVarIdByProperty('isKnown',true);
+varKnownId = gh.getVarIdByProperty('isKnown',true); % Find all known variables
+varFaultId = gh.getVarIdByProperty('isFault',true); % Find all faults
+Zid = setdiff(varKnownId,varFaultId); % Consider only non-faults
 Zindex = gh.getIndexById(Zid);
 model.z = gh.reg.varAliasArray(Zindex);
 model.Z = gh.adjacency.V2E(Zindex,:)';

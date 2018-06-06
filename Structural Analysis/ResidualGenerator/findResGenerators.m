@@ -1,6 +1,8 @@
 function [ ids ] = findResGenerators( gi, faultsOnly )
 %FINDRESGENERATORS Find unmatched constraints which can generate residuals
-%   Detailed explanation goes here
+%   Eligible constraints are those which have all of their contributing variables matched
+%   If faultsOnly=true, then at least one of the contributing equation or the residual generator itself must be
+%   faultable
 
 debug = true;
 
@@ -18,11 +20,15 @@ end
 for equId = freeEqs
     parentEqs = gi.getAncestorEqs(equId); % Get all parent equations
     varIds = gi.getVariables(parentEqs); % Get all related variables
-    allMatched = all(gi.isMatched(varIds));
-    if ~allMatched % This residual doesn't have all of its variables matched
-        if debug; fprintf('Found a residual with no complete matching\n'); end
-        continue
+    
+    if ~isempty(varIds) % This equation doesn't rely on any other variable 
+        allMatched = all(gi.isMatched(varIds)); % Find which of the variables are matched
+        if ~allMatched % This residual doesn't have all of its variables matched
+            if debug; fprintf('Found a residual with no complete matching\n'); end
+            continue
+        end
     end
+    
     if faultsOnly
         anyFaultable = any([gi.isFaultable([equId parentEqs])]);
         if ~anyFaultable
@@ -30,6 +36,7 @@ for equId = freeEqs
             continue
         end
     end
+    
     ids(end+1) = equId;
     
 end

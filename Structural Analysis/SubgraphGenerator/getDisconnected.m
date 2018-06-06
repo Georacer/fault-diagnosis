@@ -25,22 +25,29 @@ varIds = gi_u.getVariables();
 
 % Find the disconnected subgraphs
 sccs = tarjan2(BDw);  % Find the strongly connected components
-allIds = [varIds equIds];
-sccsEquIds = cell(1,length(sccs));  % Preallocate the equation ids of each subgraph
 
-for i=1:length(sccs)
-    sccIds = allIds(sccs{i});  % Find all the ids of this scc
-    equIndices = gi_u.isEquation(sccIds);  % Find which of them are equations
-    if ~any(equIndices) % This scc is a single variable
-        warning('An scc found which was a single variable');
+% If the original graph is the only scc
+if length(sccs)==1
+    graphs = {gi};
+    return;
+else
+    allIds = [varIds equIds];
+    sccsEquIds = cell(1,length(sccs));  % Preallocate the equation ids of each subgraph
+    
+    for i=1:length(sccs)
+        sccIds = allIds(sccs{i});  % Find all the ids of this scc
+        equIndices = gi_u.isEquation(sccIds);  % Find which of them are equations
+        if ~any(equIndices) % This scc is a single variable
+            warning('An scc found which was a single variable');
+        end
+        sccEquIds{i} = sccIds(logical(equIndices));
     end
-    sccEquIds{i} = sccIds(logical(equIndices));
-end
-
-% Build a new graph for each scc
-graphs = cell(1,length(sccs));
-for i=1:length(graphs)
-    graphs{i} = sg.buildSubgraph(sccEquIds{i}, 'postfix', sprintf('_%d',i)); % Let the original variables be re-introduced
+    
+    % Build a new graph for each scc
+    graphs = cell(1,length(sccs));
+    for i=1:length(graphs)
+        graphs{i} = sg.buildSubgraph(sccEquIds{i}, 'postfix', sprintf('_%d',i)); % Let the original variables be re-introduced
+    end
 end
 
 end
