@@ -14,3 +14,4 @@ addpath(genpath('SubgraphGenerator'));
 addpath(genpath('Demos'));
 addpath(genpath('Analyzer'));
 addpath(genpath('ResidualEvaluator'));
+addpath(genpath('TestScripts'));

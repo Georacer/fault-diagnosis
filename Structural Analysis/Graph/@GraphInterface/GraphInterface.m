@@ -134,6 +134,9 @@ classdef GraphInterface < handle
                 varProps.isInput = false;
                 varProps.isOutput = false;
                 varProps.isResidual = true;
+                varProps.isMatrix = false;
+                varProps.isFault = false;
+                varProps.isParameter = false;
                 varProps.isMatched = true;
                 [respSingle, resId] = gi.addVariable([],alias,varProps);
                 
@@ -255,7 +258,7 @@ classdef GraphInterface < handle
             
         end
         function [ resp ] = deleteEquations( this, ids )
-            %DELETEEQUATION Delete equations from graph
+            %DELETEEQUATIONS Delete equations from graph
             %   Detailed explanation goes here
             
 %             debug=true;
@@ -263,7 +266,12 @@ classdef GraphInterface < handle
             
             resp = false;
             
-            if ~all(this.isEquation(ids));
+            if isempty(ids) % Nothing to delete
+                resp = true;
+                return
+            end
+            
+            if ~all(this.isEquation(ids))
                 error('deleteEquations: Requested to delete an equation while passing non-equation Id');
             end
             
@@ -284,29 +292,13 @@ classdef GraphInterface < handle
             end
             relVarIds = unique(relVarIds);
             if debug; fprintf('deleteEquations: Deleting from equations %d ',ids); fprintf('the variables '); fprintf(' %d ',relVarIds); fprintf('\n'); end
+
             
+            % Delete Edges, decoupling variables from equations
             this.deleteEdges(edgeIds);
+            % Delete Variables
             this.deleteVariables(relVarIds,true);
-            
-            % % Find exclusive variables and delete them
-            % for id = relVarIds
-            %     varIndex = this.getIndexById(id);
-            %     edgeIds2 = this.graph.variables(varIndex).edgeIdArray;
-            %     if all(ismember(edgeIds2,edgeIds))
-            %         if (debug)
-            %             fprintf('*** Deleting variable with id %d\n',id);
-            %         end
-            %         this.deleteVariable(id);
-            %     end
-            % end
-            %
-            % % Delete related edges first
-            % edgeId = [];
-            % for id = ids
-            %     edgeId = [edgeId this.getEdgeIdByVertices(id,[])];
-            % end
-            % this.deleteEdge(edgeId);
-            
+                     
             % Delete equations
             indices = this.getIndexById(ids);
             this.graph.deleteEquations(indices);
@@ -332,6 +324,7 @@ classdef GraphInterface < handle
                 error('Requested to delete a variable while passing non-variable Id');
             end
             
+            % Do not delete variables which are still used by other equations
             if nargin<3
                 safe=true;
             end
@@ -1473,7 +1466,7 @@ classdef GraphInterface < handle
             gh.graph.setLimits(var_indices, limits);
         end
         function resp = setMatched( gh, ids,  value )
-            %SETPROPERTYOR Summary of gh function goes here
+            %SETMATCHED Set an edge as matched
             %   Detailed explanation goes here
             
 %             debug=true;
@@ -1500,7 +1493,9 @@ classdef GraphInterface < handle
                     gh.graph.setMatchedEdge(index,value);
                     gh.graph.setMatchedEqu(equIndex, value, varId);
                     gh.graph.setMatchedVar(varIndex, value, equId);
-                    gh.graph.setKnownVar(varIndex, value); % TODO: Debatable
+%                     gh.graph.setKnownVar(varIndex, value); % This is intentionally not enabled. The equations of a
+%                     matched variable may need to be deleted, making the variable no longer matched, but the variable
+%                     is still considered known.
                     
                     if debug; fprintf('GraphInterface/setMatched: setting as matched the edge %d\n',id); end
                 else

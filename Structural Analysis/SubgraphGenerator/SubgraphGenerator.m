@@ -51,7 +51,7 @@ classdef SubgraphGenerator < matlab.mixin.Copyable
         function MTESs = getMTESs(this)
             % Return the set of MTESs containing equation IDs
             if isempty(this.MTESs)
-                warning('MTESs not initialized yet');
+                warning('MTESs not initialized yet or zero in number');
             end
             MTESs = this.MTESs;
             return            
@@ -76,14 +76,13 @@ classdef SubgraphGenerator < matlab.mixin.Copyable
             pruneKnown = opts.pruneKnown;
             pruneUnmatched = opts.pruneUnmatched;
             
+            % Create a deep copy of the input graph
             gi = copy(this.gi);
             
             % Delete equations
             allIds = this.gi.reg.equIdArray;
             ids2Del = setdiff(allIds,equIds);
-            for i=1:length(ids2Del)
-                gi.deleteEquations(ids2Del(i));
-            end
+            gi.deleteEquations(ids2Del);
             
             % Keep only required variables
             if ~isempty(varIds)
@@ -110,6 +109,7 @@ classdef SubgraphGenerator < matlab.mixin.Copyable
                 end                
             end
             
+            gi.reg.update();
             gi.createAdjacency();
             gi.name = [gi.name postfix];
         end

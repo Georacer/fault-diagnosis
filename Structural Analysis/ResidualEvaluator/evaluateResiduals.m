@@ -7,8 +7,6 @@ function [ RE_results ] = evaluateResiduals(SA_results, RG_results, data )
 % OUTPUTS:
 % RE_results    : Residual evaluation results
 
-fprintf('Evaluating residual generators\n');
-
 gi = SA_results.gi; % Get the initial graph interface
 time_vector = data.timestamp; % Get the time vector
 values = RG_results.values; % Get the variables dictionary

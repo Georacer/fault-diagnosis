@@ -64,7 +64,7 @@ end
 
 %% Perform weighted matching up to a rank, if needed
 
-% For very large models, match 1 rank of variables to reduce the model
+% For selected very large models, match 1 rank of variables to reduce the model
 % size and complexity
 switch model.name
     case {'g014e'}
@@ -76,11 +76,13 @@ if matchWERank > 0
     matcher = Matcher(graphOver); % Instantiate a Matcher object
     matcher.setCausality('Realistic'); % Set the desired causality
     M = matcher.match('WeightedElimination','maxRank',matchWERank); % Perform the matching
+    % Set any matched variables as known, so that the LiUSM model will treat them as inputs
+    matchedVarIds = graphOver.getVariables(M);
+    graphOver.setKnown(matchedVarIds);
     
     % Generate the remaining graph from the remaining unmatched equations
     sgOver = SubgraphGenerator(graphOver);
     graphRemaining = sgOver.buildSubgraph(graphOver.getEquIdByProperty('isMatched',false),'postfix','_weightMatched');
-    sgOver.buildLiUSM();
     fprintf('Done building rank-matched submodel\n');
     
     sgRemaining = SubgraphGenerator(graphRemaining);
@@ -128,6 +130,12 @@ for graph_index=1:length(graphs_conn)
     
     % This is the currently examined graph
     graph = graphs_conn{graph_index};
+    
+    % Check if this subgraph actually has any faults % TODO: Place this under a conditional?
+    if isempty(graph.getEquIdByProperty('isFaultable'))
+        continue;
+    end
+    
     sg = SubgraphGenerator(graph);
     sg.buildLiUSM(); % Build the LiUSM model
     
@@ -179,16 +187,16 @@ for graph_index=1:length(graphs_conn)
     % each PSO
     tic
     SOSubgraphs = GraphInterface.empty;
-    h = waitbar(0,'Building MTES Subgraphs');
+    h = waitbar(0,'Building SO Subgraphs');
     
     % For each Structurally Overdetermined set
     for i=1:length(ResGenSets)
         waitbar(i/length(ResGenSets),h);
         
         % Build the subraph generator
-        if SOType == 'MTES'
+        if strcmp(SOType,'MTES')
             postfix = '_MTES';
-        elseif SOType == 'MSO'
+        elseif strcmp(SOType,'MSO')
             postfix = '_MSO';
         else
             error('Unknown SO type');
@@ -198,7 +206,7 @@ for graph_index=1:length(graphs_conn)
         
         % MTESs may have disconnected components, which need to be removed
         % Only keep the connected component of each MTES which is faultable
-        if SOType == 'MTES'
+        if strcmp(SOType,'MTES')
             % Build the undirected biadjacency matrix of the graph
             tempArray =  SOSubgraphs(i).adjacency.V2E;
             matrix = [zeros(size(tempArray,1)) tempArray ; tempArray' zeros(size(tempArray,2)) ];
