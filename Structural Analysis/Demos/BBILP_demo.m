@@ -260,7 +260,7 @@ timeMakeSG = timeSetGen;
 timeSolveILP = timeSetGen; 
 for i=1:length(files_MTES) 
     load(files_MTES{i}); 
-    for j=1:length(names); 
+    for j=1:length(names)
         timeSetGen(i,j) = stats.(names{j}).timeSetGen; 
         timeMakeSG(i,j) = stats.(names{j}).timeMakeSG; 
         timeSolveILP(i,j) = stats.(names{j}).timeSolveILP; 
