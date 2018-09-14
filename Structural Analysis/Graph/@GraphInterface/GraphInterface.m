@@ -1674,7 +1674,7 @@ classdef GraphInterface < handle
             % out - output variable
             % msr - measured variable
             % dist - disturbance
-            operators = {'dot','int','ni','inp','out','msr','fault', 'sub', 'mat', 'expr', 'par', 'dist'}; % Available operators
+            operators = {'dot','int','ni','inp','out','msr','fault', 'sub', 'mat', 'expr', 'par', 'dist', 'rg'}; % Available operators
             words = strsplit(strtrim(exprStr),' '); % Split expression to operands and variables
             linkedVariables = []; % Array with variables linked to this equation
             initProperties = true; % New variable flag for properties initialization
@@ -1762,6 +1762,9 @@ classdef GraphInterface < handle
                         isKnown = true;
                         %isMeasured = false;
                         isInput = true;
+                    case 13 % Equation marked as residual generator
+                        this.setProperty(equId,'isResGenerator');
+                        
                         
                     otherwise % Found a variable or subsystem designation
                         

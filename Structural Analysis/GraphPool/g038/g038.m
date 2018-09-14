@@ -15,8 +15,13 @@ classdef g038 < model
             % out - output variable % NOT SUPPORTED
             % msr - measured variable
             % sub - subsystem where the equation belongs
+            % mat - matrix variable
+            % expr - algebraic expression
+            % par - parameter
+            % dist - disturbance
+            % rg - residual generator
             kin = [...
-                {'x_1 x_2 f_1 expr x_1-x_2*(f_1+1)'};...
+                {'rg x_1 x_2 f_1 expr x_1-x_2*(f_1+1)'};...
                 ];
             
             der = [...

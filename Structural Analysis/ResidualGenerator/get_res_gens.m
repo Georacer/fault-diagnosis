@@ -27,7 +27,7 @@ for i=1:length(SOSubgraphs_set)
     end
 end
 
-% Flatten the matchig sets
+% Flatten the matching sets
 matchings = {};
 counter = 1;
 for i=1:length(matchings_set)
