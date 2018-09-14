@@ -5,11 +5,15 @@ classdef ResidualResponse < handle
     properties
         gi
         res_gen
+        arg_ids
         values = Dictionary.empty;
         fault_ids
+        disturbance_ids
         fault_id_current
         input_ids
+        var_ids
         pso_input_ids
+        opt_variables
         inner_problem_fault_values
         best_minimum_response_cost
         step_counter = 0;
@@ -34,7 +38,7 @@ classdef ResidualResponse < handle
             p = inputParser;
             
             p.addRequired('res_gen',@(x) isa(x, 'ResidualGenerator'));
-            p.addRequired('arg_ids',@(x) @isnumeric); % The variable IDs for maximization
+            p.addRequired('arg_ids',@isnumeric); % The variable IDs for maximization
 %             p.addParameter('testType', 'fault', @(s) validatestring(s, {'fault', 'disturbance'})); % Unneeded, will
 %             sort out through IDs
             p.addParameter('timeDetection', 0 ,@isnumeric); % Probably will deprecate
@@ -79,16 +83,16 @@ classdef ResidualResponse < handle
             
             % Get variable input ids for the whole residual generator
 %             var_ids = obj.res_gen.get_input_ids();
-            var_ids = obj.res_gen.all_input_ids; % Contains inputs, faults, disturbances and measurements
+            obj.var_ids = obj.res_gen.all_input_ids; % Contains inputs, faults, disturbances and measurements
             
             % Separate the inputs from the faults
-            fault_mask = obj.gi.isOfProperty(var_ids, 'isFault');
-            input_mask = obj.gi.isOfProperty(var_ids, 'isInput');
-            disturbance_mask = obj.gi.isOfProperty(var_ids, 'isDisturbance');
-            measured_mask = obj.gi.isOfProperty(var_ids, 'isMeasured');
-            obj.fault_ids = var_ids(fault_mask);
-            obj.disturbance_ids = var_ids(disturbance_mask);
-            obj.input_ids = var_ids( (input_mask | measured_mask) & ~fault_mask & ~disturbance_mask); % These are actual user inputs
+            fault_mask = obj.gi.isOfProperty(obj.var_ids, 'isFault');
+            input_mask = obj.gi.isOfProperty(obj.var_ids, 'isInput');
+            disturbance_mask = obj.gi.isOfProperty(obj.var_ids, 'isDisturbance');
+            measured_mask = obj.gi.isOfProperty(obj.var_ids, 'isMeasured');
+            obj.fault_ids = obj.var_ids(fault_mask);
+            obj.disturbance_ids = obj.var_ids(disturbance_mask);
+            obj.input_ids = obj.var_ids( (input_mask | measured_mask) & ~fault_mask & ~disturbance_mask); % These are actual user inputs
             
 %             if isempty(opts.testMask)
 %                 obj.testMask = ones(2,length(obj.fault_ids));
@@ -101,7 +105,7 @@ classdef ResidualResponse < handle
         function [ cost ] = fitness_function_maximum(obj, sampled_values)
             % Objective function for maximum fault impact PSO
             % sampled_values: sampled values of variables under optimization
-            obj.values.setValue(obj.var_ids, [], sampled_values);
+            obj.values.setValue(obj.opt_variables, [], sampled_values);
             
             obj.res_gen.reset_state();  % Reset the state variables %TODO: is this correct?
             cost_initial = obj.residual_evaluation_cost(obj.values);
@@ -289,7 +293,7 @@ classdef ResidualResponse < handle
             % sample_values: indexed vector holding the current values of the sampled values of optimization variables
             inequality = []; % No inequality terms
             
-            obj.values.setValue(obj.input_ids, [], sampled_values); % Set the values of the input
+            obj.values.setValue(obj.opt_variables, [], sampled_values); % Set the values of the input
             
             obj.res_gen.reset_state(); %TODO: is this correct?
             equality = obj.res_gen.evaluate(obj.values);
@@ -314,19 +318,6 @@ classdef ResidualResponse < handle
             limits = obj.gi.getLimits(obj.opt_variables);
             lower_bounds = limits(:,1);
             upper_bounds = limits(:,2);
-            
-%             % Reset fault values
-%             obj.values.setValue(obj.fault_ids, [], zeros(size(obj.fault_ids))); %TODO: needed?
-% 
-%             % Pick one fault and build the input array
-%             fault_index = i;
-%             obj.fault_id_current = obj.fault_ids(fault_index);
-%             obj.pso_input_ids = [obj.input_ids obj.fault_id_current];
-% 
-%             % Build the input bounds
-%             limits = obj.gi.getLimits(obj.pso_input_ids);
-%             lower_bounds = limits(:,1);
-%             upper_bounds = limits(:,2);
 
             if obj.plotCost
                 PlotFcn = @pswplotbestf;
@@ -362,6 +353,8 @@ classdef ResidualResponse < handle
 
             obj.values.setValue(obj.opt_variables, [], optim_values);
             obj.res_gen.reset_state();  % Reset the state variables %TODO: is this correct? Doesn't stor _prev values
+            obj.values.setValue(obj.fault_ids, [], zeros(size(obj.fault_ids)));
+            obj.values.setValue(obj.disturbance_ids, [], zeros(size(obj.disturbance_ids)));
             max_response = abs(obj.res_gen.evaluate(obj.values)); %TODO: warning, does not take state into account
 
             if obj.debug
@@ -427,25 +420,24 @@ classdef ResidualResponse < handle
         
         function print_optim_results(obj, optim_type, optim_values, response)
             fprintf('%s Residual Response: Solution found at:\n', optim_type);
-            for j=1:length(opt_variables)
+            for j=1:length(obj.opt_variables)
                 alias = obj.gi.getAliasById(obj.opt_variables(j));
                 fprintf('%5s = %f;\n', alias{1}, optim_values(j));
             end
 
             fprintf('with response: %g\n', response);
 
-            obj.values.setValue(obj.opt_variables, [], args);
+            obj.values.setValue(obj.opt_variables, [], optim_values);
             obj.res_gen.reset_state();
             obj.res_gen.evaluate(obj.values);
-            %                     disp(obj.values);
-            fprintf('Residual generator state: \n')
+            fprintf('Residual consistency: %g\n', obj.res_gen.evaluate(obj.values));
             disp(obj.res_gen.values);
 
             obj.values.setValue(obj.fault_ids, [], zeros(size(obj.fault_ids)));
             obj.values.setValue(obj.disturbance_ids, [], zeros(size(obj.disturbance_ids)));
             obj.res_gen.reset_state();
-            fprintf('Residual consistency: %g\n', obj.res_gen.evaluate(obj.values));
-            disp(obj.res_gen.values);
+            fprintf('Residual generator state: \n')
+            disp(obj.values);
         end
         
          % DELETEME
