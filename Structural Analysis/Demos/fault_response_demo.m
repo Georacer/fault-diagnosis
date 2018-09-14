@@ -14,6 +14,7 @@ clc
 
 % Select the mode of operation
 opMode = 'breaking';
+opMode = 'continuous';
 
 % Select the airplane Angle-of-Sideslip Sensor and kinematic model
 modelArray = {};
@@ -94,7 +95,10 @@ end
 % Watch how further Particle Swarm Optimization iterations may yield better min/max results. The previous result is fed back to
 % compare min/max results
 
-fault_response_vector_set = getFaultResponseVector( RG_results.res_gen_cell, fault_response_vector_set, [] ); % Run all tests, with no pre-calculated fault response vector
+tests_to_run{1} = [1 0 0 0;...
+                   0 0 0 0];
+
+fault_response_vector_set = getFaultResponseVector( RG_results.res_gen_cell, fault_response_vector_set, tests_to_run ); % Run all tests, with no pre-calculated fault response vector
 
 if strcmp(opMode,'breaking')
     input('\nPress Enter to proceed to the next step...');

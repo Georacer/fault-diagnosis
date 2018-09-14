@@ -141,7 +141,9 @@ classdef ResidualResponse < handle
             
             % Zero-out faults and disturbances
             values.setValue(obj.fault_ids, [], zeros(size(obj.fault_ids)));
-            values.setValue(obj.disturbance_ids, [], zeros(size(obj.disturbance_ids)));
+            if ~isempty(obj.disturbance_ids)
+                values.setValue(obj.disturbance_ids, [], zeros(size(obj.disturbance_ids)));
+            end
             
             % Check if integration is needed
             if obj.res_gen.is_dynamic
@@ -157,9 +159,11 @@ classdef ResidualResponse < handle
                     % Run the last iteration to graph the residual value
                     cost = -abs(obj.res_gen.evaluate(obj.res_gen.values));
                 else
+                    obj.res_gen.reset_state();
                     cost = -abs(obj.res_gen.evaluate(values));
                 end
             else
+                obj.res_gen.reset_state();
                 cost = -abs(obj.res_gen.evaluate(values));
             end
         end
@@ -383,7 +387,9 @@ classdef ResidualResponse < handle
             obj.values.setValue(obj.opt_variables, [], optim_values);
             obj.res_gen.reset_state();  % Reset the state variables %TODO: is this correct? Doesn't stor _prev values
             obj.values.setValue(obj.fault_ids, [], zeros(size(obj.fault_ids)));
-            obj.values.setValue(obj.disturbance_ids, [], zeros(size(obj.disturbance_ids)));
+            if ~isempty(obj.disturbance_ids)
+                obj.values.setValue(obj.disturbance_ids, [], zeros(size(obj.disturbance_ids)));
+            end
             max_response = abs(obj.res_gen.evaluate(obj.values)); %TODO: warning, does not take state into account
 
             if obj.debug
@@ -459,7 +465,9 @@ classdef ResidualResponse < handle
             optim_values = [obj.inner_problem_optim_values arg_optim_values];
             obj.values.setValue(obj.opt_variables, [], optim_values);
             obj.values.setValue(obj.fault_ids, [], zeros(size(obj.fault_ids)));
-            obj.values.setValue(obj.disturbance_ids, [], zeros(size(obj.disturbance_ids)));
+            if ~isempty(obj.disturbance_ids)
+                obj.values.setValue(obj.disturbance_ids, [], zeros(size(obj.disturbance_ids)));
+            end
             obj.res_gen.reset_state();  % Reset the state variables
             min_response = abs(obj.res_gen.evaluate(obj.values));
 
@@ -480,189 +488,17 @@ classdef ResidualResponse < handle
 
             obj.values.setValue(obj.opt_variables, [], optim_values);
             obj.res_gen.reset_state();
-            obj.res_gen.evaluate(obj.values);
             fprintf('Residual consistency: %g\n', obj.res_gen.evaluate(obj.values));
             disp(obj.res_gen.values);
 
             obj.values.setValue(obj.fault_ids, [], zeros(size(obj.fault_ids)));
-            obj.values.setValue(obj.disturbance_ids, [], zeros(size(obj.disturbance_ids)));
+            if ~isempty(obj.disturbance_ids)
+                obj.values.setValue(obj.disturbance_ids, [], zeros(size(obj.disturbance_ids)));
+            end
             obj.res_gen.reset_state();
             obj.res_gen.evaluate(obj.values);
             fprintf('Residual generator state: \n')
             disp(obj.res_gen.values);
-        end
-        
-         % DELETEME
-        function [ fault_contribution ] = get_residual_sensitivity(obj)
-            
-            % Initialize the fault response vectors
-            fault_contribution_maximum = zeros(size(obj.fault_ids));
-            fault_contribution_minimum = inf*ones(size(fault_contribution_maximum));
-            
-            
-            % Iterate over all faults
-            for i=1:size(obj.testMask,2)
-                tic;
-                
-                if obj.testMask(2,i)
-                    %% Calculate the maximum fault contributions
-                    % Reset fault values
-                    obj.values.setValue(obj.fault_ids, [], zeros(size(obj.fault_ids))); %TODO: needed?
-                    
-                    % Pick one fault and build the input array
-                    fault_index = i;
-                    obj.fault_id_current = obj.fault_ids(fault_index);
-                    obj.pso_input_ids = [obj.input_ids obj.fault_id_current];
-                    
-                    % Build the input bounds
-                    limits = obj.gi.getLimits(obj.pso_input_ids);
-                    lower_bounds = limits(:,1);
-                    upper_bounds = limits(:,2);
-                    
-                    if obj.plotCost
-                        PlotFcn = @pswplotbestf;
-                    else
-                        PlotFcn = [];
-                    end
-                    
-                    % Setup the problem for particleswarm
-                    if obj.debug
-                        display_type = 'iter';
-                    else
-                        display_type = 'off';
-                    end
-                    if obj.plotSwarm
-                        plotSwarm([0 0],0,'init');
-                    end
-                    particleswarm_options = optimoptions('particleswarm',...
-                        'SwarmSize',300, ...
-                        'Display',display_type, ...
-                        'MaxIterations',200, ...
-                        'MaxStallIterations', 10, ...
-                        'OutputFcn', @obj.update_steps, ...
-                        'PlotFcn', PlotFcn ...
-                        );
-                    problem.solver = 'particleswarm';
-                    problem.objective = @obj.fitness_function_maximum;
-                    problem.nvars = length(obj.pso_input_ids);
-                    problem.lb = lower_bounds;
-                    problem.ub = upper_bounds;
-                    problem.options = particleswarm_options;
-                    % Run the PSO
-                    [args, sensitivity] = particleswarm(problem);
-                    
-                    obj.values.setValue(obj.pso_input_ids, [], args);
-                    obj.res_gen.reset_state();  % Reset the state variables
-                    fault_contribution_maximum(i) = abs(obj.res_gen.evaluate(obj.values));
-                    
-                    if obj.debug
-                        fprintf('Maximum Residual Sensitivity: Solution found at:\n');
-                        for j=1:length(args)
-                            alias = obj.gi.getAliasById(obj.pso_input_ids(j));
-                            fprintf('%5s = %f;\n', alias{1}, args(j));
-                        end
-                        
-                        fprintf('with response: %g\n', fault_contribution_maximum(i));
-                        
-                        obj.values.setValue(obj.pso_input_ids, [], args);
-                        obj.res_gen.reset_state();
-                        obj.res_gen.evaluate(obj.values);
-                        %                     disp(obj.values);
-                        fprintf('Residual generator state: \n')
-                        disp(obj.res_gen.values);
-                        
-                        obj.values.setValue(obj.fault_ids, [], zeros(size(obj.fault_ids)));
-                        obj.res_gen.reset_state();
-                        fprintf('Residual consistency: %g\n', obj.res_gen.evaluate(obj.values));
-                        disp(obj.res_gen.values);
-                    end
-                end
-                
-                if obj.testMask(1,i)
-                    %% Calculate the minimum fault contributions
-                    
-                    obj.inner_problem_fault_values = nan;
-                    obj.best_minimum_response_cost = inf;
-                    
-                    % Pick one fault and build the input array
-                    fault_index = i;
-                    obj.fault_id_current = obj.fault_ids(fault_index);
-                    obj.pso_input_ids = [obj.input_ids obj.fault_id_current];
-                    
-                    % Build the input bounds
-                    limits = obj.gi.getLimits(obj.input_ids);
-                    lower_bounds = limits(:,1);
-                    upper_bounds = limits(:,2);
-                    
-                    if obj.plotCost
-                        PlotFcn = @pswplotbestf;
-                    else
-                        PlotFcn = [];
-                    end
-                    
-                    % Setup the problem for particleswarm
-                    if obj.debug
-                        display_type = 'iter';
-                    else
-                        display_type = 'off';
-                    end
-                    
-                    particleswarm_options = optimoptions('particleswarm',...
-                        'SwarmSize',30, ...
-                        'Display',display_type, ...
-                        'MaxIterations',200, ...
-                        'MaxStallIterations', 10, ...
-                        'OutputFcn', @obj.update_steps, ...
-                        'PlotFcn', PlotFcn ...
-                        );
-                    problem.solver = 'particleswarm';
-                    problem.objective = @obj.fitness_function_minimum;
-                    problem.nvars = length(obj.input_ids);
-                    problem.lb = lower_bounds;
-                    problem.ub = upper_bounds;
-                    problem.options = particleswarm_options;
-                    
-                    % Run the PSO
-                    [args, sensitivity] = particleswarm(problem);
-                    
-                    % Add the discovered fault value
-                    args = [args obj.inner_problem_fault_values];
-                    obj.values.setValue(obj.pso_input_ids, [], args);
-                    obj.res_gen.reset_state();  % Reset the state variables
-                    fault_contribution_minimum(i) = abs(obj.res_gen.evaluate(obj.values));
-                    
-                    if obj.debug
-                        fprintf('Minimum Residual Sensitivity: Solution found at:\n');
-                        for j=1:length(args)
-                            alias = obj.gi.getAliasById(obj.pso_input_ids(j));
-                            fprintf('%5s = %f;\n', alias{1}, args(j));
-                        end
-                        
-                        fprintf('with response: %g\n', fault_contribution_minimum(i));
-                        
-                        obj.values.setValue(obj.pso_input_ids, [], args);
-                        obj.res_gen.reset_state();
-                        obj.res_gen.evaluate(obj.values);
-                        %                     disp(obj.values);
-                        fprintf('Residual generator state: \n')
-                        disp(obj.res_gen.values);
-                        
-                        obj.values.setValue(obj.fault_ids, [], zeros(size(obj.fault_ids)));
-                        obj.res_gen.reset_state();
-                        fprintf('Residual consistency: %g\n', obj.res_gen.evaluate(obj.values));
-                        disp(obj.res_gen.values);
-                    end
-                    
-                    
-                    toc
-                    %                 pause();
-                end
-                
-                
-                fault_contribution = [fault_contribution_minimum; fault_contribution_maximum];
-                
-            end
-            
         end
         
     end

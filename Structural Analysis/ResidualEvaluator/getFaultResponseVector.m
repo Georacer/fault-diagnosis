@@ -18,51 +18,76 @@ end
 
 if nargin<3
     tests_to_run = [];
-end    
+end
 
 % Iterate over all residual generators
 for i=1:length(res_gen_cell)
     if isempty(res_gen_cell{i})
         continue;
+    end    
+
+    gi = res_gen_cell{i}.gi;
+    fault_ids_max = gi.getVarIdByProperty('isFault');
+    fault_ids_min = gi.getVarIdByProperty('isFault');
+    fault_min_response_vector = inf*ones(size(fault_ids_min));
+    fault_max_response_vector = zeros(size(fault_ids_max));
+    
+    testmask = tests_to_run{i};
+    
+    if isempty(testmask)    
+        testmask = ones(2,length(fault_ids_max));
+    end
+%     else
+%         fault_ids_min = fault_ids_max(tests_to_run{i}(1,:));
+%         fault_ids_max = fault_ids_max(tests_to_run{i}(2,:)); % Test only for specific faults
+%     end
+    
+    counter = 0;
+    for tf = testmask(2,:)
+        counter = counter + 1;
+        if ~tf
+            continue
+        end
+        pso_opt = ResidualResponse(res_gen_cell{i}, fault_ids_max(counter), 'timeDetection', 0.1);  
+        fault_max_response_vector(counter) = pso_opt.get_max_response();
     end
     
-%     % Find the affecting faults
-%     equ_ids = res_gen_cell{i}.equIdArray;
-%     var_ids = res_gen_cell{i}.gi.getVariables(equ_ids);
-%     fault_mask = res_gen_cell{i}.gi.isFault(var_ids);
-%     fault_ids = var_ids(fault_mask);
-    
-    if isempty(tests_to_run)    
-        testMask = [];  % Test for all faults
-    else
-        testMask = tests_to_run{i};  % Test only for specific faults
+    counter = 0;
+    for tf = testmask(1,:)
+        counter = counter + 1;
+        if ~tf
+            continue
+        end
+        pso_opt = ResidualResponse(res_gen_cell{i}, fault_ids_min(counter), 'timeDetection', 0.1);  
+        fault_min_response_vector(counter) = pso_opt.get_min_response();
     end
-    
-    pso_opt = ResidualSensitivity(res_gen_cell{i},'timeDetection',0.1, 'testMask', testMask);
-    fault_response_vector = pso_opt.get_residual_sensitivity();
-    
-    if isempty(testMask)
-        faultIndex = 1:length(fault_response_vector);
-    else
-        fautlIndex = find(any(testMask,1));
-    end
+%     pso_opt = ResidualSensitivity(res_gen_cell{i},'timeDetection',0.1, 'testMask', testMask);
+%     fault_response_vector = pso_opt.get_residual_sensitivity();
+%     
+%     if isempty(testMask)
+%         faultIndex = 1:length(fault_response_vector);
+%     else
+%         fautlIndex = find(any(testMask,1));
+%     end
     
     % Update results
     existing_fault_response_vector = fault_response_vector_set{i};
     if ~isempty(existing_fault_response_vector)
-        for j=faultIndex
-            current_min = fault_response_vector(1,j);
+        for j=1:length(fault_ids_min)
+            current_min = fault_min_response_vector(j);
             if existing_fault_response_vector(1,j) > current_min
                 existing_fault_response_vector(1,j) = current_min;
             end
-            current_max = fault_response_vector(2,j);
+        end
+        for j=1:length(fault_ids_max)
+            current_max = fault_max_response_vector(j);
             if existing_fault_response_vector(2,j) < current_max
                 existing_fault_response_vector(2,j) = current_max;
             end
-            fault_response_vector_set{i} = existing_fault_response_vector;
         end
+        fault_response_vector_set{i} = existing_fault_response_vector;
     else
-        fault_response_vector_set{i} = fault_response_vector;
+        fault_response_vector_set{i} = [fault_min_response_vector; fault_max_response_vector];
     end
     
     fprintf('Final Fault Response Vector:\n');
