@@ -73,6 +73,15 @@ for i=1:length(fault_ids)
 end
 s = '\n';  fprintf(fileID,s);
 
+% Initialize disturbances to 0
+s = '%%Disturbances Initializations\n'; fprintf(fileID,s);
+disturbance_ids = gi.getVarIdByProperty('isDisturbance');
+disturbance_aliases = gi.getAliasById(disturbance_ids);
+for i=1:length(disturbance_ids)
+    s = sprintf('dictionary.setValue(%d, {''%s''}, 0);\n', disturbance_ids(i), disturbance_aliases{i}); fprintf(fileID, s);
+end
+s = '\n';  fprintf(fileID,s);
+
 % Initialize states to 0
 s = '%%State Initializations\n'; fprintf(fileID,s);
 integral_edge_ids = gi.getEdgeIdByProperty('isIntegral');
