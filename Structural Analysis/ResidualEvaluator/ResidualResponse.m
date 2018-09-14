@@ -14,7 +14,7 @@ classdef ResidualResponse < handle
         var_ids
         pso_input_ids
         opt_variables
-        inner_problem_fault_values
+        inner_problem_optim_values
         best_minimum_response_cost
         step_counter = 0;
         timeDetection
@@ -71,10 +71,7 @@ classdef ResidualResponse < handle
             if ~all(ismember(obj.arg_ids, obj.res_gen.all_input_ids))
                 error('Not all passed argument IDs are input variables of the residual generator');
             end
-            if length(obj.arg_ids)>1 && strcmp(obj.inner_problem_method, 'fminbound')
-                error('fminbound cannot handle multi-variable optimization');
-            end
-            if ~all(obj.gi.isFault(obj.arg_ids) || obj.gi.isDisturbance(obj.arg_ids))
+            if ~all(obj.gi.isFault(obj.arg_ids) | obj.gi.isDisturbance(obj.arg_ids))
                 error('Currently only fault and disturbance optimization is supported')
             end
             
@@ -128,8 +125,6 @@ classdef ResidualResponse < handle
             
             % Set the exterior input variable values
             obj.values.setValue(obj.input_ids, [], input_values);
-            % Set the fault variable value
-            obj.values.setValue(obj.arg_ids, [], arg_values);
             
             obj.res_gen.reset_state();  % Reset the state variables %TODO: is this correct?
             cost_initial = obj.residual_evaluation_cost(obj.values);
@@ -222,7 +217,7 @@ classdef ResidualResponse < handle
                     'Display',display_type ...
                     );
                 problem.solver = 'fminbnd';
-                problem.objective = @(f) obj.fitness_function_minimum_inner(input_vec, f);
+                problem.objective = @(f) obj.fitness_function_minimum_inner(input_values, f);
                 problem.x1 = lower_bound;
                 problem.x2 = upper_bound;
                 problem.options = fminbnd_options;
@@ -236,9 +231,11 @@ classdef ResidualResponse < handle
             %%
             
             % Evaluate the residual response for the given state and the
-            % returned fault value
-            obj.values.setValue(obj.arg_ids, [], zeros(size(obj.arg_ids)));
-            cost_initial = abs(obj.res_gen.evaluate(obj.values));
+            % returned inner values
+%             obj.values.setValue(obj.input_ids, [], input_values);
+%             obj.values.setValue(obj.arg_ids, [], zeros(size(obj.arg_ids)));
+%             cost_initial = abs(obj.res_gen.evaluate(obj.values));
+            cost_initial = -inner_cost;
             if isinf(cost_initial)
                 error('Cost is not expected to be inf');
             end
@@ -249,7 +246,8 @@ classdef ResidualResponse < handle
             % If this particle has the best response, then store its fault
             % value
             if cost < obj.best_minimum_response_cost
-                obj.inner_problem_fault_values = fault_value;
+                obj.inner_problem_optim_values = optim_values;
+                obj.best_minimum_response_cost = cost;
             end
         end
         
@@ -363,17 +361,21 @@ classdef ResidualResponse < handle
         end
         
         function [ min_response ] = get_min_response(obj)           
-            % Calculate the minimum fault contributions
+            % Calculate the minimum fault contributions  
+            
+            if length(obj.arg_ids)>1 && strcmp(obj.inner_problem_method, 'fminbound')
+                error('fminbound cannot handle multi-variable optimization');
+            end
             
             obj.opt_variables = [obj.input_ids obj.arg_ids]; % The optimization parameters: system variables + fault/disturbance variables
             
             % Build the input bounds
-            limits = obj.gi.getLimits(obj.opt_variables);
+            limits = obj.gi.getLimits(obj.input_ids);
             lower_bounds = limits(:,1);
             upper_bounds = limits(:,2);
 
             % Values needed for the inner maximization
-            obj.inner_problem_fault_values = nan;
+            obj.inner_problem_optim_values = nan;
             obj.best_minimum_response_cost = inf;
 
             if obj.plotCost
@@ -408,8 +410,10 @@ classdef ResidualResponse < handle
             [input_optim_values, response] = particleswarm(problem);
 
             % Add the discovered fault value
-            optim_values = [input_optim_values obj.inner_problem_fault_values];
+            optim_values = [input_optim_values obj.inner_problem_optim_values];
             obj.values.setValue(obj.opt_variables, [], optim_values);
+            obj.values.setValue(obj.fault_ids, [], zeros(size(obj.fault_ids)));
+            obj.values.setValue(obj.disturbance_ids, [], zeros(size(obj.disturbance_ids)));
             obj.res_gen.reset_state();  % Reset the state variables
             min_response = abs(obj.res_gen.evaluate(obj.values));
 
@@ -425,7 +429,7 @@ classdef ResidualResponse < handle
                 fprintf('%5s = %f;\n', alias{1}, optim_values(j));
             end
 
-            fprintf('with response: %g\n', response);
+            fprintf('with response: %g\n\n', response);
 
             obj.values.setValue(obj.opt_variables, [], optim_values);
             obj.res_gen.reset_state();
@@ -436,8 +440,9 @@ classdef ResidualResponse < handle
             obj.values.setValue(obj.fault_ids, [], zeros(size(obj.fault_ids)));
             obj.values.setValue(obj.disturbance_ids, [], zeros(size(obj.disturbance_ids)));
             obj.res_gen.reset_state();
+            obj.res_gen.evaluate(obj.values);
             fprintf('Residual generator state: \n')
-            disp(obj.values);
+            disp(obj.res_gen.values);
         end
         
          % DELETEME
