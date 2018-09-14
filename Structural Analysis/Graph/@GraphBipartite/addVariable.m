@@ -13,6 +13,7 @@ tempVar.isResidual = varProps.isResidual;
 tempVar.isMatrix = varProps.isMatrix;
 tempVar.isFault = varProps.isFault;
 tempVar.isParameter = varProps.isParameter;
+tempVar.isDisturbance = varProps.isDisturbance;
 
 this.variables(end+1) = tempVar;
 

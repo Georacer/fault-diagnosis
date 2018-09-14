@@ -45,7 +45,8 @@ end
 s = '%%Input Initializations\n'; fprintf(fileID,s);
 input_ids = gi.getVarIdByProperty('isInput');
 fault_ids = gi.getVarIdByProperty('isFault');
-ids = setdiff(input_ids,fault_ids);  % Leave faults out, will be covered later.
+dist_ids = gi.getVarIdByProperty('isDisturbance');
+ids = setdiff(input_ids,[fault_ids dist_ids]);  % Leave faults out, will be covered later.
 if ~isempty(ids)
     aliases = gi.getAliasById(ids);
     for i=1:length(ids)
@@ -76,11 +77,13 @@ s = '\n';  fprintf(fileID,s);
 s = '%%State Initializations\n'; fprintf(fileID,s);
 integral_edge_ids = gi.getEdgeIdByProperty('isIntegral');
 state_ids = gi.getVariables(integral_edge_ids);
-state_aliases = gi.getAliasById(state_ids);
-for i=1:length(state_ids)
-    s = sprintf('dictionary.setValue(%d, {''%s''}, 0);\n', state_ids(i), state_aliases{i}); fprintf(fileID, s);
+if ~isempty(state_ids)
+    state_aliases = gi.getAliasById(state_ids);
+    for i=1:length(state_ids)
+        s = sprintf('dictionary.setValue(%d, {''%s''}, 0);\n', state_ids(i), state_aliases{i}); fprintf(fileID, s);
+    end
+    s = '\n';  fprintf(fileID,s);
 end
-s = '\n';  fprintf(fileID,s);
 
 % Create input variable limits setters
 s = '%%Input variable limits Initializations\n'; fprintf(fileID,s);
