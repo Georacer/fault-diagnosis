@@ -162,7 +162,7 @@ classdef BBILPChild < matlab.mixin.Copyable
                
             % Manual override, check if a matched equation has been marked for residual generator
             extra_offending_edges = obj.check_res_gens(obj.matching);
-            obj.offendingEdges = unique([offendingEdges extra_offending_edges]);
+            offendingEdges = unique([offendingEdges extra_offending_edges]);
             
             if isempty(offendingEdges)
                 resp = true;
