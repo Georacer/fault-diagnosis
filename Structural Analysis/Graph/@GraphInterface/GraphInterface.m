@@ -1384,6 +1384,20 @@ classdef GraphInterface < handle
                 resp(i) = gh.graph.variables(indices(i)).isFault;
             end
         end
+        function [ resp ] = isDisturbance( gh, ids )
+            %ISDISTURBANCE Decide if the variables are disturbances
+            if ~gh.isVariable(ids)
+                error('Only variables can be disturbances');
+            end
+            
+            indices = gh.getIndexById(ids);
+            
+            resp = zeros(size(indices));
+            
+            for i=1:length(resp)
+                resp(i) = gh.graph.variables(indices(i)).isDisturbance;
+            end
+        end                
         function [ resp ] = isFaultable( gh, ids )
             %ISMATCHED Summary of this function goes here
             %   Detailed explanation goes here
