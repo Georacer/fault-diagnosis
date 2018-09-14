@@ -140,6 +140,7 @@ for modelIndex=1:length(modelArray)
     interval_of_interest = [317:333]; % Select the sample interval you wish to investigate
     
     triggering_threshold = 0.97; % Specify a static threshold
+%     triggering_threshold = 0.975; % Specify a static threshold
     
     % Threshold the residual signals
     triggered_residuals = thresholdResiduals(RE_results, interval_of_interest, triggering_threshold);
@@ -170,7 +171,12 @@ for modelIndex=1:length(modelArray)
     end
     
     % Plot the Fault Occurrence Grid
-    plotFaultOccurence(SA_results, candidate_fault_ids, interval_of_interest-1);
+    fig_handle = plotFaultOccurence(SA_results, candidate_fault_ids, interval_of_interest-1);
+    
+    % Add fault event line
+    line(fig_handle.Children(1), 'XData', [322 322], 'YData', [0, 50], 'Color', 'red', 'LineStyle', '--'); 
+    text(322.5, 33, 'Failure Event', 'Color', 'red');
+    ylabel('Candidate Fault in Message ID/Field')
     
     if strcmp(opMode,'breaking')
         input('Press Enter to proceed to the next step...');
