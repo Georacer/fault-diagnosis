@@ -60,7 +60,7 @@ s = '%%Measurement Initializations\n'; fprintf(fileID,s);
 measurement_ids = gi.getVarIdByProperty('isMeasured');
 measured_aliases = gi.getAliasById(measurement_ids);
 for i=1:length(measurement_ids)
-    s = sprintf('dictionary.setValue(%d, {''%s''}, 0);\n', measurement_ids(i), measured_aliases{i}); fprintf(fileID, s);
+    s = sprintf('dictionary.setValue([], {''%s''}, 0);\n', measured_aliases{i}); fprintf(fileID, s);
 end
 s = '\n';  fprintf(fileID,s);
 
@@ -69,7 +69,7 @@ s = '%%Fault Initializations\n'; fprintf(fileID,s);
 fault_ids = gi.getVarIdByProperty('isFault');
 fault_aliases = gi.getAliasById(fault_ids);
 for i=1:length(fault_ids)
-    s = sprintf('dictionary.setValue(%d, {''%s''}, 0);\n', fault_ids(i), fault_aliases{i}); fprintf(fileID, s);
+    s = sprintf('dictionary.setValue([], {''%s''}, 0);\n', fault_aliases{i}); fprintf(fileID, s);
 end
 s = '\n';  fprintf(fileID,s);
 
@@ -78,7 +78,7 @@ s = '%%Disturbances Initializations\n'; fprintf(fileID,s);
 disturbance_ids = gi.getVarIdByProperty('isDisturbance');
 disturbance_aliases = gi.getAliasById(disturbance_ids);
 for i=1:length(disturbance_ids)
-    s = sprintf('dictionary.setValue(%d, {''%s''}, 0);\n', disturbance_ids(i), disturbance_aliases{i}); fprintf(fileID, s);
+    s = sprintf('dictionary.setValue([], {''%s''}, 0);\n', disturbance_aliases{i}); fprintf(fileID, s);
 end
 s = '\n';  fprintf(fileID,s);
 
@@ -89,7 +89,7 @@ state_ids = gi.getVariables(integral_edge_ids);
 if ~isempty(state_ids)
     state_aliases = gi.getAliasById(state_ids);
     for i=1:length(state_ids)
-        s = sprintf('dictionary.setValue(%d, {''%s''}, 0);\n', state_ids(i), state_aliases{i}); fprintf(fileID, s);
+        s = sprintf('dictionary.setValue([], {''%s''}, 0);\n', state_aliases{i}); fprintf(fileID, s);
     end
     s = '\n';  fprintf(fileID,s);
 end
