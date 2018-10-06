@@ -114,7 +114,7 @@ classdef ResidualResponse < handle
             cost = cost_initial + cost_penalty;
             
             if obj.plotSwarm
-                plotSwarm(obj.plotSwarmIds,cost_initial,'iter');
+                plotSwarm(obj.values.getValue(obj.plotSwarmIds),-cost,'iter');
             end
         end
         
@@ -172,7 +172,6 @@ classdef ResidualResponse < handle
             % Objective function for minimum fault impact PSO
             % input_vec: indexed vector with input variable values,
             % including the fault variable in question in the last element
-            obj.values.setValue(obj.arg_ids, [], arg_values);
             
             if obj.plotCost
                 PlotFcn = @pswplotbestf;
@@ -204,79 +203,20 @@ classdef ResidualResponse < handle
 
             % Run the PSO
             [input_optim_values, inner_cost] = particleswarm(problem);
-%%             
-%             %% Maximum fault response search using Particle Swarm
-%             if strcmp(obj.inner_problem_method, 'pso')
-%                 
-%                 % Setup the inner optimization problem
-%                 % Build the input bounds
-%                 limits = obj.gi.getLimits(obj.ard_ids);
-%                 lower_bounds = limits(:,1);
-%                 upper_bounds = limits(:,1);
-%                 % Setup the problem for particleswarm
-%                 display_type = 'off';
-%                 %             display_type = 'iter';
-%                 particleswarm_options = optimoptions('particleswarm',...
-%                     'SwarmSize', min(10*length(obj.arg_ids), 30), ...
-%                     'Display',display_type, ...
-%                     'MaxIterations',100, ...
-%                     'MaxStallIterations', 5 ...
-%                     );
-%                 problem.solver = 'particleswarm';
-%                 problem.objective = @(arg_values) obj.fitness_function_minimum_inner(input_values, arg_values);
-%                 problem.nvars = length(obj.arg_ids);
-%                 problem.lb = lower_bounds;
-%                 problem.ub = upper_bounds;
-%                 problem.options = particleswarm_options;
-%                 % Run the PSO to find the fault value which maximizes the fault
-%                 % impact
-%                 obj.res_gen.reset_state();  % Reset the state variables
-%                 [optim_values, inner_cost] = particleswarm(problem);
-%                 
-%                 %% Maximum fault response search using fminbound
-%             elseif strcmp(obj.inner_problem_method, 'fminbound')
-%                 
-%                 % Verify input
-%                 if length(obj.arg_ids)>1
-%                     error('fminbound cannot optimize more than 1 variable');
-%                 end
-%                 
-%                 % Build the input bounds
-%                 limits = obj.gi.getLimits(obj.arg_ids);
-%                 lower_bound = limits(1);
-%                 upper_bound = limits(2);
-%                 
-%                 display_type = 'off';
-%                 %             display_type = 'iter';
-%                 fminbnd_options = optimset(...
-%                     'Display',display_type ...
-%                     );
-%                 problem.solver = 'fminbnd';
-%                 problem.objective = @(f) obj.fitness_function_minimum_inner(input_values, f);
-%                 problem.x1 = lower_bound;
-%                 problem.x2 = upper_bound;
-%                 problem.options = fminbnd_options;
-%                 % Run the SINGLE-variable solver
-%                 [ optim_values, inner_cost] = fminbnd(problem);
-%                 
-%             else
-%                 error('Unsupported maximization method');
-%             end
-            
-            %%
             
             % Evaluate the residual response for the given state and the
             % returned inner values
-%             obj.values.setValue(obj.input_ids, [], input_values);
-%             obj.values.setValue(obj.arg_ids, [], zeros(size(obj.arg_ids)));
+%             obj.values.setValue(obj.arg_ids, [], arg_values);
+%             obj.values.setValue(obj.input_ids, [], input_optim_values);
 %             cost_initial = abs(obj.res_gen.evaluate(obj.values));
-            cost_initial = inner_cost;
+            cost_initial = -inner_cost;
             if isinf(cost_initial)
                 error('Cost is not expected to be inf');
             end
             
             cost_penalty = obj.constraint_cost([input_optim_values arg_values]);    % pso_input_vec has the fault at its last position
-            cost = cost_initial + cost_penalty;
+            cost = cost_initial + 100*cost_penalty;
+%             cost = cost_initial;
             
             % If this particle has the best response, then store its fault
             % value
@@ -368,7 +308,7 @@ classdef ResidualResponse < handle
                 plotSwarm([0 0],0,'init');
             end
             particleswarm_options = optimoptions('particleswarm',...
-                'SwarmSize',300, ...
+                'SwarmSize',60*length(obj.opt_variables), ...
                 'Display',display_type, ...
                 'MaxIterations',200, ...
                 'MaxStallIterations', 10, ...

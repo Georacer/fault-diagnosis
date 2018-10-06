@@ -1,5 +1,5 @@
 classdef ResidualSensitivity < handle
-    %RESIDUALSENSITIVITY Summary of this class goes here
+    %RESIDUALSENSITIVITY MARKED FOR DEPRECATION
     %   Detailed explanation goes here
     
     properties
@@ -34,6 +34,7 @@ classdef ResidualSensitivity < handle
             p = inputParser;
             
             p.addRequired('res_gen',@(x) isa(x, 'ResidualGenerator'));
+            p.addParameter('testType', 'fault', @(s) validatestring(s, {'fault', 'disturbance'}));
             p.addParameter('timeDetection', 0 ,@isnumeric);
             p.addParameter('deltat', 0.01 ,@isnumeric);
             p.addParameter('innerProblem', 'fminbound' ,@(s) validatestring(s, {'fminbound', 'pso'}));
@@ -47,6 +48,7 @@ classdef ResidualSensitivity < handle
             obj.res_gen = opts.res_gen;
             obj.gi = opts.res_gen.gi;
             
+            obj.testType = opts.testType;
             obj.timeDetection = opts.timeDetection;
             obj.dt = opts.deltat;
             obj.plotCost = opts.plotCost;
@@ -65,9 +67,11 @@ classdef ResidualSensitivity < handle
             % Separate the inputs from the faults
             fault_mask = obj.gi.isOfProperty(var_ids, 'isFault');
             input_mask = obj.gi.isOfProperty(var_ids, 'isInput');
+            disturbance_mask = obj.gi.isOfProperty(var_ids, 'isDisturbance');
             measured_mask = obj.gi.isOfProperty(var_ids, 'isMeasured');
             obj.fault_ids = var_ids(fault_mask);
-            obj.input_ids = var_ids( (input_mask | measured_mask) & ~fault_mask);
+            obj.disturbance_ids = var_ids(disturbance_mask);
+            obj.input_ids = var_ids( (input_mask | measured_mask) & ~fault_mask & ~disturbance_mask);
             
             if isempty(opts.testMask)
                 obj.testMask = ones(2,length(obj.fault_ids));
@@ -226,7 +230,7 @@ classdef ResidualSensitivity < handle
             [~, error_eq] = obj.constraints(input_vec);
             
             % Set q
-            q = max(0, abs(error_eq));
+            q = max(0, abs(error_eq)); %TODO unneeded?
             
             % Set theta
             if q < 0.001
@@ -294,7 +298,7 @@ classdef ResidualSensitivity < handle
                 if obj.testMask(2,i)
                     %% Calculate the maximum fault contributions
                     % Reset fault values
-                    obj.values.setValue(obj.fault_ids, [], zeros(size(obj.fault_ids)));
+                    obj.values.setValue(obj.fault_ids, [], zeros(size(obj.fault_ids))); %TODO: needed?
                     
                     % Pick one fault and build the input array
                     fault_index = i;
