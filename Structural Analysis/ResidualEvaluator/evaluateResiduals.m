@@ -13,6 +13,10 @@ values = RG_results.values; % Get the variables dictionary
 res_gen_cell = RG_results.res_gen_cell; % Get the residual generators set
 residuals = zeros(length(res_gen_cell), length(time_vector)); % Initialize the residuals array
 
+%% Zero-out disturbance variables
+dist_ids = gi.getVarIdByProperty('isDisturbance');
+values.setValue(dist_ids, [], zeros(size(dist_ids)));
+
 %% Build the variable ids and aliases
 
 var_aliases = setdiff(fieldnames(data),{'timestamp'});

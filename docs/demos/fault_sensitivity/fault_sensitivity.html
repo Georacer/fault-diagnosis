@@ -1,0 +1,396 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Estimating Fault Sensitivity &mdash; fault-diangosis 0.7 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="fault-diangosis 0.7 documentation" href="../../index.html"/>
+        <link rel="up" title="Demos" href="../index.html"/>
+        <link rel="next" title="Contributors" href="../../contributors.html"/>
+        <link rel="prev" title="Branch-and-Bound ILP Matching Calculation Cost" href="../bbilp_vs_exhaustive/bbilp_vs_exhaustive.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="../../index.html" class="icon icon-home"> fault-diangosis
+        
+
+        
+        </a>
+
+        
+          
+          
+            <div class="version">
+              0.7
+            </div>
+          
+        
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../model/index.html">Model Input</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../graph/index.html">Graph Representation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../graph_interface/index.html">The graph interface API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../display/index.html">Graph display</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../subgraph_generator/index.html">Subgraph Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../matcher/index.html">Graph matching methods</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Demos</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../basic_functionality/basic_functionality.html">Basic functionality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../matching_intro/matching_intro.html">Introduction to matching</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mavlink/mavlink.html">Residual Generation for a MAVLink UAV</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../bbilp_vs_exhaustive/bbilp_vs_exhaustive.html">Branch-and-Bound ILP Matching Calculation Cost</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Estimating Fault Sensitivity</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#case-study">Case Study</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#structural-analysis">Structural Analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#residual-implementation">Residual Implementation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fault-response-evaluation">Fault Response Evaluation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sanitizing-the-results">Sanitizing the Results</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#decoding-the-fault-response-vector">Decoding the Fault Response Vector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#application-on-real-flight-data">Application on Real Flight Data</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributors.html">Contributors</a></li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">fault-diangosis</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Demos</a> &raquo;</li>
+      
+    <li>Estimating Fault Sensitivity</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="estimating-fault-sensitivity">
+<span id="chap-fault-sensitivity"></span><h1>Estimating Fault Sensitivity<a class="headerlink" href="#estimating-fault-sensitivity" title="Permalink to this headline">¶</a></h1>
+<p>In linear systems, when a parity relation is found, and given a set of system inputs representing faults with known magnitude, it is easy to calculate the effect of said faults on the parity relation. This is commonly known as <em>Fault Sensitivity</em>.</p>
+<p>Equivalently, it is easy to find the magnitude of the fault response of the residual signal.
+And this needn’t be with a numerical procedure; A closed-form formula can be found which describes the residual response under the influence of the maximum fault.
+This response value is constant and can be subsequently used to select a threshold for the fault detection logic.</p>
+<p>However, in non-linear systems, there are two complications:</p>
+<p>Firstly, it is not always straightforward, or even possible to find a closed-form solution for the fault response level of a given parity relation, as it may involve piece-wise functions, non-linear algebraic equations systems or differential-algebraic equation systems.</p>
+<p>Secondly, in a non-linear system, the fault response level at maximum fault may not be constant, but instead dependent on some system variables. For example, a system variable multiplying the fault variable can “mute” the fault influence on the system. What is more, the maximum fault response of the residual may even not correspond to maximum fault magnitude. Stated differently, the sensitivity of the residual to the fault is variable.</p>
+<p>Consequenty, we realise that, for two different fault sources with the same worst-case value, the corresponding residual response level may be of different scale for each fault.</p>
+<p>For the above reasons, traditional approaches for fault response estimation do not work for general, non-linear systems.
+Instead, this toolbox utilizes numerical methods (specifically Particle Swarm Optimization) to estimate the response of a residual to faults.</p>
+<div class="section" id="case-study">
+<h2>Case Study<a class="headerlink" href="#case-study" title="Permalink to this headline">¶</a></h2>
+<p>As a running example for this demonstration, we shall use a submodel of a fixed-wing UAV, incorporating the lateral motion quantities of velocity, airspeed, roll angle, acceleration and angle of sideslip. This is implemented in model <code class="docutils literal notranslate"><span class="pre">g032b</span></code>, found in the graph pool of the toolbox.</p>
+<p>It corresponds to an actual system, the UnATRaP UAV, the aerial testbed of our laboratory.</p>
+<img alt="../../_images/unatrap.jpg" src="../../_images/unatrap.jpg" />
+<p>The UAV is equipped with an airdata boom, able to measure the angle of sideslip directly, and with an ArduPilot autopilot, which provides an estimate of the inertial and wind velocity.</p>
+<img alt="../../_images/airdata_boom.png" src="../../_images/airdata_boom.png" />
+<p>The corresponding demo script is <code class="docutils literal notranslate"><span class="pre">fault_response_demo.m</span></code>, which:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Builds the system model and finds the (unique) residual generator</li>
+<li>Implements the residual generator function using Matlab’s symbolic and numerical solver tools</li>
+<li>Uses Particle Swarm Optimization to estimate the response of the residual signal to the faults it covers</li>
+<li>Uses Particle Swarm Optimization to estimate the robustness thresholds of the residual (explained further down)</li>
+<li>Parses logged data from a real flight, where a angle of sideslip measurement fault occurred and compares estimated and actual residual responses</li>
+</ol>
+</div></blockquote>
+</div>
+<div class="section" id="structural-analysis">
+<h2>Structural Analysis<a class="headerlink" href="#structural-analysis" title="Permalink to this headline">¶</a></h2>
+<p>The system description can be found in the file <code class="docutils literal notranslate"><span class="pre">g032b</span></code>, which includes not only the structural information, but the actual equation expresssions, e.g.</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">...</span>
+<span class="p">{</span><span class="s">&#39;v v_r v_w expr -v+v_r+v_w&#39;</span><span class="p">};</span><span class="c">...</span>
+<span class="p">{</span><span class="s">&#39;Beta v_r Va expr -v_r+sin(Beta)*Va&#39;</span><span class="p">};</span><span class="c">...</span>
+</pre></div>
+</div>
+<p>These will later be used to implement the residual generator function.</p>
+<p>Four faults are considered for this system:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>fseq1: angle of sideslip measurement fault</li>
+<li>fseq2: airspeed measurement fault</li>
+<li>fseq3: roll angle measurement fault</li>
+<li>fseq4: pitch angle measurement fault</li>
+</ol>
+</div></blockquote>
+<p>Run the demo script <code class="docutils literal notranslate"><span class="pre">fault_response_demo.m</span></code>. It is set to breaking operation, halting after each section, allowing better introspection.
+The first part is structural analysis of the system. Once it is done, the system graph is constructed:</p>
+<img alt="../../_images/sideslip_system.png" src="../../_images/sideslip_system.png" />
+<p>and a valid matching is found, leading to a residual generator</p>
+<img alt="../../_images/sideslip_system_matched.png" src="../../_images/sideslip_system_matched.png" />
+<p>The white rectangle is the unmatched equation, the evaluation point of the residual signal.</p>
+</div>
+<div class="section" id="residual-implementation">
+<h2>Residual Implementation<a class="headerlink" href="#residual-implementation" title="Permalink to this headline">¶</a></h2>
+<p>The next section of the code is the implementation of the residual generator function. The toolbox parses the system equations, and solves them according to the partial ordering dictated by the matching. Analytical tools are used to perform solutions and substitutions. Where this is not possible, numerical tools are used.</p>
+<p>The order of evaluations is output:</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">Sequence</span> <span class="n">of</span> <span class="n">calculations</span> <span class="k">for</span> <span class="n">the</span> <span class="n">evaluation</span> <span class="n">of</span> <span class="n">the</span> <span class="n">residual</span><span class="p">:</span>
+<span class="n">Beta</span> <span class="p">:=</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">Beta_m</span> <span class="o">+</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">fseq1</span>
+<span class="n">Va</span> <span class="p">:=</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">Va_m</span> <span class="o">+</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">fseq2</span>
+<span class="n">v_w</span> <span class="p">:=</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">v_w_m</span>
+<span class="n">r</span> <span class="p">:=</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">r_m</span>
+<span class="n">u</span> <span class="p">:=</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">u_m</span>
+<span class="n">p</span> <span class="p">:=</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">p_m</span>
+<span class="n">w</span> <span class="p">:=</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">w_m</span>
+<span class="n">Phi</span> <span class="p">:=</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">Phi_m</span> <span class="o">-</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">fseq7</span>
+<span class="n">Theta</span> <span class="p">:=</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">Theta_m</span> <span class="o">-</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">fseq8</span>
+<span class="n">v_r</span> <span class="p">:=</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">Va</span><span class="o">*</span><span class="nb">sin</span><span class="p">(</span><span class="n">Beta</span><span class="p">)</span>
+<span class="n">Fy</span> <span class="p">:=</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">m</span><span class="o">*</span><span class="p">(</span><span class="n">a_m_y</span> <span class="o">+</span> <span class="n">g</span><span class="o">*</span><span class="nb">cos</span><span class="p">(</span><span class="n">Theta</span><span class="p">)</span><span class="o">*</span><span class="nb">sin</span><span class="p">(</span><span class="n">Phi</span><span class="p">))</span>
+<span class="n">v</span> <span class="p">:=</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">v_r</span> <span class="o">+</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">v_w</span>
+<span class="n">dot_v</span> <span class="p">:=</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">p</span><span class="o">*</span><span class="n">w</span> <span class="o">+</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">r</span><span class="o">*</span><span class="n">u</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">*</span><span class="n">Fy</span><span class="p">)</span><span class="o">/</span><span class="n">m</span>
+<span class="mi">0</span> <span class="p">:=</span> <span class="p">(</span><span class="n">residual</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="fault-response-evaluation">
+<h2>Fault Response Evaluation<a class="headerlink" href="#fault-response-evaluation" title="Permalink to this headline">¶</a></h2>
+<p>Next, Particle Swarm Optimization is used to estimate the maximum influence of each fault onto the residual signal. It is assumed that only one fault occurs at a time.</p>
+<p>The corresponding code is:</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">fault_response_vector_set</span> <span class="p">=</span> <span class="n">getFaultResponseVector</span><span class="p">(</span> <span class="n">RG_results</span><span class="p">.</span><span class="n">res_gen_cell</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[]</span> <span class="p">);</span> <span class="c">% Run all tests, with no pre-calculated fault response vector</span>
+</pre></div>
+</div>
+<p>As we discussed at the beginning of this demonstration, the operational domain of the system plays a role in the fault response levels. Thus, the optimization must be aware of the domain of the system variables (in this case, the flight envelope of the UAV).
+This is communicated with the script <code class="docutils literal notranslate"><span class="pre">makeDictionary_g032a.m</span></code>, found in the same folder as the system model.</p>
+<p>For example, the airspeed range is set from 20m/s to 35m/s with</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">graphInitial</span><span class="p">.</span><span class="n">setLimits</span><span class="p">([],</span> <span class="p">{</span><span class="s">&#39;Va_m&#39;</span><span class="p">},</span> <span class="p">[</span><span class="mi">20</span> <span class="mi">35</span><span class="p">]);</span>
+</pre></div>
+</div>
+<p>and the airspeed measurement fault is constrained to 5m/s:</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">graphInitial</span><span class="p">.</span><span class="n">setLimits</span><span class="p">([],</span> <span class="p">{</span><span class="s">&#39;fseq2&#39;</span><span class="p">},</span> <span class="p">[</span><span class="o">-</span><span class="mi">5</span> <span class="mi">5</span><span class="p">]);</span>
+</pre></div>
+</div>
+<p>This essentially sets the domain limits of the search of the Particle Swarm Optimization.</p>
+<p>The optimization may take several minutes to finish. A non-linear residual generator function needs to be evaluated over a multi-variable search space and for four different fault variables/sources.</p>
+<p>The final result is</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">Final</span> <span class="n">Fault</span> <span class="n">Response</span> <span class="n">Vector</span><span class="p">:</span>
+<span class="mf">264.0353</span>    <span class="mf">4.9024</span>    <span class="mf">0.3897</span>    <span class="mf">0.4598</span>
+<span class="mf">290.9532</span>   <span class="mf">35.3553</span>    <span class="mf">0.2901</span>    <span class="mf">0.0045</span>
+</pre></div>
+</div>
+<p>Let us go over what this array contains:</p>
+<p>Each column corresponds to one of the measurement fault sources, angle of sideslip, airspeed, roll and pitch angle.</p>
+<p>The lower row is the fault response of the residual <strong>maximized</strong> over the fault range and also <strong>maximized</strong> over the system variables range. This is the greatest fault response level that is expected to be reached for each of the fault sources.
+Placing a detection threshold level above this value does not make sense, as the residual signal is not expected to rise above that value.</p>
+<p>The upper row is the fault response of the residual <strong>maximized</strong> over the fault range but <strong>minimized</strong> over the system variables range. This value is the residual level corresponding to the worst-case fault, but also corresponding to the worst-case attenuation due to the system variables. This value is useful for assessing the worst-case performance of the diagnostic system.</p>
+<p>Theoretically, every value of the top row should be lower than the corresponding value of the bottom row; the worst-case fault response should be lower than the best-case fault response. However, there are a few reasons why this contradictory result may appear:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Local minima of the residual generator function have pulled the particles towards a non-optimal solution</li>
+<li>Fewer particles have been scattered in the search-space to reduce computational complexity, which led to a less-than-necessary coverage of the search-space</li>
+<li>In difficult optimization problems, the random nature of Particle Swarm Optimization cannot converge to the same, optimal result in every run</li>
+</ol>
+</div></blockquote>
+</div>
+<div class="section" id="sanitizing-the-results">
+<h2>Sanitizing the Results<a class="headerlink" href="#sanitizing-the-results" title="Permalink to this headline">¶</a></h2>
+<p>Obviously, this result is wrong. The optimization needs to be run again, until the minimum fault response is lower than the maximum fault response.</p>
+<p>The next section of the demo script is set to run the Particle Swarm Optimization once more:</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">fault_response_vector_set</span> <span class="p">=</span> <span class="n">getFaultResponseVector</span><span class="p">(</span> <span class="n">RG_results</span><span class="p">.</span><span class="n">res_gen_cell</span><span class="p">,</span> <span class="n">fault_response_vector_set</span><span class="p">,</span> <span class="p">[]</span> <span class="p">);</span> <span class="c">% Run all tests, with no pre-calculated fault response vector</span>
+</pre></div>
+</div>
+<p>This time, the previous fault response vector is passed onto the optimization routine. If a lower minimum / greater maximum response is found for any fault source, it will be used. If not, the old values will be preserved.</p>
+<p>The new result is:</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="mf">264.0353</span>    <span class="mf">4.9024</span>    <span class="mf">0.3897</span>    <span class="mf">0.0698</span>
+<span class="mf">335.3099</span>   <span class="mf">35.3553</span>    <span class="mf">0.7778</span>    <span class="mf">0.0519</span>
+</pre></div>
+</div>
+<p>Better limits were found for the minimum response of pitch angle measurement fault (4th column) and the maximum response of the angle of sideslip, roll angle and pitch angle measurement faults (1st, 3rd and 4th columns).</p>
+<p>However, the results of the 4th column are still incompatible. One more run of the optimization returns.</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="mf">194.5380</span>    <span class="mf">4.9024</span>    <span class="mf">0.3897</span>    <span class="mf">0.0412</span>
+<span class="mf">335.3099</span>   <span class="mf">35.3553</span>    <span class="mf">0.7943</span>    <span class="mf">0.1554</span>
+</pre></div>
+</div>
+<p>Lower bounds were found for the 1st and 4th column and a meaningful upper bound was finally found for the 4th column as well. This is a satisfactory result.</p>
+<p>It should be noted that the true lower/upper bound value could be analytically found for most systems, but with painful calculations and derivations. Instead, here, we introduced an approach suitable for treating large-scale systems, with many residual generators and many faults, and obtaining at least some first-pass results.</p>
+</div>
+<div class="section" id="decoding-the-fault-response-vector">
+<h2>Decoding the Fault Response Vector<a class="headerlink" href="#decoding-the-fault-response-vector" title="Permalink to this headline">¶</a></h2>
+<p>Let us take a closer look at the contents of the fault response vector of the single residual generator of this system.</p>
+<p>The first, most obvious observation is that the residual is an order of magnitude more sensitive to angle of sideslip measurement faults than airspeed measurement faults, and one more order of magnitude, compared to roll and pitch angle measurement faults.</p>
+<p>This raises the suspicion that the residual signal will be practically insensitive to the last two faults, due to the unavoidable signal noise that will manifest in the diagnostic system.
+Coversely, it is evident that this residual generator is most sensitive to angle of sideslip measurement faults.</p>
+<p>Additionally, for the second column, the lower bound response is about 7 times lower than the maximum response, which means that even for the maximum airspeed measurement fault, the residual response will vary this much over the whole flight envelope.</p>
+</div>
+<div class="section" id="application-on-real-flight-data">
+<h2>Application on Real Flight Data<a class="headerlink" href="#application-on-real-flight-data" title="Permalink to this headline">¶</a></h2>
+<p>During one of our test flights, it so happened that the wind vane of the angle of sideslip worked itself loose.</p>
+<img alt="../../_images/vane_detached.png" src="../../_images/vane_detached.png" />
+<p>Thanks to the redundant measurement sources of the autopilot system, we are able to measure the faulty measurement singal and also reconstruct an estimate of the true angle of sideslip.</p>
+<img alt="../../_images/fault_response_beta.png" src="../../_images/fault_response_beta.png" />
+<p>The airplane takes off at about t=1300, when the wind vane starts working and the estimated measurement error drops close to zero. Notice that the error is not exactly zero, due to various measurement noise sources.</p>
+<p>At t=2400 the plane lands. The absence of a wind stream allows the angle of sideslip sensor to sit at a random position and the error grows large.</p>
+<p>The airplane takes off again at t=2900 and the error drops once more, but at about t=3000 the wind vane breaks.
+The measurement error now deviates from zero significantly more.</p>
+<p>Note that the measured value of the angle of sideslip is frozen at a random value, but the actual quantity varies, so the error is not constant.</p>
+<p>The residual signal, as the output of a function which is fed with the system measurements ( r=g(u,y) ) can be seen below in blue, with the fault overlayed for temporal reference.</p>
+<img alt="../../_images/fault_response_residual.png" src="../../_images/fault_response_residual.png" />
+<p>The level of response of the actual, calculated residual is very close to the predicted value of 335. The reason it exceeds it is most likely due to the presence of other sources of error such as measurement noise which further build up the residual value.</p>
+<p>In green, the value of the theoretical value of the residual is plotted, as a function of system state and fault ( r=h(x,f) ). If the optimization procedure was successful in finding the true maximum of the residual reponse, this should match the resopnse level exactly, which is the case.</p>
+<p>As a final note, notice that even though the fault is non-zero around t=3050s and t=3500s, the residual response drops close to zero.
+This seems contradictory and in violation to the assumption of exoneration, but is actually constistent with the underlying theory.</p>
+<p>In close inspection, the residual value is dependent upon the fault and its derivative as well:</p>
+<img alt="../../_images/residual_expression.png" src="../../_images/residual_expression.png" />
+<p>This is also witnessed by the matched graph of the subsystem at the top of this document, which requires a differentiation of the variable <em>v</em>, which is subsequently subtracted from <em>dot_v</em>, with the residual as the remainder of this operation.</p>
+<p>As a result, the residual value is much more dependent on the error derivative than the error itself. These intervals where the residual drops significantly is when the error is significant, but its derivative less so.
+This is a topic which merits the attention of the diagnostic system designer when tackling dynamic residual generator functions.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../../contributors.html" class="btn btn-neutral float-right" title="Contributors" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../bbilp_vs_exhaustive/bbilp_vs_exhaustive.html" class="btn btn-neutral" title="Branch-and-Bound ILP Matching Calculation Cost" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>Except where otherwise noted, this documentation is licensed under <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC Attribution-Share Alike 3.0 Unported</a>.</p>
+
+<div style="float:right;"><a href="https://github.com/Georacer/mavlink-inspector/issues/new?title=Estimating%20Fault%20Sensitivity%20-%20&body=URL:%20../../demos/fault_sensitivity/fault_sensitivity%0ATitle:%20Estimating%20Fault%20Sensitivity%0A%0APlease%20update%20this%20description%20and%20the%20issue%20title">Page bug</a></div>
+
+    <p>
+
+    </p>
+  </div>
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.7',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

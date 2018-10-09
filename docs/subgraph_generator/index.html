@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Subgraph Generator &mdash; fault-diangosis 0.7 documentation</title>
+  <title>Subgraph Generator &mdash; fault-diangosis 0.8 documentation</title>
   
 
   
@@ -30,7 +30,8 @@
   
 
   
-    <link rel="top" title="fault-diangosis 0.7 documentation" href="../index.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="fault-diangosis 0.8 documentation" href="../index.html"/>
         <link rel="next" title="Graph matching methods" href="../matcher/index.html"/>
         <link rel="prev" title="Graph display" href="../display/index.html"/> 
 
@@ -59,7 +60,7 @@
           
           
             <div class="version">
-              0.7
+              0.8
             </div>
           
         
@@ -85,7 +86,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../graph/index.html">Graph Representation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../graph_interface/index.html">The graph interface API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../display/index.html">Graph display</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Subgraph Generator</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Subgraph Generator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../matcher/index.html">Graph matching methods</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../demos/index.html">Demos</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contributors.html">Contributors</a></li>
@@ -133,14 +134,14 @@
             
   <div class="section" id="subgraph-generator">
 <h1>Subgraph Generator<a class="headerlink" href="#subgraph-generator" title="Permalink to this headline">¶</a></h1>
-<p>There is often the need to keep only a part of an original structural graph, for further processing and investigation. The <code class="docutils literal"><span class="pre">SubgraphGenerator</span></code> class provides such functionality through the following methods:</p>
+<p>There is often the need to keep only a part of an original structural graph, for further processing and investigation. The <code class="docutils literal notranslate"><span class="pre">SubgraphGenerator</span></code> class provides such functionality through the following methods:</p>
 <blockquote>
 <div><ul class="simple">
-<li><code class="docutils literal"><span class="pre">setGraphInterface(gi)</span></code> - Set the <code class="docutils literal"><span class="pre">GraphInterface</span></code> object which the <code class="docutils literal"><span class="pre">SubgraphGenerator</span></code> should manipulate</li>
-<li><code class="docutils literal"><span class="pre">graphInterface</span> <span class="pre">=</span> <span class="pre">buildSubgraph(varargin)</span></code> - Get a <code class="docutils literal"><span class="pre">GraphInterface</span></code> object which contains only the provided equation and variable IDs.</li>
-<li><code class="docutils literal"><span class="pre">graphInterface</span> <span class="pre">=</span> <span class="pre">getOver()</span></code> - Return a <code class="docutils literal"><span class="pre">GraphInterface</span></code> object containing only the overdetermined part of the graph.</li>
-<li><code class="docutils literal"><span class="pre">buildLiUSM()</span></code> - Populate the <code class="docutils literal"><span class="pre">liUSM</span></code> member with a <code class="docutils literal"><span class="pre">DiagnosisModel</span></code> object from the <em>Fault Diagnosis Toolbox</em>.</li>
-<li><code class="docutils literal"><span class="pre">buildMSOs()</span></code>,``buildMTESs()`` - Request the <code class="docutils literal"><span class="pre">liUSM</span></code> member to build the sets of MSOs or MTESs respectively.</li>
+<li><code class="docutils literal notranslate"><span class="pre">setGraphInterface(gi)</span></code> - Set the <code class="docutils literal notranslate"><span class="pre">GraphInterface</span></code> object which the <code class="docutils literal notranslate"><span class="pre">SubgraphGenerator</span></code> should manipulate</li>
+<li><code class="docutils literal notranslate"><span class="pre">graphInterface</span> <span class="pre">=</span> <span class="pre">buildSubgraph(varargin)</span></code> - Get a <code class="docutils literal notranslate"><span class="pre">GraphInterface</span></code> object which contains only the provided equation and variable IDs.</li>
+<li><code class="docutils literal notranslate"><span class="pre">graphInterface</span> <span class="pre">=</span> <span class="pre">getOver()</span></code> - Return a <code class="docutils literal notranslate"><span class="pre">GraphInterface</span></code> object containing only the overdetermined part of the graph.</li>
+<li><code class="docutils literal notranslate"><span class="pre">buildLiUSM()</span></code> - Populate the <code class="docutils literal notranslate"><span class="pre">liUSM</span></code> member with a <code class="docutils literal notranslate"><span class="pre">DiagnosisModel</span></code> object from the <em>Fault Diagnosis Toolbox</em>.</li>
+<li><code class="docutils literal notranslate"><span class="pre">buildMSOs()</span></code>,``buildMTESs()`` - Request the <code class="docutils literal notranslate"><span class="pre">liUSM</span></code> member to build the sets of MSOs or MTESs respectively.</li>
 </ul>
 </div></blockquote>
 </div>
@@ -188,7 +189,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.7',
+            VERSION:'0.8',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
@@ -197,6 +198,7 @@
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

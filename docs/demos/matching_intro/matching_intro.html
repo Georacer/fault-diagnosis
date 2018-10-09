@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Introduction to matching &mdash; fault-diangosis 0.7 documentation</title>
+  <title>Introduction to matching &mdash; fault-diangosis 0.8 documentation</title>
   
 
   
@@ -30,7 +30,8 @@
   
 
   
-    <link rel="top" title="fault-diangosis 0.7 documentation" href="../../index.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="fault-diangosis 0.8 documentation" href="../../index.html"/>
         <link rel="up" title="Demos" href="../index.html"/>
         <link rel="next" title="Residual Generation for a MAVLink UAV" href="../mavlink/mavlink.html"/>
         <link rel="prev" title="Basic functionality" href="../basic_functionality/basic_functionality.html"/> 
@@ -60,7 +61,7 @@
           
           
             <div class="version">
-              0.7
+              0.8
             </div>
           
         
@@ -90,7 +91,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../matcher/index.html">Graph matching methods</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">Demos</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../basic_functionality/basic_functionality.html">Basic functionality</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">Introduction to matching</a><ul>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Introduction to matching</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#build-the-graph">Build the graph</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#match-with-weighted-elimination">Match with Weighted Elimination</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#match-with-bbilp">Match with BBILP</a></li>
@@ -98,7 +99,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../mavlink/mavlink.html">Residual Generation for a MAVLink UAV</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../bbilp_vs_exhaustive/bbilp_vs_exhaustive.html">Branch-and-Bound ILP Matching Calculation Cost</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../fault_response/fault_response.html">Estimating Fault Response</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fault_response/fault_response.html">Estimating Fault Sensitivity</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../contributors.html">Contributors</a></li>
@@ -151,32 +152,32 @@
 <p>In this demo, two ways of performing graph matchig will be presented.</p>
 <div class="section" id="build-the-graph">
 <h2>Build the graph<a class="headerlink" href="#build-the-graph" title="Permalink to this headline">¶</a></h2>
-<p>First, let&#8217;s build a <code class="docutils literal"><span class="pre">GraphInterface</span></code> object</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">model</span> <span class="p">=</span> <span class="n">g007</span><span class="p">();</span>
+<p>First, let’s build a <code class="docutils literal notranslate"><span class="pre">GraphInterface</span></code> object</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="p">=</span> <span class="n">g007</span><span class="p">();</span>
     <span class="n">initialGraph</span> <span class="p">=</span> <span class="n">GraphInterface</span><span class="p">();</span>
     <span class="n">initialGraph</span><span class="p">.</span><span class="n">readModel</span><span class="p">(</span><span class="n">model</span><span class="p">);</span>
     <span class="n">initialGraph</span><span class="p">.</span><span class="n">createAdjacency</span><span class="p">();</span>
 </pre></div>
 </div>
-<p>A plot of the original graph can be seen in <a class="reference internal" href="../basic_functionality/basic_functionality.html#basic-functionality"><span>Basic functionality</span></a>.</p>
+<p>A plot of the original graph can be seen in <a class="reference internal" href="../basic_functionality/basic_functionality.html#basic-functionality"><span class="std std-ref">Basic functionality</span></a>.</p>
 </div>
 <div class="section" id="match-with-weighted-elimination">
 <h2>Match with Weighted Elimination<a class="headerlink" href="#match-with-weighted-elimination" title="Permalink to this headline">¶</a></h2>
-<p>Let&#8217;s perform a matching using the <a class="reference internal" href="../../matcher/index.html#weighted-elimination"><span>Weighted Elimination</span></a> algorithm. It maintains the set of equations which have only one unknown, unmatched veriable and in each step it adds to the matching the cheapest calculation, until the set is depleted</p>
+<p>Let’s perform a matching using the <a class="reference internal" href="../../matcher/index.html#weighted-elimination"><span class="std std-ref">Weighted Elimination</span></a> algorithm. It maintains the set of equations which have only one unknown, unmatched veriable and in each step it adds to the matching the cheapest calculation, until the set is depleted</p>
 <p>First, create a copy of the initial graph</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">graphWE</span> <span class="p">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">initialGraph</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">graphWE</span> <span class="p">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">initialGraph</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>Then ,create a matcher object</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">matcher</span> <span class="p">=</span> <span class="n">Matcher</span><span class="p">(</span><span class="n">graphWE</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">matcher</span> <span class="p">=</span> <span class="n">Matcher</span><span class="p">(</span><span class="n">graphWE</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>Perform the matching</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">matching</span> <span class="p">=</span> <span class="n">matcher</span><span class="p">.</span><span class="n">match</span><span class="p">(</span><span class="s">&#39;WeightedElimination&#39;</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">matching</span> <span class="p">=</span> <span class="n">matcher</span><span class="p">.</span><span class="n">match</span><span class="p">(</span><span class="s">&#39;WeightedElimination&#39;</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>Plot the result.</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">plotter</span> <span class="p">=</span> <span class="n">Plotter</span><span class="p">(</span><span class="n">graphWE</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">plotter</span> <span class="p">=</span> <span class="n">Plotter</span><span class="p">(</span><span class="n">graphWE</span><span class="p">);</span>
 <span class="n">plotter</span><span class="p">.</span><span class="n">plotDot</span><span class="p">(</span><span class="s">&#39;matchedWE&#39;</span><span class="p">);</span>
 </pre></div>
 </div>
@@ -184,7 +185,7 @@
 <p>Notice how the known variables are now shown in blue. Also the matching procedure has specified a direction for the graph edges. The graph is now fully directed.
 Residual variables have been added onto the redundant constraints.</p>
 <p>Display the edges of the matching set and compare with plot</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="nb">disp</span><span class="p">(</span><span class="n">matching</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">disp</span><span class="p">(</span><span class="n">matching</span><span class="p">);</span>
 
 <span class="mi">73</span>    <span class="mi">77</span>    <span class="mi">81</span>    <span class="mi">51</span>    <span class="mi">60</span>    <span class="mi">30</span>    <span class="mi">63</span>    <span class="mi">34</span>    <span class="mi">11</span>    <span class="mi">23</span>    <span class="mi">39</span>    <span class="mi">54</span>    <span class="mi">20</span>    <span class="mi">45</span>
 </pre></div>
@@ -192,26 +193,26 @@ Residual variables have been added onto the redundant constraints.</p>
 </div>
 <div class="section" id="match-with-bbilp">
 <h2>Match with BBILP<a class="headerlink" href="#match-with-bbilp" title="Permalink to this headline">¶</a></h2>
-<p>Now let&#8217;s use the <a class="reference internal" href="../../matcher/index.html#bbilp"><span>BBILP</span></a> algorithm to generate matching sets.
+<p>Now let’s use the <a class="reference internal" href="../../matcher/index.html#bbilp"><span class="std std-ref">BBILP</span></a> algorithm to generate matching sets.
 In order to have fault isolation capabilities, it is beneficial to create as many matching sets, each providing a different fault signature.
 To that goal, we will generate as many PSO sets as possible and match them using BBILP.
 BBILP generates the cheapest valid matching for the given PSO.</p>
 <p>Once again, copy the original graph</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">graphBBILP</span> <span class="p">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">initialGraph</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">graphBBILP</span> <span class="p">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">initialGraph</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>Now, create a <code class="docutils literal"><span class="pre">SubgraphGenerator</span></code> object, which has the funcitonality to create the multiple PSOs.</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">SG</span> <span class="p">=</span> <span class="n">SubgraphGenerator</span><span class="p">(</span><span class="n">graphBBILP</span><span class="p">);</span>
+<p>Now, create a <code class="docutils literal notranslate"><span class="pre">SubgraphGenerator</span></code> object, which has the funcitonality to create the multiple PSOs.</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">SG</span> <span class="p">=</span> <span class="n">SubgraphGenerator</span><span class="p">(</span><span class="n">graphBBILP</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>It uses the <cite>Fault Diagnosis Toolbox</cite> to generate the PSO set: namely the set of MTESs. For this example, there are 10 MTESs.</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">SG</span><span class="p">.</span><span class="n">buildLiUSM</span><span class="p">();</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">SG</span><span class="p">.</span><span class="n">buildLiUSM</span><span class="p">();</span>
 <span class="n">SG</span><span class="p">.</span><span class="n">buildMTESs</span><span class="p">();</span>
 <span class="n">PSOSet</span> <span class="p">=</span> <span class="n">SG</span><span class="p">.</span><span class="n">getMTESs</span><span class="p">();</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal"><span class="pre">SubgraphGenerator</span></code> will read each MTES and create a subgraph with only those equations, pruning any known variables.</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">PSOSubgraphs</span> <span class="p">=</span> <span class="n">GraphInterface</span><span class="p">.</span><span class="n">empty</span><span class="p">;</span>
+<p>The <code class="docutils literal notranslate"><span class="pre">SubgraphGenerator</span></code> will read each MTES and create a subgraph with only those equations, pruning any known variables.</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">PSOSubgraphs</span> <span class="p">=</span> <span class="n">GraphInterface</span><span class="p">.</span><span class="n">empty</span><span class="p">;</span>
 <span class="n">h</span> <span class="p">=</span> <span class="n">waitbar</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s">&#39;Building MTES Subgraphs&#39;</span><span class="p">);</span>
 <span class="k">for</span> <span class="nb">i</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="nb">length</span><span class="p">(</span><span class="n">PSOSet</span><span class="p">)</span>
     <span class="n">waitbar</span><span class="p">(</span><span class="nb">i</span><span class="o">/</span><span class="nb">length</span><span class="p">(</span><span class="n">PSOSet</span><span class="p">),</span><span class="n">h</span><span class="p">);</span>
@@ -221,8 +222,8 @@ BBILP generates the cheapest valid matching for the given PSO.</p>
 <span class="n">close</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>A <code class="docutils literal"><span class="pre">Matcher</span></code> object for each subgraph is created to handle the matching procedure.</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">matchers</span> <span class="p">=</span> <span class="n">Matcher</span><span class="p">.</span><span class="n">empty</span><span class="p">;</span>
+<p>A <code class="docutils literal notranslate"><span class="pre">Matcher</span></code> object for each subgraph is created to handle the matching procedure.</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">matchers</span> <span class="p">=</span> <span class="n">Matcher</span><span class="p">.</span><span class="n">empty</span><span class="p">;</span>
 <span class="n">h</span> <span class="p">=</span> <span class="n">waitbar</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s">&#39;Examining PSOs&#39;</span><span class="p">);</span>
 <span class="k">for</span> <span class="nb">i</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="nb">length</span><span class="p">(</span><span class="n">PSOSubgraphs</span><span class="p">)</span>
     <span class="n">fprintf</span><span class="p">(</span><span class="s">&#39;\n&#39;</span><span class="p">);</span>
@@ -236,14 +237,14 @@ BBILP generates the cheapest valid matching for the given PSO.</p>
 </pre></div>
 </div>
 <p>The resulting matchings sets can be printed with the following commands.</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">fprintf</span><span class="p">(</span><span class="s">&#39;\nResulting valid matchings:\n&#39;</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">fprintf</span><span class="p">(</span><span class="s">&#39;\nResulting valid matchings:\n&#39;</span><span class="p">);</span>
 <span class="k">for</span> <span class="nb">i</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="nb">length</span><span class="p">(</span><span class="n">matchers</span><span class="p">)</span>
     <span class="nb">disp</span><span class="p">(</span><span class="n">matchers</span><span class="p">(</span><span class="nb">i</span><span class="p">).</span><span class="n">matchingSet</span><span class="p">);</span>
 <span class="k">end</span>
 </pre></div>
 </div>
 <p>Let us examine two specific matchings. First the edge set</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="mi">3</span>    <span class="mi">26</span>    <span class="mi">34</span>    <span class="mi">57</span>    <span class="mi">63</span>    <span class="mi">73</span>    <span class="mi">77</span>    <span class="mi">81</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="mi">3</span>    <span class="mi">26</span>    <span class="mi">34</span>    <span class="mi">57</span>    <span class="mi">63</span>    <span class="mi">73</span>    <span class="mi">77</span>    <span class="mi">81</span>
 </pre></div>
 </div>
 <p>Giving the directed subgraph</p>
@@ -261,9 +262,9 @@ BBILP generates the cheapest valid matching for the given PSO.</p>
 <li>ceq1 -&gt; dot_x1</li>
 </ol>
 </div></blockquote>
-<p>Forming a residual with equation <code class="docutils literal"><span class="pre">deq1</span></code>. Direct, single-equation evaluations were required for the generaiton of this residual.</p>
+<p>Forming a residual with equation <code class="docutils literal notranslate"><span class="pre">deq1</span></code>. Direct, single-equation evaluations were required for the generaiton of this residual.</p>
 <p>Another matching set is</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="mi">3</span>    <span class="mi">23</span>    <span class="mi">39</span>    <span class="mi">56</span>    <span class="mi">65</span>    <span class="mi">73</span>    <span class="mi">77</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="mi">3</span>    <span class="mi">23</span>    <span class="mi">39</span>    <span class="mi">56</span>    <span class="mi">65</span>    <span class="mi">73</span>    <span class="mi">77</span>
 </pre></div>
 </div>
 <img alt="../../_images/ex7.png" src="../../_images/ex7.png" />
@@ -277,7 +278,7 @@ BBILP generates the cheapest valid matching for the given PSO.</p>
 <li>ceq1 -&gt; dot_x1</li>
 </ol>
 </div></blockquote>
-<p>Again, forming a residual generator at <code class="docutils literal"><span class="pre">deq1</span></code>. However, this time there exist Strongly Connected Components in the resulting directed graph. Namely, the evaluations 3 and 4 require an ODE solver to obtain the values of <code class="docutils literal"><span class="pre">x6</span></code> and <code class="docutils literal"><span class="pre">x3</span></code>.</p>
+<p>Again, forming a residual generator at <code class="docutils literal notranslate"><span class="pre">deq1</span></code>. However, this time there exist Strongly Connected Components in the resulting directed graph. Namely, the evaluations 3 and 4 require an ODE solver to obtain the values of <code class="docutils literal notranslate"><span class="pre">x6</span></code> and <code class="docutils literal notranslate"><span class="pre">x3</span></code>.</p>
 <p>Whether such a residual generator can be implemented in a diagnostic system is the decision of the designer.</p>
 </div>
 </div>
@@ -325,7 +326,7 @@ BBILP generates the cheapest valid matching for the given PSO.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.7',
+            VERSION:'0.8',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
@@ -334,6 +335,7 @@ BBILP generates the cheapest valid matching for the given PSO.</p>
       <script type="text/javascript" src="../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

@@ -3,6 +3,7 @@
 % This script involves
 % * Generation of the Structural Model
 % * Automated generation of the residual generator
+% * Estimation of robust residual thresholds
 % * Estimation of the Fault Response Magnitude
 % * Evaluation of the residual and comparison with theoretical value
 
@@ -14,10 +15,10 @@ clc
 
 % Select the mode of operation
 opMode = 'breaking';
+% opMode = 'continuous';
 
 % Select the airplane Angle-of-Sideslip Sensor and kinematic model
-modelArray = {};
-modelArray{end+1} = g032a();
+model = g032b();
 
 % Specify the graph matching method
 matchMethod = 'BBILP';
@@ -27,6 +28,8 @@ SOType = 'MTES';
 
 % Specify the Brand & Bound ILP branching method
 branchMethod = 'DFS';
+
+%% Perform Structural Analsysis and Matching, extract residual generators
 
 % Build the options structure
 SA_settings.matchMethod = matchMethod;
@@ -39,10 +42,6 @@ SA_settings.plotGraphDisconnected = true;
 SA_settings.plotGraphPSO = true;
 SA_settings.plotGraphMatched = true;
 
-%% Read the model description and create the initial graph
-model = modelArray{1};
-
-%% Perform Structural Analsysis and Matching, extract residual generators
 SA_results = structural_analysis(model, SA_settings);
 
 if strcmp(opMode,'breaking')
@@ -90,16 +89,45 @@ if strcmp(opMode,'breaking')
     clc
 end
 
-%% Run again if you want to run more optimization iterations
-% Watch how further Particle Swarm Optimization iterations may yield better min/max results. The previous result is fed back to
-% compare min/max results
+% return
 
-fault_response_vector_set = getFaultResponseVector( RG_results.res_gen_cell, fault_response_vector_set, [] ); % Run all tests, with no pre-calculated fault response vector
+%% OPTIONAL: Run again if you want to run more optimization iterations
+% % Watch how further Particle Swarm Optimization iterations may yield better min/max results. The previous result is fed back to
+% % compare min/max results
+% % 
+% % tests_to_run{1} = [0 0 0 1;...
+% %                    0 0 0 0];
+% % 
+% % fault_response_vector_set = getFaultResponseVector( RG_results.res_gen_cell, fault_response_vector_set, tests_to_run ); % Run all tests, with pre-calculated fault response vector
+% % 
+% % if strcmp(opMode,'breaking')
+% %     input('\nPress Enter to proceed to the next step...');
+% %     clc
+% % end
+% % return
 
-if strcmp(opMode,'breaking')
-    input('\nPress Enter to proceed to the next step...');
-    clc
-end
+%% Calculate robustness of each residual generator
+fprintf('Calculating robustness thresholds:\n');
+
+gi = RG_results.res_gen_cell{1}.gi;
+disturbance_ids = gi.getVarIdByProperty('isDisturbance');
+plotSwarmIds = gi.getVarIdByAlias({'Va_m', 'Beta_m'});
+pso_opt = ResidualResponse(RG_results.res_gen_cell{1}, disturbance_ids, 'plotCost', true, 'plotSwarm', false, 'plotSwarmIds', plotSwarmIds);  
+robust_threshold = pso_opt.get_max_response();
+
+% return
+
+%% OPTIONAL: Calculate sensitivity PLUS robustness of a residual generator
+% fprintf('Calculating robustness thresholds:\n');
+% 
+% gi = RG_results.res_gen_cell{1}.gi;
+% disturbance_ids = gi.getVarIdByProperty('isDisturbance');
+% fault_id = gi.getVarIdByAlias('fseq1');
+% plotSwarmIds = gi.getVarIdByAlias({'Va_m', 'Beta_m'});
+% pso_opt = ResidualResponse(RG_results.res_gen_cell{1}, [disturbance_ids, fault_id], 'plotCost', false, 'plotSwarm', true, 'plotSwarmIds', plotSwarmIds);  
+% robust_threshold = pso_opt.get_max_response();
+% 
+% return
 
 %% Example using actual log data
 % Showing expected, simulated and measured residual response to the previously examined residual generator:
@@ -196,6 +224,8 @@ datalog.Theta_m = Theta_D;
 datalog.a_m_y = ay_D;
 datalog.v_w_m = vw_D;
 
+% return
+
 %% Calculate the residual
 
 % Evaluate the residual generator automatically
@@ -221,11 +251,18 @@ figure();
 entries = {};
 hold on
 grid on
+% Mark Estimated Maximum Fault Domain
+rectangle('Position',[1000 248.7 3000 (368.8-248.7)], 'FaceColor', [0.8 0.8 0.0], 'LineStyle', '--')
+% Mark Estimated Robustness interval
+rectangle('Position',[1000 0 3000 29.18], 'FaceColor', [0.5 0.5 0.8], 'LineStyle', '--')
 plot(timeVec, abs(res_auto),'b');
 entries{end+1} = 'Residual';
 plot(timeVec, abs(res_est),'g');
 entries{end+1} = 'Expected Residual';
 plot(timeVec, 100*abs(f1),'r');
+text(1500, 385, 'S^+_\beta')
+text(1500, 270, 'S^-_\beta')
+text(1500, 50, 'S^+_d')
 xlabel 'time (s)';
 entries{end+1} = 'Fault magnitude *100';
 title('Residuals and error');

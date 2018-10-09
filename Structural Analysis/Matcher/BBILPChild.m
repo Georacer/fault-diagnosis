@@ -147,9 +147,8 @@ classdef BBILPChild < matlab.mixin.Copyable
             
             validator = Validator(graphDir, graphTypes, obj.numVars, obj.numEqs);
             offendingEdges = validator.isValid();
-            if isempty(offendingEdges)
-                resp = true;
-            else
+            
+            if ~isempty(offendingEdges)
                 equIndices = offendingEdges(:,1);
                 varIndices = offendingEdges(:,2);
                 equIds = obj.equIdArray(equIndices);
@@ -158,9 +157,31 @@ classdef BBILPChild < matlab.mixin.Copyable
                 for i=1:length(edgeIds)
                     edgeIds(i) = obj.gi.getEdgeIdByVertices(equIds(i),varIds(i));
                 end
-                obj.offendingEdges = edgeIds;
+                offendingEdges = edgeIds;
+            end
+               
+            % Manual override, check if a matched equation has been marked for residual generator
+            extra_offending_edges = obj.check_res_gens(obj.matching);
+            offendingEdges = unique([offendingEdges extra_offending_edges]);
+            
+            if isempty(offendingEdges)
+                resp = true;
+            else
+                obj.offendingEdges = offendingEdges;
                 resp = false;
             end
+            
+        end
+        
+        function edgeIds = check_res_gens(obj, matching)
+           % Check if a matched equation had been marked as residual generator to force a matching
+           edgeIds = [];
+           for edge_id = matching
+               equ_id = obj.gi.getEquations(edge_id);
+               if obj.gi.isOfProperty(equ_id, 'isResGenerator')
+                   edgeIds(end+1) = edge_id;
+               end
+           end
         end
         
         function edgeIds = getOffendingEdges(obj)

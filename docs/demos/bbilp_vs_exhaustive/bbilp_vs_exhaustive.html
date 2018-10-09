@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Branch-and-Bound ILP Matching Calculation Cost &mdash; fault-diangosis 0.7 documentation</title>
+  <title>Branch-and-Bound ILP Matching Calculation Cost &mdash; fault-diangosis 0.8 documentation</title>
   
 
   
@@ -30,9 +30,10 @@
   
 
   
-    <link rel="top" title="fault-diangosis 0.7 documentation" href="../../index.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="fault-diangosis 0.8 documentation" href="../../index.html"/>
         <link rel="up" title="Demos" href="../index.html"/>
-        <link rel="next" title="Estimating Fault Response" href="../fault_response/fault_response.html"/>
+        <link rel="next" title="Estimating Fault Sensitivity" href="../fault_response/fault_response.html"/>
         <link rel="prev" title="Residual Generation for a MAVLink UAV" href="../mavlink/mavlink.html"/> 
 
   
@@ -60,7 +61,7 @@
           
           
             <div class="version">
-              0.7
+              0.8
             </div>
           
         
@@ -92,12 +93,12 @@
 <li class="toctree-l2"><a class="reference internal" href="../basic_functionality/basic_functionality.html">Basic functionality</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../matching_intro/matching_intro.html">Introduction to matching</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../mavlink/mavlink.html">Residual Generation for a MAVLink UAV</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">Branch-and-Bound ILP Matching Calculation Cost</a><ul>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Branch-and-Bound ILP Matching Calculation Cost</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#running-the-test-script">Running the Test Script</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#calculation-cost-results">Calculation Cost Results</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../fault_response/fault_response.html">Estimating Fault Response</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fault_response/fault_response.html">Estimating Fault Sensitivity</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../contributors.html">Contributors</a></li>
@@ -154,7 +155,7 @@
 <p>However, the most significant advantage of the B&amp;B approach is that, starting from an initial matching, all edges which violate the validity of that matching form a branching set, which can divide the search space into multiple sections.
 By following this search tree (either with DFS, BFS or other strategy) one can reach the optimal (i.e. cheapest) valid matching in usually less time than what is achievable through exhaustive enumeration of all the possible matchings.</p>
 <p>While this BBILP approach has the same worst-case complexity with exhaustive enumeration, this is rarely the case, as we will see further on.</p>
-<p>This demonstration uses the demo script <code class="docutils literal"><span class="pre">BBILP_demo</span></code>, which:</p>
+<p>This demonstration uses the demo script <code class="docutils literal notranslate"><span class="pre">BBILP_demo</span></code>, which:</p>
 <blockquote>
 <div><ol class="arabic simple">
 <li>Sets up a set of benchmark models, taken from the literature</li>
@@ -165,9 +166,9 @@ By following this search tree (either with DFS, BFS or other strategy) one can r
 </div></blockquote>
 <div class="section" id="running-the-test-script">
 <h2>Running the Test Script<a class="headerlink" href="#running-the-test-script" title="Permalink to this headline">¶</a></h2>
-<p>Simply execute the <code class="docutils literal"><span class="pre">BBILP_demo.m</span></code> script, located in the <code class="docutils literal"><span class="pre">Demos</span></code> folder. It will take about 3 minutes to finish, depending on your machine.</p>
-<p>Before discussing the results, let&#8217;s go over some key areas of the script:</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="c">% Select the models to test</span>
+<p>Simply execute the <code class="docutils literal notranslate"><span class="pre">BBILP_demo.m</span></code> script, located in the <code class="docutils literal notranslate"><span class="pre">Demos</span></code> folder. It will take about 3 minutes to finish, depending on your machine.</p>
+<p>Before discussing the results, let’s go over some key areas of the script:</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">% Select the models to test</span>
 <span class="n">modelArray</span><span class="p">{</span><span class="k">end</span><span class="o">+</span><span class="mi">1</span><span class="p">}</span> <span class="p">=</span> <span class="n">g008</span><span class="p">();</span>
 <span class="n">modelArray</span><span class="p">{</span><span class="k">end</span><span class="o">+</span><span class="mi">1</span><span class="p">}</span> <span class="p">=</span> <span class="n">g021</span><span class="p">();</span>
 <span class="n">modelArray</span><span class="p">{</span><span class="k">end</span><span class="o">+</span><span class="mi">1</span><span class="p">}</span> <span class="p">=</span> <span class="n">g022</span><span class="p">();</span>
@@ -177,8 +178,8 @@ By following this search tree (either with DFS, BFS or other strategy) one can r
 <span class="n">modelArray</span><span class="p">{</span><span class="k">end</span><span class="o">+</span><span class="mi">1</span><span class="p">}</span> <span class="p">=</span> <span class="n">g026</span><span class="p">();</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal"><span class="pre">modelArray</span></code> cell holds the system models to be examined for residual generators. Each one comes from a relevant publication in the literature. For more information for each one, open the corresponding model function and look up the reference to the corresponding publication.</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="c">% Define the matching method set to test</span>
+<p>The <code class="docutils literal notranslate"><span class="pre">modelArray</span></code> cell holds the system models to be examined for residual generators. Each one comes from a relevant publication in the literature. For more information for each one, open the corresponding model function and look up the reference to the corresponding publication.</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">% Define the matching method set to test</span>
 <span class="n">matchMethodSet</span> <span class="p">=</span> <span class="p">{</span><span class="s">&#39;BBILP&#39;</span><span class="p">,</span> <span class="s">&#39;Exhaustive&#39;</span><span class="p">};</span>
 
 <span class="c">% Define the Structurally Overdetermined set of graphs to examine</span>
@@ -189,12 +190,12 @@ By following this search tree (either with DFS, BFS or other strategy) one can r
 </pre></div>
 </div>
 <p>The settings for the benchmark test are set up: Two different matchhing methods are specified for examination, and two different PSO types are defined for use. In total, each system model will be executed 4 times, to acquire data for all combinations. The branching method, which refers to the BBILP algorithm, is set to Depth-First Search, but does not significanlty affect the results.</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="c">%% Perform Structural Analsysis and Matching, extract residual generators</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">%% Perform Structural Analsysis and Matching, extract residual generators</span>
 <span class="n">SA_results</span> <span class="p">=</span> <span class="n">structural_analysis</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">SA_settings</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>This is the core functionality of the script, which performs the structural analysis on each provided model, with the various analysis options.</p>
-<p>The structural analysis results for each case-study are lumped and save in a .mat file, available for future processing. In this case the files <code class="docutils literal"><span class="pre">BBILP_DFS_MSO.mat</span></code>, <code class="docutils literal"><span class="pre">BBILP_DFS_MTES.mat</span></code>, <code class="docutils literal"><span class="pre">Exhaustive_DFS_MSO.mat</span></code> and <a href="#id1"><span class="problematic" id="id2">``</span></a>Exhaustive_DFS_MTES.mat``s are created.</p>
+<p>The structural analysis results for each case-study are lumped and save in a .mat file, available for future processing. In this case the files <code class="docutils literal notranslate"><span class="pre">BBILP_DFS_MSO.mat</span></code>, <code class="docutils literal notranslate"><span class="pre">BBILP_DFS_MTES.mat</span></code>, <code class="docutils literal notranslate"><span class="pre">Exhaustive_DFS_MSO.mat</span></code> and <code class="docutils literal notranslate"><span class="pre">Exhaustive_DFS_MTES.mat</span></code> are created.</p>
 </div>
 <div class="section" id="calculation-cost-results">
 <h2>Calculation Cost Results<a class="headerlink" href="#calculation-cost-results" title="Permalink to this headline">¶</a></h2>
@@ -214,7 +215,7 @@ Keep in mind that these benchmark models are quite small, with some tens of equa
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../fault_response/fault_response.html" class="btn btn-neutral float-right" title="Estimating Fault Response" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="../fault_response/fault_response.html" class="btn btn-neutral float-right" title="Estimating Fault Sensitivity" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="../mavlink/mavlink.html" class="btn btn-neutral" title="Residual Generation for a MAVLink UAV" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
@@ -250,7 +251,7 @@ Keep in mind that these benchmark models are quite small, with some tens of equa
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.7',
+            VERSION:'0.8',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
@@ -259,6 +260,7 @@ Keep in mind that these benchmark models are quite small, with some tens of equa
       <script type="text/javascript" src="../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
