@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Basic functionality &mdash; fault-diangosis 0.7 documentation</title>
+  <title>Basic functionality &mdash; fault-diangosis 0.8 documentation</title>
   
 
   
@@ -30,7 +30,8 @@
   
 
   
-    <link rel="top" title="fault-diangosis 0.7 documentation" href="../../index.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="fault-diangosis 0.8 documentation" href="../../index.html"/>
         <link rel="up" title="Demos" href="../index.html"/>
         <link rel="next" title="Introduction to matching" href="../matching_intro/matching_intro.html"/>
         <link rel="prev" title="Demos" href="../index.html"/> 
@@ -60,7 +61,7 @@
           
           
             <div class="version">
-              0.7
+              0.8
             </div>
           
         
@@ -89,7 +90,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../subgraph_generator/index.html">Subgraph Generator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../matcher/index.html">Graph matching methods</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">Demos</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="">Basic functionality</a><ul>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Basic functionality</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#create-and-examine-a-graph">Create and examine a graph</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#graph-elements-discovery">Graph elements discovery</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#discover-elements-by-property">Discover elements by property</a></li>
@@ -98,7 +99,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../matching_intro/matching_intro.html">Introduction to matching</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../mavlink/mavlink.html">Residual Generation for a MAVLink UAV</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../bbilp_vs_exhaustive/bbilp_vs_exhaustive.html">Branch-and-Bound ILP Matching Calculation Cost</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../fault_response/fault_response.html">Estimating Fault Response</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fault_response/fault_response.html">Estimating Fault Sensitivity</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../contributors.html">Contributors</a></li>
@@ -152,23 +153,23 @@
 <div class="section" id="create-and-examine-a-graph">
 <h2>Create and examine a graph<a class="headerlink" href="#create-and-examine-a-graph" title="Permalink to this headline">¶</a></h2>
 <p>First, load a structural system model</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">model</span> <span class="p">=</span> <span class="n">g007</span><span class="p">();</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="p">=</span> <span class="n">g007</span><span class="p">();</span>
 </pre></div>
 </div>
 <p>Create a new GraphInterface object to host the graph</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">initialGraph</span> <span class="p">=</span> <span class="n">GraphInterface</span><span class="p">();</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">initialGraph</span> <span class="p">=</span> <span class="n">GraphInterface</span><span class="p">();</span>
 </pre></div>
 </div>
 <p>Then, read the model</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">initialGraph</span><span class="p">.</span><span class="n">readModel</span><span class="p">(</span><span class="n">model</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">initialGraph</span><span class="p">.</span><span class="n">readModel</span><span class="p">(</span><span class="n">model</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>Build the adjacency matrices</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">initialGraph</span><span class="p">.</span><span class="n">createAdjacency</span><span class="p">();</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">initialGraph</span><span class="p">.</span><span class="n">createAdjacency</span><span class="p">();</span>
 </pre></div>
 </div>
 <p>The initial graph has a GraphBipartite, a Registry and an Adjacency member</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="nb">disp</span><span class="p">(</span><span class="n">initialGraph</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">disp</span><span class="p">(</span><span class="n">initialGraph</span><span class="p">);</span>
 
 <span class="n">GraphInterface</span> <span class="n">with</span> <span class="k">properties</span><span class="p">:</span>
 
@@ -181,7 +182,7 @@
 </pre></div>
 </div>
 <p>The graph member contains all of the graph element arrays</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="nb">disp</span><span class="p">(</span><span class="n">initialGraph</span><span class="p">.</span><span class="n">graph</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">disp</span><span class="p">(</span><span class="n">initialGraph</span><span class="p">.</span><span class="n">graph</span><span class="p">);</span>
 
 <span class="n">GraphBipartite</span> <span class="n">with</span> <span class="k">properties</span><span class="p">:</span>
 
@@ -197,7 +198,7 @@
 </pre></div>
 </div>
 <p>The adjacency member contains the bidirectional, the equation-to-veriable and variable-to-equation adjacency matrices</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="nb">disp</span><span class="p">(</span><span class="n">initialGraph</span><span class="p">.</span><span class="n">adjacency</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="nb">disp</span><span class="p">(</span><span class="n">initialGraph</span><span class="p">.</span><span class="n">adjacency</span><span class="p">);</span>
 
 <span class="n">Adjacency</span> <span class="n">with</span> <span class="k">properties</span><span class="p">:</span>
 
@@ -214,11 +215,11 @@
 </pre></div>
 </div>
 <p>Create a new plotter object</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">plotter</span> <span class="p">=</span> <span class="n">Plotter</span><span class="p">(</span><span class="n">initialGraph</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">plotter</span> <span class="p">=</span> <span class="n">Plotter</span><span class="p">(</span><span class="n">initialGraph</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>Create a dot graph and compile it</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">plotter</span><span class="p">.</span><span class="n">plotDot</span><span class="p">(</span><span class="s">&#39;initial&#39;</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">plotter</span><span class="p">.</span><span class="n">plotDot</span><span class="p">(</span><span class="s">&#39;initial&#39;</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>The output .ps image is in the g008 folder.
@@ -229,7 +230,7 @@ This is the resulting image. Open it in a new tab to view it in full resolution.
 <div class="section" id="graph-elements-discovery">
 <h2>Graph elements discovery<a class="headerlink" href="#graph-elements-discovery" title="Permalink to this headline">¶</a></h2>
 <p>Get the IDs of all the variables in the graph</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">variableIdArray</span> <span class="p">=</span> <span class="n">initialGraph</span><span class="p">.</span><span class="n">getVariables</span><span class="p">()</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">variableIdArray</span> <span class="p">=</span> <span class="n">initialGraph</span><span class="p">.</span><span class="n">getVariables</span><span class="p">()</span>
 
 <span class="n">variableIdArray</span> <span class="p">=</span>
 
@@ -237,7 +238,7 @@ This is the resulting image. Open it in a new tab to view it in full resolution.
 </pre></div>
 </div>
 <p>Get the names of all the variables</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">variableNames</span> <span class="p">=</span> <span class="n">initialGraph</span><span class="p">.</span><span class="n">getAliasById</span><span class="p">(</span><span class="n">variableIdArray</span><span class="p">)</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">variableNames</span> <span class="p">=</span> <span class="n">initialGraph</span><span class="p">.</span><span class="n">getAliasById</span><span class="p">(</span><span class="n">variableIdArray</span><span class="p">)</span>
 
 <span class="n">variableNames</span> <span class="p">=</span>
 
@@ -251,7 +252,7 @@ This is the resulting image. Open it in a new tab to view it in full resolution.
 </pre></div>
 </div>
 <p>Get the equations which use the first variable</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">equ1</span> <span class="p">=</span> <span class="n">initialGraph</span><span class="p">.</span><span class="n">getEquations</span><span class="p">(</span><span class="n">variableIdArray</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">equ1</span> <span class="p">=</span> <span class="n">initialGraph</span><span class="p">.</span><span class="n">getEquations</span><span class="p">(</span><span class="n">variableIdArray</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
 
 <span class="n">equ1</span> <span class="p">=</span>
 
@@ -259,7 +260,7 @@ This is the resulting image. Open it in a new tab to view it in full resolution.
 </pre></div>
 </div>
 <p>Get the edge between the first variable and the first equation</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">edge1</span> <span class="p">=</span> <span class="n">initialGraph</span><span class="p">.</span><span class="n">getEdgeIdByVertices</span><span class="p">(</span><span class="n">equ1</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="n">variableIdArray</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">edge1</span> <span class="p">=</span> <span class="n">initialGraph</span><span class="p">.</span><span class="n">getEdgeIdByVertices</span><span class="p">(</span><span class="n">equ1</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="n">variableIdArray</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
 
 <span class="n">edge1</span> <span class="p">=</span>
 
@@ -270,7 +271,7 @@ This is the resulting image. Open it in a new tab to view it in full resolution.
 <div class="section" id="discover-elements-by-property">
 <h2>Discover elements by property<a class="headerlink" href="#discover-elements-by-property" title="Permalink to this headline">¶</a></h2>
 <p>Find all of the known variables</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">knownVars</span> <span class="p">=</span> <span class="n">initialGraph</span><span class="p">.</span><span class="n">getVariablesKnown</span><span class="p">;</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">knownVars</span> <span class="p">=</span> <span class="n">initialGraph</span><span class="p">.</span><span class="n">getVariablesKnown</span><span class="p">;</span>
 <span class="n">initialGraph</span><span class="p">.</span><span class="n">getAliasById</span><span class="p">(</span><span class="n">knownVars</span><span class="p">)</span>
 
 <span class="nb">ans</span> <span class="p">=</span>
@@ -279,7 +280,7 @@ This is the resulting image. Open it in a new tab to view it in full resolution.
 </pre></div>
 </div>
 <p>Find all of the inputs</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">inputVars</span> <span class="p">=</span> <span class="n">initialGraph</span><span class="p">.</span><span class="n">getVarIdByProperty</span><span class="p">(</span><span class="s">&#39;isInput&#39;</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">inputVars</span> <span class="p">=</span> <span class="n">initialGraph</span><span class="p">.</span><span class="n">getVarIdByProperty</span><span class="p">(</span><span class="s">&#39;isInput&#39;</span><span class="p">);</span>
 <span class="n">initialGraph</span><span class="p">.</span><span class="n">getAliasById</span><span class="p">(</span><span class="n">inputVars</span><span class="p">)</span>
 
 <span class="nb">ans</span> <span class="p">=</span>
@@ -333,7 +334,7 @@ This is the resulting image. Open it in a new tab to view it in full resolution.
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.7',
+            VERSION:'0.8',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
@@ -342,6 +343,7 @@ This is the resulting image. Open it in a new tab to view it in full resolution.
       <script type="text/javascript" src="../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

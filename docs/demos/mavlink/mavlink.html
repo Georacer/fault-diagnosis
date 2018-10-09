@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Residual Generation for a MAVLink UAV &mdash; fault-diangosis 0.7 documentation</title>
+  <title>Residual Generation for a MAVLink UAV &mdash; fault-diangosis 0.8 documentation</title>
   
 
   
@@ -30,7 +30,8 @@
   
 
   
-    <link rel="top" title="fault-diangosis 0.7 documentation" href="../../index.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="fault-diangosis 0.8 documentation" href="../../index.html"/>
         <link rel="up" title="Demos" href="../index.html"/>
         <link rel="next" title="Branch-and-Bound ILP Matching Calculation Cost" href="../bbilp_vs_exhaustive/bbilp_vs_exhaustive.html"/>
         <link rel="prev" title="Introduction to matching" href="../matching_intro/matching_intro.html"/> 
@@ -60,7 +61,7 @@
           
           
             <div class="version">
-              0.7
+              0.8
             </div>
           
         
@@ -91,7 +92,7 @@
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">Demos</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../basic_functionality/basic_functionality.html">Basic functionality</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../matching_intro/matching_intro.html">Introduction to matching</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">Residual Generation for a MAVLink UAV</a><ul>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Residual Generation for a MAVLink UAV</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#generation-of-the-structural-model">Generation of the Structural Model</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#extraction-of-psos-for-maximum-fault-isolation">Extraction of PSOs for maximum fault isolation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#finding-valid-matchings-for-each-subgraph">Finding valid matchings for each subgraph</a></li>
@@ -100,7 +101,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../bbilp_vs_exhaustive/bbilp_vs_exhaustive.html">Branch-and-Bound ILP Matching Calculation Cost</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../fault_response/fault_response.html">Estimating Fault Response</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fault_response/fault_response.html">Estimating Fault Sensitivity</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../contributors.html">Contributors</a></li>
@@ -166,9 +167,9 @@
 <p>The MAVLink protocol is a standardized message format for use in unmanned vehicles. It is mostly intented for aerial vehicles, but is not limited to them.
 Its robust description allows for a fixed interface between such a vehcile and a generic FDI module.</p>
 <p>Let us construct a structural graph which reflects a MAVLink-enabled fixed-wing UAV.
-The corresponding model in the <code class="docutils literal"><span class="pre">GraphPool</span></code> folder is <code class="docutils literal"><span class="pre">g033</span></code>.</p>
+The corresponding model in the <code class="docutils literal notranslate"><span class="pre">GraphPool</span></code> folder is <code class="docutils literal notranslate"><span class="pre">g033</span></code>.</p>
 <p>At the core of the model are the measurement equations:</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">msr</span> <span class="p">=</span> <span class="p">[</span><span class="c">...</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">msr</span> <span class="p">=</span> <span class="p">[</span><span class="c">...</span>
   <span class="c">% 0, HEARTBEAT</span>
   <span class="c">% 1, SYS_STATUS</span>
      <span class="p">{</span><span class="s">&#39;fault msr load_sys_status load sub autopilot expr -load_sys_status/10+load&#39;</span><span class="p">};</span><span class="c">...</span>
@@ -185,7 +186,7 @@ The corresponding model in the <code class="docutils literal"><span class="pre">
 </div>
 <p>Each MAVLink message ID is stated. However, messages which convey state information (e.g. ID=0:Heartbeat) cannot be handled by our Parity-Space-based approach and are ommited. The same holds for event-triggered messages (e.g. any mission-related message).</p>
 <p>The rest of the measurements are assigned a fault each and their analytical expressions are provided. Additionally, each measurement equation is assigned to a subsystem, for later classification.</p>
-<p>If only the information conveyed through MAVLink was used, then only hardware redundancy cross-checking would be possible. Instead, we add a set of equations which hold for all fixed-wing UAVs and act as the &#8220;glue&#8221; among the measurements.</p>
+<p>If only the information conveyed through MAVLink was used, then only hardware redundancy cross-checking would be possible. Instead, we add a set of equations which hold for all fixed-wing UAVs and act as the “glue” among the measurements.</p>
 <p>These equations can act as:</p>
 <blockquote>
 <div><ul class="simple">
@@ -194,8 +195,8 @@ The corresponding model in the <code class="docutils literal"><span class="pre">
 <li>Implicit equalities</li>
 </ul>
 </div></blockquote>
-<p>Naturally, since these equations are meant to be portable from UAV to UAV, they shouldn&#8217;t need any airframe-specific parameters.</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="c">% First-principles equations</span>
+<p>Naturally, since these equations are meant to be portable from UAV to UAV, they shouldn’t need any airframe-specific parameters.</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">% First-principles equations</span>
     <span class="n">kin</span> <span class="p">=</span> <span class="p">[</span><span class="c">...</span>
     <span class="p">{</span><span class="s">&#39;climb v_d expr -climb-v_d&#39;</span><span class="p">};</span><span class="c">...</span>
     <span class="p">{</span><span class="s">&#39;v_ground ni v_n ni v_e expr -v_ground+sqrt(v_n^2+v_e^2)&#39;</span><span class="p">};</span><span class="c">...</span>
@@ -227,22 +228,22 @@ The corresponding model in the <code class="docutils literal"><span class="pre">
 </div>
 <div class="section" id="extraction-of-psos-for-maximum-fault-isolation">
 <h2>Extraction of PSOs for maximum fault isolation<a class="headerlink" href="#extraction-of-psos-for-maximum-fault-isolation" title="Permalink to this headline">¶</a></h2>
-<p>The <code class="docutils literal"><span class="pre">structural_analysis()</span></code> routine bears the majority of the Structural Analysis work. After instantiating the initial structural graph object, it finds its overconstrained part, to limit the scope of the ensuing analysis.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">structural_analysis()</span></code> routine bears the majority of the Structural Analysis work. After instantiating the initial structural graph object, it finds its overconstrained part, to limit the scope of the ensuing analysis.</p>
 <p>The next important step is to break down the structural graph into its Weakly Connected Components (WCCs). If such a partitioning exists, it can greatly accelerate the analysis.
 Indicatively, the initial MAVLink model is of large size and also has a large structural redundancy degree of 59. It potentially could contain up to 9.4x10e21 residual generators, a number which is intractable.</p>
 <p>Instead, the initial model can be broken down to 34 subgraphs, which can yield up to 7952 residual generators, a much more amenable number.</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">graphs_conn</span> <span class="p">=</span> <span class="n">getDisconnected</span><span class="p">(</span><span class="n">graphRemaining</span><span class="p">);</span>  <span class="c">% Get the Weakly Connected Components</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">graphs_conn</span> <span class="p">=</span> <span class="n">getDisconnected</span><span class="p">(</span><span class="n">graphRemaining</span><span class="p">);</span>  <span class="c">% Get the Weakly Connected Components</span>
 </pre></div>
 </div>
 <p>A typical structural subgraph looks like</p>
 <img alt="../../_images/wcc_2.png" src="../../_images/wcc_2.png" />
 <p>The MTES <a class="footnote-reference" href="#krysander" id="id1">[1]</a> algorithm is used to extract all the minimum structurally overdetermined sets of equations.</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">sg</span><span class="p">.</span><span class="n">buildMTESs</span><span class="p">();</span> <span class="c">% Use the LiUSM algorithm to find the MTESs</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">sg</span><span class="p">.</span><span class="n">buildMTESs</span><span class="p">();</span> <span class="c">% Use the LiUSM algorithm to find the MTESs</span>
 <span class="n">ResGenSets</span> <span class="p">=</span> <span class="n">sg</span><span class="p">.</span><span class="n">getMTESs</span><span class="p">();</span> <span class="c">% Get the equations sets corresponding to the MTESs</span>
 </pre></div>
 </div>
 <p>Then, a new structural graph is generated for each MTES, in order to be examined separately.</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">SOSubgraphs</span><span class="p">(</span><span class="nb">i</span><span class="p">)</span> <span class="p">=</span> <span class="n">sg</span><span class="p">.</span><span class="n">buildSubgraph</span><span class="p">(</span><span class="n">ResGenSets</span><span class="p">{</span><span class="nb">i</span><span class="p">},</span> <span class="s">&#39;pruneKnown&#39;</span><span class="p">,</span> <span class="n">true</span><span class="p">,</span> <span class="s">&#39;postfix&#39;</span><span class="p">,</span> <span class="n">postfix</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">SOSubgraphs</span><span class="p">(</span><span class="nb">i</span><span class="p">)</span> <span class="p">=</span> <span class="n">sg</span><span class="p">.</span><span class="n">buildSubgraph</span><span class="p">(</span><span class="n">ResGenSets</span><span class="p">{</span><span class="nb">i</span><span class="p">},</span> <span class="s">&#39;pruneKnown&#39;</span><span class="p">,</span> <span class="n">true</span><span class="p">,</span> <span class="s">&#39;postfix&#39;</span><span class="p">,</span> <span class="n">postfix</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>One of the PSOs extracted from the previous subgraph is</p>
@@ -254,7 +255,7 @@ Indicatively, the initial MAVLink model is of large size and also has a large st
 <p>Next, a matching procedure is applied to each Proper Structurally Overconstrained subgraph (PSO). The goal is to take advantage of the graph-based encoding of each PSO and employ graph-based methods to discover a matching which represents a valid sequence of calculations leading to the evaluation of a residual generator.</p>
 <p>Older matching algorithms, such as the Ranking Matching <a class="footnote-reference" href="#blanke" id="id2">[2]</a> and the efficient Hungarian algorithm and its derivatives <a class="footnote-reference" href="#hopcroft" id="id3">[3]</a>, are not a suitable option for this task. They have multiple deficiencies, such as the inability to cope with calculation loops or ensuring the realisability <a class="footnote-reference" href="#flaugergues" id="id4">[4]</a> of the resulting matching.</p>
 <p>For the above reasons, we employ our own <strong>Branch and Bound Integer Linear Programming (BBILP)</strong> matching algorithm.</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="p">[</span><span class="c">...]</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="c">...]</span>
 <span class="nb">disp</span><span class="p">(</span><span class="s">&#39;Examining another SO graph&#39;</span><span class="p">)</span>
 <span class="n">tempGI</span> <span class="p">=</span> <span class="n">SOSubgraphs</span><span class="p">(</span><span class="n">index</span><span class="p">);</span>
 <span class="n">matchers</span><span class="p">(</span><span class="nb">i</span><span class="p">)</span> <span class="p">=</span> <span class="n">Matcher</span><span class="p">(</span><span class="n">tempGI</span><span class="p">);</span> <span class="c">% Instantiate the matcher for this SO</span>
@@ -275,12 +276,12 @@ Indicatively, the initial MAVLink model is of large size and also has a large st
 <h2>Implementation of every residual generator<a class="headerlink" href="#implementation-of-every-residual-generator" title="Permalink to this headline">¶</a></h2>
 <p>We can now proceed with implementing each structural residual generator and obtain a numerical function, able to process measured data.</p>
 <p>The analytical expression of each equation was passed during the construction of the model and stored alongside the equation. Now, the Symbolic Toolbox of MATLAB is employed to solve each equation for the specified variable (according to the matching) and use the rest of the equations as arguments.</p>
-<p>The function <code class="docutils literal"><span class="pre">get_res_gens</span></code> is responsible for this task:</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">RG_results</span> <span class="p">=</span> <span class="n">get_res_gens</span><span class="p">(</span><span class="n">SA_results</span><span class="p">,</span> <span class="n">RG_settings</span><span class="p">);</span>
+<p>The function <code class="docutils literal notranslate"><span class="pre">get_res_gens</span></code> is responsible for this task:</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">RG_results</span> <span class="p">=</span> <span class="n">get_res_gens</span><span class="p">(</span><span class="n">SA_results</span><span class="p">,</span> <span class="n">RG_settings</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>The edges of the matching are converted to a fully-ordered evaluation list, through knowledge propagation from inputs to the residual generator equation.</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="c">%% Propagate knowledge from inputs to outputs</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">%% Propagate knowledge from inputs to outputs</span>
 
 <span class="n">knownVarIds</span> <span class="p">=</span> <span class="p">[];</span>
 <span class="n">unusedIndices</span> <span class="p">=</span> <span class="mi">1</span><span class="p">:</span><span class="nb">length</span><span class="p">(</span><span class="n">SCCsEquIds</span><span class="p">);</span> <span class="c">% Indices to the equations SCCs cell array</span>
@@ -316,20 +317,20 @@ Indicatively, the initial MAVLink model is of large size and also has a large st
 </pre></div>
 </div>
 <p><strong>NOTE:</strong> Any Strongly Connected Components (SCCs) existing in the matched subgraph will break the propagation process. Thus, during propagation they are compacted into single equation-variable pairs to allow the process to continue. Later, they each will be treated as a unified equation system during the implementation process, anyway.</p>
-<p>Each equation is turned into an <code class="docutils literal"><span class="pre">Evaluator</span></code> object</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">obj</span><span class="p">.</span><span class="n">evaluators_list</span> <span class="p">=</span> <span class="n">create_evaluators</span><span class="p">(</span><span class="n">graphInitial</span><span class="p">,</span> <span class="n">matched_graph</span><span class="p">,</span> <span class="n">SCCs</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">obj</span><span class="p">.</span><span class="n">dt</span><span class="p">);</span>
+<p>Each equation is turned into an <code class="docutils literal notranslate"><span class="pre">Evaluator</span></code> object</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">obj</span><span class="p">.</span><span class="n">evaluators_list</span> <span class="p">=</span> <span class="n">create_evaluators</span><span class="p">(</span><span class="n">graphInitial</span><span class="p">,</span> <span class="n">matched_graph</span><span class="p">,</span> <span class="n">SCCs</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">obj</span><span class="p">.</span><span class="n">dt</span><span class="p">);</span>
 <span class="p">[</span><span class="c">...]</span>
 <span class="n">new_evaluator</span> <span class="p">=</span> <span class="n">Evaluator</span><span class="p">(</span><span class="n">gi</span><span class="p">,</span> <span class="n">sub_digraph</span><span class="p">,</span> <span class="n">scc</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>which may be inherited by</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">new_evaluator</span> <span class="p">=</span> <span class="n">Differentiator</span><span class="p">(</span><span class="n">gi</span><span class="p">,</span> <span class="n">sub_digraph</span><span class="p">,</span> <span class="n">scc</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">,</span> <span class="n">dt</span><span class="p">);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">new_evaluator</span> <span class="p">=</span> <span class="n">Differentiator</span><span class="p">(</span><span class="n">gi</span><span class="p">,</span> <span class="n">sub_digraph</span><span class="p">,</span> <span class="n">scc</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">,</span> <span class="n">dt</span><span class="p">);</span>
 <span class="n">new_evaluator</span> <span class="p">=</span> <span class="n">DAESolver</span><span class="p">(</span><span class="n">gi</span><span class="p">,</span> <span class="n">sub_digraph</span><span class="p">,</span> <span class="n">scc</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">,</span> <span class="n">dt</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>depending on the nature of each equation; whether it is a single equation, an explicit integration/differentiation or an SCC representing a Differential-Algebraic Equation set (DAE).</p>
 <p>The equation is solved symbolically once during setup and a numerical function is created. In this manner each subsequent evaluation (e.g. during log parsing) will be as fast as possible.</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">obj</span><span class="p">.</span><span class="n">expressions_solved</span> <span class="p">=</span> <span class="n">vpasolve</span><span class="p">(</span><span class="n">obj</span><span class="p">.</span><span class="n">expressions</span><span class="p">,</span> <span class="n">obj</span><span class="p">.</span><span class="n">sym_var_matched_array</span><span class="p">);</span> <span class="c">% Store the pre-solved expressions</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">obj</span><span class="p">.</span><span class="n">expressions_solved</span> <span class="p">=</span> <span class="n">vpasolve</span><span class="p">(</span><span class="n">obj</span><span class="p">.</span><span class="n">expressions</span><span class="p">,</span> <span class="n">obj</span><span class="p">.</span><span class="n">sym_var_matched_array</span><span class="p">);</span> <span class="c">% Store the pre-solved expressions</span>
 <span class="p">[</span><span class="c">...]</span>
 <span class="n">obj</span><span class="p">.</span><span class="n">expressions_solved_handle</span> <span class="p">=</span> <span class="n">matlabFunction</span><span class="p">(</span><span class="n">obj</span><span class="p">.</span><span class="n">expressions_solved</span><span class="p">,</span> <span class="s">&#39;Vars&#39;</span><span class="p">,</span> <span class="n">obj</span><span class="p">.</span><span class="n">sym_var_input_array</span><span class="p">,</span> <span class="s">&#39;Outputs&#39;</span><span class="p">,</span> <span class="n">obj</span><span class="p">.</span><span class="n">gi</span><span class="p">.</span><span class="n">getAliasById</span><span class="p">(</span><span class="n">obj</span><span class="p">.</span><span class="n">var_matched_ids</span><span class="p">));</span>
 </pre></div>
@@ -340,13 +341,13 @@ Indicatively, the initial MAVLink model is of large size and also has a large st
 <h2>Calculation of the residuals using a stored log<a class="headerlink" href="#calculation-of-the-residuals-using-a-stored-log" title="Permalink to this headline">¶</a></h2>
 <p>We have reached a point where we are able to pass a MAVLink log to our algorithm to perform fault diagnosis in real measured data. Our example log file was taken during a mapping mission, performed by a 2m UAV. The UAV experienced sudden loss of control and fell into the ground.</p>
 <img alt="../../_images/afrika.png" src="../../_images/afrika.png" />
-<p>The log is initially converted to an <code class="docutils literal"><span class="pre">.m</span></code> file with the <code class="docutils literal"><span class="pre">mavtomfile.py</span></code> Python script, provided by <em>pymavlink</em>.</p>
+<p>The log is initially converted to an <code class="docutils literal notranslate"><span class="pre">.m</span></code> file with the <code class="docutils literal notranslate"><span class="pre">mavtomfile.py</span></code> Python script, provided by <em>pymavlink</em>.</p>
 <p>Then, the log file is resampled at a constant rate, which is user selectable. Most MAVLink messages are emitted regularly at 1, 2 and 4Hz. We select 1Hz for our analysis. We can also restrict the examination interval to the last few seconds of the flight.</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">data_resampled</span> <span class="p">=</span> <span class="n">resampleData</span><span class="p">(</span><span class="s">&#39;afrika.mat&#39;</span><span class="p">,</span> <span class="n">SA_results</span><span class="p">);</span>  <span class="c">% Read the dataset and resample it to have uniform data</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">data_resampled</span> <span class="p">=</span> <span class="n">resampleData</span><span class="p">(</span><span class="s">&#39;afrika.mat&#39;</span><span class="p">,</span> <span class="n">SA_results</span><span class="p">);</span>  <span class="c">% Read the dataset and resample it to have uniform data</span>
 </pre></div>
 </div>
 <p>Now the data is in a form that can be fed into each residual generator and obtain residual signals. Thresholding is also performed against a constant value (different for each residual).</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">RE_results</span> <span class="p">=</span> <span class="n">evaluateResiduals</span><span class="p">(</span><span class="n">SA_results</span><span class="p">,</span> <span class="n">RG_results</span><span class="p">,</span> <span class="n">data_resampled</span><span class="p">);</span>  <span class="c">% Evaluate the residual generator bank</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">RE_results</span> <span class="p">=</span> <span class="n">evaluateResiduals</span><span class="p">(</span><span class="n">SA_results</span><span class="p">,</span> <span class="n">RG_results</span><span class="p">,</span> <span class="n">data_resampled</span><span class="p">);</span>  <span class="c">% Evaluate the residual generator bank</span>
 <span class="p">[</span><span class="c">...]</span>
 <span class="n">interval_of_interest</span> <span class="p">=</span> <span class="p">[</span><span class="mi">317</span><span class="p">:</span><span class="mi">333</span><span class="p">];</span> <span class="c">% Select the sample interval you wish to investigate</span>
 <span class="n">triggering_threshold</span> <span class="p">=</span> <span class="mf">0.97</span><span class="p">;</span> <span class="c">% Specify a static threshold</span>
@@ -461,7 +462,7 @@ However, further investigation would require analysis of the internal structural
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.7',
+            VERSION:'0.8',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
@@ -470,6 +471,7 @@ However, further investigation would require analysis of the internal structural
       <script type="text/javascript" src="../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

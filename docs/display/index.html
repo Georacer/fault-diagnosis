@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Graph display &mdash; fault-diangosis 0.7 documentation</title>
+  <title>Graph display &mdash; fault-diangosis 0.8 documentation</title>
   
 
   
@@ -30,7 +30,8 @@
   
 
   
-    <link rel="top" title="fault-diangosis 0.7 documentation" href="../index.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="fault-diangosis 0.8 documentation" href="../index.html"/>
         <link rel="next" title="Subgraph Generator" href="../subgraph_generator/index.html"/>
         <link rel="prev" title="The graph interface API" href="../graph_interface/index.html"/> 
 
@@ -59,7 +60,7 @@
           
           
             <div class="version">
-              0.7
+              0.8
             </div>
           
         
@@ -84,7 +85,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../model/index.html">Model Input</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../graph/index.html">Graph Representation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../graph_interface/index.html">The graph interface API</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Graph display</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Graph display</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../subgraph_generator/index.html">Subgraph Generator</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../matcher/index.html">Graph matching methods</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../demos/index.html">Demos</a></li>
@@ -133,11 +134,11 @@
             
   <div class="section" id="graph-display">
 <h1>Graph display<a class="headerlink" href="#graph-display" title="Permalink to this headline">¶</a></h1>
-<p>Structural graphs typically are too large to be inspected as numerical arrays. The <code class="docutils literal"><span class="pre">Plotter</span></code> class allows visualization of a bipartite graph in two ways.</p>
+<p>Structural graphs typically are too large to be inspected as numerical arrays. The <code class="docutils literal notranslate"><span class="pre">Plotter</span></code> class allows visualization of a bipartite graph in two ways.</p>
 <blockquote>
 <div><ul class="simple">
-<li><code class="docutils literal"><span class="pre">PlotDM()</span></code> - This method converts the graph into a temporary <code class="docutils literal"><span class="pre">DiagnosisModel</span></code> object (from <code class="docutils literal"><span class="pre">Fault</span> <span class="pre">Diagnosis</span> <span class="pre">Tooblox</span></code>) and uses its <code class="docutils literal"><span class="pre">PlotDM()</span></code> method to present the fine Dulmage-Mendelson decomposition of the system graph.</li>
-<li><code class="docutils literal"><span class="pre">plotDot(graphName,compile)</span></code> - This method exports the graph structure into a file written in the <code class="docutils literal"><span class="pre">dot</span></code> language of the GraphViz package. If the <code class="docutils literal"><span class="pre">compile</span></code> argument is true (by default), then it also runs the <code class="docutils literal"><span class="pre">dot</span></code> compiler onto the file and exports a PostScript image in the model description directory.</li>
+<li><code class="docutils literal notranslate"><span class="pre">PlotDM()</span></code> - This method converts the graph into a temporary <code class="docutils literal notranslate"><span class="pre">DiagnosisModel</span></code> object (from <code class="docutils literal notranslate"><span class="pre">Fault</span> <span class="pre">Diagnosis</span> <span class="pre">Tooblox</span></code>) and uses its <code class="docutils literal notranslate"><span class="pre">PlotDM()</span></code> method to present the fine Dulmage-Mendelson decomposition of the system graph.</li>
+<li><code class="docutils literal notranslate"><span class="pre">plotDot(graphName,compile)</span></code> - This method exports the graph structure into a file written in the <code class="docutils literal notranslate"><span class="pre">dot</span></code> language of the GraphViz package. If the <code class="docutils literal notranslate"><span class="pre">compile</span></code> argument is true (by default), then it also runs the <code class="docutils literal notranslate"><span class="pre">dot</span></code> compiler onto the file and exports a PostScript image in the model description directory.</li>
 </ul>
 </div></blockquote>
 </div>
@@ -185,7 +186,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.7',
+            VERSION:'0.8',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
@@ -194,6 +195,7 @@
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

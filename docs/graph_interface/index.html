@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>The graph interface API &mdash; fault-diangosis 0.7 documentation</title>
+  <title>The graph interface API &mdash; fault-diangosis 0.8 documentation</title>
   
 
   
@@ -30,7 +30,8 @@
   
 
   
-    <link rel="top" title="fault-diangosis 0.7 documentation" href="../index.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="fault-diangosis 0.8 documentation" href="../index.html"/>
         <link rel="next" title="Graph display" href="../display/index.html"/>
         <link rel="prev" title="Graph Representation" href="../graph/index.html"/> 
 
@@ -59,7 +60,7 @@
           
           
             <div class="version">
-              0.7
+              0.8
             </div>
           
         
@@ -83,7 +84,7 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../model/index.html">Model Input</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../graph/index.html">Graph Representation</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">The graph interface API</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">The graph interface API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#provided-methods">Provided methods</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#model-creation">Model creation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#graph-search">Graph search</a></li>
@@ -144,7 +145,7 @@
             
   <div class="section" id="the-graph-interface-api">
 <h1>The graph interface API<a class="headerlink" href="#the-graph-interface-api" title="Permalink to this headline">¶</a></h1>
-<p>The core class of this toolbox is the <code class="docutils literal"><span class="pre">GraphInterface</span></code>. It wraps around the <a class="reference internal" href="../graph/index.html#sec-graph-class"><span>The graph class</span></a> data structure and provides functionality for its creation, parsing and editing.</p>
+<p>The core class of this toolbox is the <code class="docutils literal notranslate"><span class="pre">GraphInterface</span></code>. It wraps around the <a class="reference internal" href="../graph/index.html#sec-graph-class"><span class="std std-ref">The graph class</span></a> data structure and provides functionality for its creation, parsing and editing.</p>
 <div class="section" id="provided-methods">
 <h2>Provided methods<a class="headerlink" href="#provided-methods" title="Permalink to this headline">¶</a></h2>
 <p>The main functionality of this class is:</p>
@@ -152,7 +153,7 @@
 <h3>Model creation<a class="headerlink" href="#model-creation" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
-<li><code class="docutils literal"><span class="pre">readModel(model)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">readModel(model)</span></code></li>
 </ul>
 </div></blockquote>
 </div>
@@ -160,18 +161,18 @@
 <h3>Graph search<a class="headerlink" href="#graph-search" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
-<li><code class="docutils literal"><span class="pre">getEquations(ids)</span></code></li>
-<li><code class="docutils literal"><span class="pre">getVariables(ids)</span></code></li>
-<li><code class="docutils literal"><span class="pre">getVariablesKnown(id)</span></code></li>
-<li><code class="docutils literal"><span class="pre">getVariablesUnknown(id)</span></code></li>
-<li><code class="docutils literal"><span class="pre">getVarIdByAlias(alias)</span></code></li>
-<li><code class="docutils literal"><span class="pre">getEdges(ids)</span></code></li>
-<li><code class="docutils literal"><span class="pre">getEdgeWeight(ids)</span></code></li>
-<li><code class="docutils literal"><span class="pre">getEdgeIdByVertices(equIds,varIds)</span></code></li>
-<li><code class="docutils literal"><span class="pre">getAliasById(ids)</span></code></li>
-<li><code class="docutils literal"><span class="pre">getMatchedEqus()</span></code></li>
-<li><code class="docutils literal"><span class="pre">getMatchedVars()</span></code></li>
-<li><code class="docutils literal"><span class="pre">getMathedEdges()</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">getEquations(ids)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">getVariables(ids)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">getVariablesKnown(id)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">getVariablesUnknown(id)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">getVarIdByAlias(alias)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">getEdges(ids)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">getEdgeWeight(ids)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">getEdgeIdByVertices(equIds,varIds)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">getAliasById(ids)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">getMatchedEqus()</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">getMatchedVars()</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">getMathedEdges()</span></code></li>
 </ul>
 </div></blockquote>
 </div>
@@ -179,14 +180,14 @@
 <h3>Logical tests<a class="headerlink" href="#logical-tests" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
-<li><code class="docutils literal"><span class="pre">isEquation(ids)</span></code></li>
-<li><code class="docutils literal"><span class="pre">isVariable(ids)</span></code></li>
-<li><code class="docutils literal"><span class="pre">isEdge(ids)</span></code></li>
-<li><code class="docutils literal"><span class="pre">isMatched(ids)</span></code></li>
-<li><code class="docutils literal"><span class="pre">isKnown(ids)</span></code></li>
-<li><code class="docutils literal"><span class="pre">isIntegral(ids)</span></code></li>
-<li><code class="docutils literal"><span class="pre">isDerivative(ids)</span></code></li>
-<li><code class="docutils literal"><span class="pre">isNonSolvable(ids)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">isEquation(ids)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">isVariable(ids)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">isEdge(ids)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">isMatched(ids)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">isKnown(ids)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">isIntegral(ids)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">isDerivative(ids)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">isNonSolvable(ids)</span></code></li>
 </ul>
 </div></blockquote>
 </div>
@@ -194,9 +195,9 @@
 <h3>Graph element editing<a class="headerlink" href="#graph-element-editing" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
-<li><code class="docutils literal"><span class="pre">setEdgeWeight(ids,</span> <span class="pre">weights)</span></code></li>
-<li><code class="docutils literal"><span class="pre">setMathed(ids)</span></code></li>
-<li><code class="docutils literal"><span class="pre">setKnown(ids)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">setEdgeWeight(ids,</span> <span class="pre">weights)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">setMathed(ids)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">setKnown(ids)</span></code></li>
 </ul>
 </div></blockquote>
 </div>
@@ -204,15 +205,15 @@
 <h3>Graph manipulation<a class="headerlink" href="#graph-manipulation" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
-<li><code class="docutils literal"><span class="pre">applyMatching(M)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">applyMatching(M)</span></code></li>
 </ul>
 </div></blockquote>
 </div>
 </div>
 <div class="section" id="adjacency-matrices">
 <h2>Adjacency matrices<a class="headerlink" href="#adjacency-matrices" title="Permalink to this headline">¶</a></h2>
-<p>Traditionally, structural methods used adjacency matrices for model representation. <code class="docutils literal"><span class="pre">GraphInterface</span></code> creates such a matrix based on its graph with <code class="docutils literal"><span class="pre">createAdjacency()</span></code> and adds it to its members, as an <code class="docutils literal"><span class="pre">Adjacency</span></code> class.</p>
-<p>This class provides the bidirectional (<code class="docutils literal"><span class="pre">BD</span></code>), equation-to-variable (<code class="docutils literal"><span class="pre">E2V</span></code>) and variable-to-equations (<code class="docutils literal"><span class="pre">V2E</span></code>) matrices as its members, with weighted entries.</p>
+<p>Traditionally, structural methods used adjacency matrices for model representation. <code class="docutils literal notranslate"><span class="pre">GraphInterface</span></code> creates such a matrix based on its graph with <code class="docutils literal notranslate"><span class="pre">createAdjacency()</span></code> and adds it to its members, as an <code class="docutils literal notranslate"><span class="pre">Adjacency</span></code> class.</p>
+<p>This class provides the bidirectional (<code class="docutils literal notranslate"><span class="pre">BD</span></code>), equation-to-variable (<code class="docutils literal notranslate"><span class="pre">E2V</span></code>) and variable-to-equations (<code class="docutils literal notranslate"><span class="pre">V2E</span></code>) matrices as its members, with weighted entries.</p>
 </div>
 </div>
 
@@ -259,7 +260,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.7',
+            VERSION:'0.8',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
@@ -268,6 +269,7 @@
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

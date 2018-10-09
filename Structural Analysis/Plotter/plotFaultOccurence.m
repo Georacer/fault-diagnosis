@@ -1,4 +1,4 @@
-function [ ] = plotFaultOccurence( SA_results, candidate_fault_ids, interval, sample_mask )
+function [ fig_handle ] = plotFaultOccurence( SA_results, candidate_fault_ids, interval, sample_mask )
 %PLOTFAULTOCCURENCE Generate the Fault Occurrence Grid
 %   INPUTS:
 % SA_results            : Structural Analysis results, generated from structural_analysis()
@@ -85,7 +85,7 @@ for i=1:length(candidate_fault_ids)
 end
 
 % Generate the patch figure
-h2 = figure();
+fig_handle = figure();
 patch(X_arg,Y_arg,C_arg);
 xlabel('timestamps (zeroed)');
 xlim([interval(1) interval(end)+1])
@@ -94,6 +94,7 @@ yticklabels(expressions_flattened);
 ylim([0 length(expressions_flattened)+thickness/2]);
 set(gca,'TickLabelInterpreter','none');
 
+hold on
 grid on
 
 end

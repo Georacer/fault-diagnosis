@@ -89,6 +89,10 @@ classdef Plotter < matlab.mixin.Copyable
                 if this.gi.graph.variables(i).isMatched
                     color = 'lightskyblue';
                 end
+                if this.gi.graph.variables(i).isDisturbance
+                    color = 'tomato';
+                    shape = 'doublecircle';
+                end
                 nodeDef = [nodeDef sprintf('node [shape = %s, color = %s, fillcolor = %s, style = filled, label="%s\n%d"]; %s;\n'...
                     ,shape,frameColor,color,this.gi.reg.varAliasArray{i},this.gi.reg.varIdArray(i),this.gi.reg.varAliasArray{i})];
             end

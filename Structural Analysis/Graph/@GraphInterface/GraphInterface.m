@@ -202,6 +202,7 @@ classdef GraphInterface < handle
                     this.setPropertyOR(varId,'isMatrix',varProps.isMatrix);
                     this.setPropertyOR(varId,'isFault',varProps.isFault);
                     this.setPropertyOR(varId,'isParameter',varProps.isParameter);
+                    this.setPropertyOR(varId,'isDisturbance',varProps.isDisturbance);
                     id = varId;
                 end
             else
@@ -1383,6 +1384,20 @@ classdef GraphInterface < handle
                 resp(i) = gh.graph.variables(indices(i)).isFault;
             end
         end
+        function [ resp ] = isDisturbance( gh, ids )
+            %ISDISTURBANCE Decide if the variables are disturbances
+            if ~gh.isVariable(ids)
+                error('Only variables can be disturbances');
+            end
+            
+            indices = gh.getIndexById(ids);
+            
+            resp = zeros(size(indices));
+            
+            for i=1:length(resp)
+                resp(i) = gh.graph.variables(indices(i)).isDisturbance;
+            end
+        end                
         function [ resp ] = isFaultable( gh, ids )
             %ISMATCHED Summary of this function goes here
             %   Detailed explanation goes here
@@ -1658,7 +1673,8 @@ classdef GraphInterface < handle
             % inp - input variable
             % out - output variable
             % msr - measured variable
-            operators = {'dot','int','ni','inp','out','msr','fault', 'sub', 'mat', 'expr', 'par'}; % Available operators
+            % dist - disturbance
+            operators = {'dot','int','ni','inp','out','msr','fault', 'sub', 'mat', 'expr', 'par', 'dist', 'rg'}; % Available operators
             words = strsplit(strtrim(exprStr),' '); % Split expression to operands and variables
             linkedVariables = []; % Array with variables linked to this equation
             initProperties = true; % New variable flag for properties initialization
@@ -1677,6 +1693,7 @@ classdef GraphInterface < handle
                     isMatrix = false;
                     isExpression = false;
                     isParameter = false;
+                    isDisturbance = false;
                     initProperties = false;
                     edgeWeight = 1;
                 end
@@ -1719,7 +1736,8 @@ classdef GraphInterface < handle
                         faultVarProps.isMatched = false;
                         faultVarProps.isMatrix = false;
                         faultVarProps.isFault = true;
-                        faultVarProps.isParameter = false;                        
+                        faultVarProps.isParameter = false;    
+                        faultVarProps.isDisturbance = false;
                         [resp, varId] = this.addVariable([], ['f' prefix alias], faultVarProps);
                         
                         edgeProps.isMatched = false;
@@ -1734,10 +1752,20 @@ classdef GraphInterface < handle
                         isMatrix = true;
                     case 10
                         isExpression = true;
-                    case 11 % This is a paremeter
+                    case 11 % This is a parameter
                         isParameter = true;
                         isNonSolvable = true;
                         isKnown = true;
+                    case 12 % This is a disturbance
+                        isDisturbance = true;
+                        isNonSolvable = true;
+                        isKnown = true;
+                        %isMeasured = false;
+                        isInput = true;
+                    case 13 % Equation marked as residual generator
+                        this.setProperty(equId,'isResGenerator');
+                        
+                        
                     otherwise % Found a variable or subsystem designation
                         
                         if isSubsystem % sub keyword met previously
@@ -1769,6 +1797,7 @@ classdef GraphInterface < handle
                             varProps.isMatrix = isMatrix;
                             varProps.isFault = false;  % Faults are generated specifically above
                             varProps.isParameter = isParameter;
+                            varProps.isDisturbance = isDisturbance;
                             [resp, varId] = this.addVariable([],word,varProps);
                             
                             edgeProps.isMatched = false;

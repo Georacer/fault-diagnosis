@@ -16,6 +16,7 @@ classdef Variable < Vertex
         isMatrix
         isFault
         isParameter
+        isDisturbance
         
         limit_upper = 1;
         limit_lower = -1;

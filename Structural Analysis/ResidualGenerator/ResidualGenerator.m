@@ -11,7 +11,7 @@ classdef ResidualGenerator < handle
         gd; % Handle to the directed subgraph
         
         all_input_ids;
-        var_input_ids;  % IDs of the input variables
+        var_input_ids;  % IDs of the input variables % UNUSED?
         
         is_dynamic = false;
         has_failed = false;
@@ -89,6 +89,8 @@ classdef ResidualGenerator < handle
         
         function [ input_ids ] = get_input_ids(obj)
             % Get the input variable ids
+            %TODO how does this differ from obj.all_input_ids? - These are all of the variables which serve as inputs to
+            %all of the member evaluators
             input_ids = [];
             for i=1:length(obj.evaluators_list)
                 input_ids = [ input_ids obj.evaluators_list{i}.var_input_ids ];

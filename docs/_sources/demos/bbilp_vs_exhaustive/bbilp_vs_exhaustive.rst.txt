@@ -66,7 +66,7 @@ The settings for the benchmark test are set up: Two different matchhing methods 
 
 This is the core functionality of the script, which performs the structural analysis on each provided model, with the various analysis options.
 
-The structural analysis results for each case-study are lumped and save in a .mat file, available for future processing. In this case the files ``BBILP_DFS_MSO.mat``, ``BBILP_DFS_MTES.mat``, ``Exhaustive_DFS_MSO.mat`` and ``Exhaustive_DFS_MTES.mat``s are created.
+The structural analysis results for each case-study are lumped and save in a .mat file, available for future processing. In this case the files ``BBILP_DFS_MSO.mat``, ``BBILP_DFS_MTES.mat``, ``Exhaustive_DFS_MSO.mat`` and ``Exhaustive_DFS_MTES.mat`` are created.
 
 Calculation Cost Results
 ========================

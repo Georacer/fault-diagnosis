@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Estimating Fault Response &mdash; fault-diangosis 0.7 documentation</title>
+  <title>Estimating Fault Sensitivity &mdash; fault-diangosis 0.8 documentation</title>
   
 
   
@@ -30,7 +30,8 @@
   
 
   
-    <link rel="top" title="fault-diangosis 0.7 documentation" href="../../index.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="fault-diangosis 0.8 documentation" href="../../index.html"/>
         <link rel="up" title="Demos" href="../index.html"/>
         <link rel="next" title="Contributors" href="../../contributors.html"/>
         <link rel="prev" title="Branch-and-Bound ILP Matching Calculation Cost" href="../bbilp_vs_exhaustive/bbilp_vs_exhaustive.html"/> 
@@ -60,7 +61,7 @@
           
           
             <div class="version">
-              0.7
+              0.8
             </div>
           
         
@@ -93,13 +94,14 @@
 <li class="toctree-l2"><a class="reference internal" href="../matching_intro/matching_intro.html">Introduction to matching</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../mavlink/mavlink.html">Residual Generation for a MAVLink UAV</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../bbilp_vs_exhaustive/bbilp_vs_exhaustive.html">Branch-and-Bound ILP Matching Calculation Cost</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="">Estimating Fault Response</a><ul>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Estimating Fault Sensitivity</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#case-study">Case Study</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#structural-analysis">Structural Analysis</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#residual-implementation">Residual Implementation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#fault-response-evaluation">Fault Response Evaluation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#sanitizing-the-results">Sanitizing the Results</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#decoding-the-fault-response-vector">Decoding the Fault Response Vector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#robustness-of-residual-signal-against-noise">Robustness of Residual Signal against Noise</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#application-on-real-flight-data">Application on Real Flight Data</a></li>
 </ul>
 </li>
@@ -138,7 +140,7 @@
       
           <li><a href="../index.html">Demos</a> &raquo;</li>
       
-    <li>Estimating Fault Response</li>
+    <li>Estimating Fault Sensitivity</li>
       <li class="wy-breadcrumbs-aside">
         
           
@@ -150,38 +152,40 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="estimating-fault-response">
-<span id="chap-fault-response"></span><h1>Estimating Fault Response<a class="headerlink" href="#estimating-fault-response" title="Permalink to this headline">¶</a></h1>
-<p>In linear systems, when a parity relation is found, and given a set of system inputs representing faults with known magnitude, it is easy to calculate the effect of said faults on the parity relation. In other words, it is easy to find the magnitude of the fault response of the residual signal.
-And this needn&#8217;t be with a numerical procedure; A closed-form formula can be found which describes the residual response under the influence of the maximum fault.
+  <div class="section" id="estimating-fault-sensitivity">
+<span id="chap-fault-sensitivity"></span><h1>Estimating Fault Sensitivity<a class="headerlink" href="#estimating-fault-sensitivity" title="Permalink to this headline">¶</a></h1>
+<p>In linear systems, when a parity relation is found, and given a set of system inputs representing faults with known magnitude, it is easy to calculate the effect of said faults on the parity relation. This is commonly known as <em>Fault Sensitivity</em>.</p>
+<p>Equivalently, it is easy to find the magnitude of the fault response of the residual signal.
+And this needn’t be with a numerical procedure; A closed-form formula can be found which describes the residual response under the influence of the maximum fault.
 This response value is constant and can be subsequently used to select a threshold for the fault detection logic.</p>
 <p>However, in non-linear systems, there are two complications:</p>
-<p>Firstly, it is not always easy, or even possible to find a closed-form solution for the fault response level of a given parity relation, as it may involve piece-wise functions, non-linear algebraic equations systems or differential-algebraic equation systems.</p>
-<p>Secondly, in a non-linear system, the fault response level at maximum fault may not be constant, but instead dependent on some systems variables. For example, a system variable multiplying the fault variable can &#8220;mute&#8221; the fault influence on the system. What is more, the maximum fault response of the residual may even not correspond to maximum fault magnitude. Stated differently, the sensitivity of the residual to the fault is variable.</p>
-<p>Stemming for the second point, is the realization that for two different fault sources with the same worst-case value, the corresponding level of response of the residual may be of different scale for each fault.</p>
+<p>Firstly, it is not always straightforward, or even possible to find a closed-form solution for the fault response level of a given parity relation, as it may involve piece-wise functions, non-linear algebraic equations systems or differential-algebraic equation systems.</p>
+<p>Secondly, in a non-linear system, the fault response level at maximum fault may not be constant, but instead dependent on some system variables. For example, a system variable multiplying the fault variable can “mute” the fault influence on the system. What is more, the maximum fault response of the residual may even not correspond to maximum fault magnitude. Stated differently, the sensitivity of the residual to the fault is variable.</p>
+<p>Consequenty, we realise that, for two different fault sources with the same worst-case value, the corresponding residual response level may be of different scale for each fault.</p>
 <p>For the above reasons, traditional approaches for fault response estimation do not work for general, non-linear systems.
 Instead, this toolbox utilizes numerical methods (specifically Particle Swarm Optimization) to estimate the response of a residual to faults.</p>
 <div class="section" id="case-study">
 <h2>Case Study<a class="headerlink" href="#case-study" title="Permalink to this headline">¶</a></h2>
-<p>As a running example for this demonstration, we shall use a submodel of a fixed-wing UAV, incorporating the lateral motion quantities of velocity, airspeed, roll angle, acceleration and angle of sideslip. This is implemented in model <code class="docutils literal"><span class="pre">g032a</span></code>, found in the graph pool of the toolbox.</p>
+<p>As a running example for this demonstration, we shall use a submodel of a fixed-wing UAV, incorporating the lateral motion quantities of velocity, airspeed, roll angle, acceleration and angle of sideslip. This is implemented in model <code class="docutils literal notranslate"><span class="pre">g032b</span></code>, found in the graph pool of the toolbox.</p>
 <p>It corresponds to an actual system, the UnATRaP UAV, the aerial testbed of our laboratory.</p>
 <img alt="../../_images/unatrap.jpg" src="../../_images/unatrap.jpg" />
 <p>The UAV is equipped with an airdata boom, able to measure the angle of sideslip directly, and with an ArduPilot autopilot, which provides an estimate of the inertial and wind velocity.</p>
 <img alt="../../_images/airdata_boom.png" src="../../_images/airdata_boom.png" />
-<p>The corresponding demo script is <code class="docutils literal"><span class="pre">fault_response_demo.m</span></code>, which:</p>
+<p>The corresponding demo script is <code class="docutils literal notranslate"><span class="pre">fault_response_demo.m</span></code>, which:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li>Builds the system model and find the (unique) residual generator</li>
-<li>Implements the residual generator function using Matlab&#8217;s symbolic and numerical solver tools</li>
-<li>Uses Particle Swarm Optimization to estimate the sensitivity of the residual signal to the faults it covers</li>
+<li>Builds the system model and finds the (unique) residual generator</li>
+<li>Implements the residual generator function using Matlab’s symbolic and numerical solver tools</li>
+<li>Uses Particle Swarm Optimization to estimate the response of the residual signal to the faults it covers</li>
+<li>Uses Particle Swarm Optimization to estimate the robustness thresholds of the residual (explained further down)</li>
 <li>Parses logged data from a real flight, where a angle of sideslip measurement fault occurred and compares estimated and actual residual responses</li>
 </ol>
 </div></blockquote>
 </div>
 <div class="section" id="structural-analysis">
 <h2>Structural Analysis<a class="headerlink" href="#structural-analysis" title="Permalink to this headline">¶</a></h2>
-<p>The system description can be found in the file <code class="docutils literal"><span class="pre">g032a</span></code>, which includes not only the structural information, but the actual equation expresssions, e.g.</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="c">...</span>
+<p>The system description can be found in the file <code class="docutils literal notranslate"><span class="pre">g032b</span></code>, which includes not only the structural information, but the actual equation expresssions, e.g.</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">...</span>
 <span class="p">{</span><span class="s">&#39;v v_r v_w expr -v+v_r+v_w&#39;</span><span class="p">};</span><span class="c">...</span>
 <span class="p">{</span><span class="s">&#39;Beta v_r Va expr -v_r+sin(Beta)*Va&#39;</span><span class="p">};</span><span class="c">...</span>
 </pre></div>
@@ -196,7 +200,7 @@ Instead, this toolbox utilizes numerical methods (specifically Particle Swarm Op
 <li>fseq4: pitch angle measurement fault</li>
 </ol>
 </div></blockquote>
-<p>Run the demo script <code class="docutils literal"><span class="pre">fault_response_demo.m</span></code>. It is set to breaking operation, halting after each section, allowing better introspection.
+<p>Run the demo script <code class="docutils literal notranslate"><span class="pre">fault_response_demo.m</span></code>. It is set to breaking operation, halting after each section, allowing better introspection.
 The first part is structural analysis of the system. Once it is done, the system graph is constructed:</p>
 <img alt="../../_images/sideslip_system.png" src="../../_images/sideslip_system.png" />
 <p>and a valid matching is found, leading to a residual generator</p>
@@ -207,7 +211,7 @@ The first part is structural analysis of the system. Once it is done, the system
 <h2>Residual Implementation<a class="headerlink" href="#residual-implementation" title="Permalink to this headline">¶</a></h2>
 <p>The next section of the code is the implementation of the residual generator function. The toolbox parses the system equations, and solves them according to the partial ordering dictated by the matching. Analytical tools are used to perform solutions and substitutions. Where this is not possible, numerical tools are used.</p>
 <p>The order of evaluations is output:</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">Sequence</span> <span class="n">of</span> <span class="n">calculations</span> <span class="k">for</span> <span class="n">the</span> <span class="n">evaluation</span> <span class="n">of</span> <span class="n">the</span> <span class="n">residual</span><span class="p">:</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">Sequence</span> <span class="n">of</span> <span class="n">calculations</span> <span class="k">for</span> <span class="n">the</span> <span class="n">evaluation</span> <span class="n">of</span> <span class="n">the</span> <span class="n">residual</span><span class="p">:</span>
 <span class="n">Beta</span> <span class="p">:=</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">Beta_m</span> <span class="o">+</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">fseq1</span>
 <span class="n">Va</span> <span class="p">:=</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">Va_m</span> <span class="o">+</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">fseq2</span>
 <span class="n">v_w</span> <span class="p">:=</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">v_w_m</span>
@@ -229,25 +233,25 @@ The first part is structural analysis of the system. Once it is done, the system
 <h2>Fault Response Evaluation<a class="headerlink" href="#fault-response-evaluation" title="Permalink to this headline">¶</a></h2>
 <p>Next, Particle Swarm Optimization is used to estimate the maximum influence of each fault onto the residual signal. It is assumed that only one fault occurs at a time.</p>
 <p>The corresponding code is:</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">fault_response_vector_set</span> <span class="p">=</span> <span class="n">getFaultResponseVector</span><span class="p">(</span> <span class="n">RG_results</span><span class="p">.</span><span class="n">res_gen_cell</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[]</span> <span class="p">);</span> <span class="c">% Run all tests, with no pre-calculated fault response vector</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">fault_response_vector_set</span> <span class="p">=</span> <span class="n">getFaultResponseVector</span><span class="p">(</span> <span class="n">RG_results</span><span class="p">.</span><span class="n">res_gen_cell</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[]</span> <span class="p">);</span> <span class="c">% Run all tests, with no pre-calculated fault response vector</span>
 </pre></div>
 </div>
 <p>As we discussed at the beginning of this demonstration, the operational domain of the system plays a role in the fault response levels. Thus, the optimization must be aware of the domain of the system variables (in this case, the flight envelope of the UAV).
-This is communicated with the script <code class="docutils literal"><span class="pre">makeDictionary_g032a.m</span></code>, found in the same folder as the system model.</p>
+This is communicated with the script <code class="docutils literal notranslate"><span class="pre">makeDictionary_g032b.m</span></code>, found in the same folder as the system model.</p>
 <p>For example, the airspeed range is set from 20m/s to 35m/s with</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">graphInitial</span><span class="p">.</span><span class="n">setLimits</span><span class="p">([],</span> <span class="p">{</span><span class="s">&#39;Va_m&#39;</span><span class="p">},</span> <span class="p">[</span><span class="mi">20</span> <span class="mi">35</span><span class="p">]);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">graphInitial</span><span class="p">.</span><span class="n">setLimits</span><span class="p">([],</span> <span class="p">{</span><span class="s">&#39;Va_m&#39;</span><span class="p">},</span> <span class="p">[</span><span class="mi">20</span> <span class="mi">35</span><span class="p">]);</span>
 </pre></div>
 </div>
 <p>and the airspeed measurement fault is constrained to 5m/s:</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">graphInitial</span><span class="p">.</span><span class="n">setLimits</span><span class="p">([],</span> <span class="p">{</span><span class="s">&#39;fseq2&#39;</span><span class="p">},</span> <span class="p">[</span><span class="o">-</span><span class="mi">5</span> <span class="mi">5</span><span class="p">]);</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">graphInitial</span><span class="p">.</span><span class="n">setLimits</span><span class="p">([],</span> <span class="p">{</span><span class="s">&#39;fseq2&#39;</span><span class="p">},</span> <span class="p">[</span><span class="o">-</span><span class="mi">5</span> <span class="mi">5</span><span class="p">]);</span>
 </pre></div>
 </div>
 <p>This essentially sets the domain limits of the search of the Particle Swarm Optimization.</p>
 <p>The optimization may take several minutes to finish. A non-linear residual generator function needs to be evaluated over a multi-variable search space and for four different fault variables/sources.</p>
 <p>The final result is</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">Final</span> <span class="n">Fault</span> <span class="n">Response</span> <span class="n">Vector</span><span class="p">:</span>
-<span class="mf">264.0353</span>    <span class="mf">4.9024</span>    <span class="mf">0.3897</span>    <span class="mf">0.4598</span>
-<span class="mf">290.9532</span>   <span class="mf">35.3553</span>    <span class="mf">0.2901</span>    <span class="mf">0.0045</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">Final</span> <span class="n">Fault</span> <span class="n">Response</span> <span class="n">Vector</span><span class="p">:</span>
+<span class="mf">314.0353</span>    <span class="mf">5.2344</span>  <span class="mf">0.7522</span>  <span class="mf">0.4598</span>
+<span class="mf">323.9532</span>   <span class="mf">31.6754</span>  <span class="mf">0.6347</span>  <span class="mf">0.0045</span>
 </pre></div>
 </div>
 <p>Let us go over what this array contains:</p>
@@ -268,19 +272,19 @@ Placing a detection threshold level above this value does not make sense, as the
 <h2>Sanitizing the Results<a class="headerlink" href="#sanitizing-the-results" title="Permalink to this headline">¶</a></h2>
 <p>Obviously, this result is wrong. The optimization needs to be run again, until the minimum fault response is lower than the maximum fault response.</p>
 <p>The next section of the demo script is set to run the Particle Swarm Optimization once more:</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="n">fault_response_vector_set</span> <span class="p">=</span> <span class="n">getFaultResponseVector</span><span class="p">(</span> <span class="n">RG_results</span><span class="p">.</span><span class="n">res_gen_cell</span><span class="p">,</span> <span class="n">fault_response_vector_set</span><span class="p">,</span> <span class="p">[]</span> <span class="p">);</span> <span class="c">% Run all tests, with no pre-calculated fault response vector</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">fault_response_vector_set</span> <span class="p">=</span> <span class="n">getFaultResponseVector</span><span class="p">(</span> <span class="n">RG_results</span><span class="p">.</span><span class="n">res_gen_cell</span><span class="p">,</span> <span class="n">fault_response_vector_set</span><span class="p">,</span> <span class="p">[]</span> <span class="p">);</span> <span class="c">% Run all tests, with pre-calculated fault response vector</span>
 </pre></div>
 </div>
 <p>This time, the previous fault response vector is passed onto the optimization routine. If a lower minimum / greater maximum response is found for any fault source, it will be used. If not, the old values will be preserved.</p>
 <p>The new result is:</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="mf">264.0353</span>    <span class="mf">4.9024</span>    <span class="mf">0.3897</span>    <span class="mf">0.0698</span>
-<span class="mf">335.3099</span>   <span class="mf">35.3553</span>    <span class="mf">0.7778</span>    <span class="mf">0.0519</span>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="mf">314.0353</span>    <span class="mf">5.2344</span>    <span class="mf">0.7522</span>    <span class="mf">0.1716</span>
+<span class="mf">368.7736</span>   <span class="mf">31.6754</span>    <span class="mf">0.7835</span>    <span class="mf">0.0819</span>
 </pre></div>
 </div>
 <p>Better limits were found for the minimum response of pitch angle measurement fault (4th column) and the maximum response of the angle of sideslip, roll angle and pitch angle measurement faults (1st, 3rd and 4th columns).</p>
-<p>However, the results of the 4th column are still incompatible. One more run of the optimization returns.</p>
-<div class="highlight-matlab"><div class="highlight"><pre><span class="mf">194.5380</span>    <span class="mf">4.9024</span>    <span class="mf">0.3897</span>    <span class="mf">0.0412</span>
-<span class="mf">335.3099</span>   <span class="mf">35.3553</span>    <span class="mf">0.7943</span>    <span class="mf">0.1554</span>
+<p>However, the results of the 4th column are still incompatible: The top value should be smaller than the bottom value. One more run of the optimization returns.</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="mf">249.7166</span>    <span class="mf">5.2344</span>    <span class="mf">0.7522</span>    <span class="mf">0.1449</span>
+<span class="mf">368.7736</span>   <span class="mf">31.6754</span>    <span class="mf">0.8028</span>    <span class="mf">0.1857</span>
 </pre></div>
 </div>
 <p>Lower bounds were found for the 1st and 4th column and a meaningful upper bound was finally found for the 4th column as well. This is a satisfactory result.</p>
@@ -293,6 +297,21 @@ Placing a detection threshold level above this value does not make sense, as the
 <p>This raises the suspicion that the residual signal will be practically insensitive to the last two faults, due to the unavoidable signal noise that will manifest in the diagnostic system.
 Coversely, it is evident that this residual generator is most sensitive to angle of sideslip measurement faults.</p>
 <p>Additionally, for the second column, the lower bound response is about 7 times lower than the maximum response, which means that even for the maximum airspeed measurement fault, the residual response will vary this much over the whole flight envelope.</p>
+</div>
+<div class="section" id="robustness-of-residual-signal-against-noise">
+<h2>Robustness of Residual Signal against Noise<a class="headerlink" href="#robustness-of-residual-signal-against-noise" title="Permalink to this headline">¶</a></h2>
+<p>So far, we have assessed the sensitivity of the residual to occurring faults, but in real systems which are subject to noise, this is not enough.
+The fault response of the residual must be clearly distinguisable from the baseline noise level of the residual, during the fault-free case. Put differently, the Signal-to-Noise ratio of the residual must be adequate.</p>
+<p>Noise sources and disturbances can be incorporated in the system model and encoded in the structural graph. They can be seen as pale red circles (with <code class="docutils literal notranslate"><span class="pre">d_*</span></code> names).</p>
+<p>The noise floor of the residual signal during both fault-free conditions can be estimated with the same numerical optimization approach.
+As required by our framework, a range domain is specified for each noise source. The characterization of each domain can result from sensor datasheets, state uncertainties etc.</p>
+<p>This time, all of the noise sources are included in the optimization simultaneously:</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">disturbance_ids</span> <span class="p">=</span> <span class="n">gi</span><span class="p">.</span><span class="n">getVarIdByProperty</span><span class="p">(</span><span class="s">&#39;isDisturbance&#39;</span><span class="p">);</span>
+<span class="n">pso_opt</span> <span class="p">=</span> <span class="n">ResidualResponse</span><span class="p">(</span><span class="n">RG_results</span><span class="p">.</span><span class="n">res_gen_cell</span><span class="p">{</span><span class="mi">1</span><span class="p">},</span> <span class="n">disturbance_ids</span><span class="p">);</span>
+<span class="n">robust_threshold</span> <span class="p">=</span> <span class="n">pso_opt</span><span class="p">.</span><span class="n">get_max_response</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>The result is <code class="docutils literal notranslate"><span class="pre">29.18</span></code>.</p>
 </div>
 <div class="section" id="application-on-real-flight-data">
 <h2>Application on Real Flight Data<a class="headerlink" href="#application-on-real-flight-data" title="Permalink to this headline">¶</a></h2>
@@ -307,8 +326,9 @@ The measurement error now deviates from zero significantly more.</p>
 <p>Note that the measured value of the angle of sideslip is frozen at a random value, but the actual quantity varies, so the error is not constant.</p>
 <p>The residual signal, as the output of a function which is fed with the system measurements ( r=g(u,y) ) can be seen below in blue, with the fault overlayed for temporal reference.</p>
 <img alt="../../_images/fault_response_residual.png" src="../../_images/fault_response_residual.png" />
-<p>The level of response of the actual, calculated residual is very close to the predicted value of 335. The reason it exceeds it is most likely due to the presence of other sources of error such as measurement noise which further build up the residual value.</p>
-<p>In green, the value of the theoretical value of the residual is plotted, as a function of system state and fault ( r=h(x,f) ). If the optimization procedure was successful in finding the true maximum of the residual reponse, this should match the resopnse level exactly, which is the case.</p>
+<p>During the fault-free flight segment, the residual is mostly confined within the predicted threshold (marked in blue shade).</p>
+<p>During the fault the level of response of the actual, calculated residual (blue) is very close to the predicted value of 368. The reason it exceeds it is most likely due to the presence of other sources of error such as measurement noise which further build up the residual value.</p>
+<p>In green, the value of the theoretical value of the residual is plotted, as a function of system state and fault ( r=h(x,f) ). If the optimization procedure was successful in finding the true maximum of the residual reponse, this should match the response level exactly, which is the case.</p>
 <p>As a final note, notice that even though the fault is non-zero around t=3050s and t=3500s, the residual response drops close to zero.
 This seems contradictory and in violation to the assumption of exoneration, but is actually constistent with the underlying theory.</p>
 <p>In close inspection, the residual value is dependent upon the fault and its derivative as well:</p>
@@ -339,7 +359,7 @@ This is a topic which merits the attention of the diagnostic system designer whe
   <div role="contentinfo">
     <p>Except where otherwise noted, this documentation is licensed under <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC Attribution-Share Alike 3.0 Unported</a>.</p>
 
-<div style="float:right;"><a href="https://github.com/Georacer/mavlink-inspector/issues/new?title=Estimating%20Fault%20Response%20-%20&body=URL:%20../../demos/fault_response/fault_response%0ATitle:%20Estimating%20Fault%20Response%0A%0APlease%20update%20this%20description%20and%20the%20issue%20title">Page bug</a></div>
+<div style="float:right;"><a href="https://github.com/Georacer/mavlink-inspector/issues/new?title=Estimating%20Fault%20Sensitivity%20-%20&body=URL:%20../../demos/fault_response/fault_response%0ATitle:%20Estimating%20Fault%20Sensitivity%0A%0APlease%20update%20this%20description%20and%20the%20issue%20title">Page bug</a></div>
 
     <p>
 
@@ -362,7 +382,7 @@ This is a topic which merits the attention of the diagnostic system designer whe
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.7',
+            VERSION:'0.8',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
@@ -371,6 +391,7 @@ This is a topic which merits the attention of the diagnostic system designer whe
       <script type="text/javascript" src="../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
