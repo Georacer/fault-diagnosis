@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Graph matching methods &mdash; fault-diangosis 0.7 documentation</title>
+  <title>Graph matching methods &mdash; fault-diangosis 0.8 documentation</title>
   
 
   
@@ -30,7 +30,8 @@
   
 
   
-    <link rel="top" title="fault-diangosis 0.7 documentation" href="../index.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="fault-diangosis 0.8 documentation" href="../index.html"/>
         <link rel="next" title="Demos" href="../demos/index.html"/>
         <link rel="prev" title="Subgraph Generator" href="../subgraph_generator/index.html"/> 
 
@@ -59,7 +60,7 @@
           
           
             <div class="version">
-              0.7
+              0.8
             </div>
           
         
@@ -86,7 +87,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../graph_interface/index.html">The graph interface API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../display/index.html">Graph display</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../subgraph_generator/index.html">Subgraph Generator</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Graph matching methods</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Graph matching methods</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#matcher-instantiation">Matcher instantiation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#matching-algorithms">Matching algorithms</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#murty">Murty</a></li>
@@ -145,25 +146,25 @@
             
   <div class="section" id="graph-matching-methods">
 <h1>Graph matching methods<a class="headerlink" href="#graph-matching-methods" title="Permalink to this headline">¶</a></h1>
-<p>Graph matching is an indispensable part of Fautl Diagnosis via Structural Analysis. <cite>fault-diagnosis</cite> provides 6 different algorithms for matching, through the <code class="docutils literal"><span class="pre">Matcher</span></code> class.</p>
+<p>Graph matching is an indispensable part of Fautl Diagnosis via Structural Analysis. <cite>fault-diagnosis</cite> provides 6 different algorithms for matching, through the <code class="docutils literal notranslate"><span class="pre">Matcher</span></code> class.</p>
 <div class="section" id="matcher-instantiation">
 <h2>Matcher instantiation<a class="headerlink" href="#matcher-instantiation" title="Permalink to this headline">¶</a></h2>
-<p>The <code class="docutils literal"><span class="pre">Matcher</span></code> object is instantiated by providing the <code class="docutils literal"><span class="pre">GraphInterface</span></code> object it should act upon.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">Matcher</span></code> object is instantiated by providing the <code class="docutils literal notranslate"><span class="pre">GraphInterface</span></code> object it should act upon.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
-<p class="last">The <code class="docutils literal"><span class="pre">Matcher</span></code> functionality applies changes directly onto the provided <code class="docutils literal"><span class="pre">GraphInterface</span></code>. If you want to preserve the original graph create a copy with the <code class="docutils literal"><span class="pre">copy</span></code> function.</p>
+<p class="last">The <code class="docutils literal notranslate"><span class="pre">Matcher</span></code> functionality applies changes directly onto the provided <code class="docutils literal notranslate"><span class="pre">GraphInterface</span></code>. If you want to preserve the original graph create a copy with the <code class="docutils literal notranslate"><span class="pre">copy</span></code> function.</p>
 </div>
-<p>Call the <code class="docutils literal"><span class="pre">setCausality(causality)</span></code> method to choose the causality setting (among <cite>None</cite>, <cite>Integral</cite>, <cite>Differential</cite>, <cite>Mixed</cite> and <cite>Realistic</cite>) for the mather algorithms which use it.</p>
+<p>Call the <code class="docutils literal notranslate"><span class="pre">setCausality(causality)</span></code> method to choose the causality setting (among <cite>None</cite>, <cite>Integral</cite>, <cite>Differential</cite>, <cite>Mixed</cite> and <cite>Realistic</cite>) for the mather algorithms which use it.</p>
 </div>
 <div class="section" id="matching-algorithms">
 <h2>Matching algorithms<a class="headerlink" href="#matching-algorithms" title="Permalink to this headline">¶</a></h2>
 <p>The matching algorithms which are offered by <cite>fault-diangosis</cite> are presented below.
-The member <code class="docutils literal"><span class="pre">matchingSet</span></code> is filled with the matching(s) the matching procedures uncover.</p>
+The member <code class="docutils literal notranslate"><span class="pre">matchingSet</span></code> is filled with the matching(s) the matching procedures uncover.</p>
 <div class="section" id="murty">
 <h3>Murty<a class="headerlink" href="#murty" title="Permalink to this headline">¶</a></h3>
 <p><strong>Arguments</strong>
 numMatchings: number of matchings to return</p>
-<p>Uses Murty&#8217;s algorithm which returns the k-cheapest matchings of a <em>just-constrained</em> graph, in order of increasing cost. The cheapest matching is applied.</p>
+<p>Uses Murty’s algorithm which returns the k-cheapest matchings of a <em>just-constrained</em> graph, in order of increasing cost. The cheapest matching is applied.</p>
 </div>
 <div class="section" id="weighedelimination">
 <span id="weighted-elimination"></span><h3>WeighedElimination<a class="headerlink" href="#weighedelimination" title="Permalink to this headline">¶</a></h3>
@@ -179,19 +180,19 @@ maxMatchings: The maximum number of matchings that are allowed to be performed</
 </div>
 <div class="section" id="valid">
 <h3>Valid<a class="headerlink" href="#valid" title="Permalink to this headline">¶</a></h3>
-<p>This is similar to <code class="docutils literal"><span class="pre">ValidJust</span></code> but is applicable only to MSO graphs.</p>
-<p>It runs <code class="docutils literal"><span class="pre">ValidJust</span></code> to all just-constrained subgraphs and selects the cheapest valid matching, which is returned and applied.</p>
+<p>This is similar to <code class="docutils literal notranslate"><span class="pre">ValidJust</span></code> but is applicable only to MSO graphs.</p>
+<p>It runs <code class="docutils literal notranslate"><span class="pre">ValidJust</span></code> to all just-constrained subgraphs and selects the cheapest valid matching, which is returned and applied.</p>
 </div>
 <div class="section" id="valid2">
 <h3>Valid2<a class="headerlink" href="#valid2" title="Permalink to this headline">¶</a></h3>
-<p>This is an extension of <code class="docutils literal"><span class="pre">Valid</span></code> which is applicable to all graphs. It produces the set of MSOs which are parsed for their cheapest valid matching, similar to the previous algorithm. The cheapest valid mathing across all MSOs is returned and applied. Useful for matching PSO graphs.</p>
+<p>This is an extension of <code class="docutils literal notranslate"><span class="pre">Valid</span></code> which is applicable to all graphs. It produces the set of MSOs which are parsed for their cheapest valid matching, similar to the previous algorithm. The cheapest valid mathing across all MSOs is returned and applied. Useful for matching PSO graphs.</p>
 </div>
 <div class="section" id="bbilp">
 <span id="id1"></span><h3>BBILP<a class="headerlink" href="#bbilp" title="Permalink to this headline">¶</a></h3>
 <p><strong>Arguments</strong>
 branchMethod: cheap, BFS, DFS</p>
 <p>This algorithm is applicable to PSO graphs and poses the valid matching problem as a Branch-and-Bound Integer Linear Programming (BBILP) problem. It initially relaxes the problem into a simple assignment problem which is solved by the Hungarian algorithm. The relaxed solution is then verified. Any violating edge is used as a branching node in a search tree which is parsed in search of the cheapest valid solution.</p>
-<p>This algorithm is designed to perform much faster (most of the time) in constrained matching problems with exponentially many constraints, where traditionally all candidate matchings must be checked for validity before the cheapest one is selected (as the <code class="docutils literal"><span class="pre">Valid2</span></code> algorithm does).</p>
+<p>This algorithm is designed to perform much faster (most of the time) in constrained matching problems with exponentially many constraints, where traditionally all candidate matchings must be checked for validity before the cheapest one is selected (as the <code class="docutils literal notranslate"><span class="pre">Valid2</span></code> algorithm does).</p>
 </div>
 </div>
 </div>
@@ -239,7 +240,7 @@ branchMethod: cheap, BFS, DFS</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.7',
+            VERSION:'0.8',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
@@ -248,6 +249,7 @@ branchMethod: cheap, BFS, DFS</p>
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

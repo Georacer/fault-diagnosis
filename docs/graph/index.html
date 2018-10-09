@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Graph Representation &mdash; fault-diangosis 0.7 documentation</title>
+  <title>Graph Representation &mdash; fault-diangosis 0.8 documentation</title>
   
 
   
@@ -30,7 +30,8 @@
   
 
   
-    <link rel="top" title="fault-diangosis 0.7 documentation" href="../index.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="fault-diangosis 0.8 documentation" href="../index.html"/>
         <link rel="next" title="The graph interface API" href="../graph_interface/index.html"/>
         <link rel="prev" title="Model Input" href="../model/index.html"/> 
 
@@ -59,7 +60,7 @@
           
           
             <div class="version">
-              0.7
+              0.8
             </div>
           
         
@@ -82,7 +83,7 @@
           
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../model/index.html">Model Input</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Graph Representation</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Graph Representation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#the-graph-class">The graph class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#vertex-class">Vertex class</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#equations">Equations</a></li>
@@ -144,10 +145,10 @@
 <h1>Graph Representation<a class="headerlink" href="#graph-representation" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="the-graph-class">
 <span id="sec-graph-class"></span><h2>The graph class<a class="headerlink" href="#the-graph-class" title="Permalink to this headline">¶</a></h2>
-<p>The basic data structure in <cite>fault-diangosis</cite> is a bipartite structural graph, encoded in the <code class="docutils literal"><span class="pre">GraphBipartite</span></code> class.
+<p>The basic data structure in <cite>fault-diangosis</cite> is a bipartite structural graph, encoded in the <code class="docutils literal notranslate"><span class="pre">GraphBipartite</span></code> class.
 It contains equation vertices, variable vertices and edges which connect the first two.</p>
-<p>The <code class="docutils literal"><span class="pre">GraphBipartite</span></code> class is meant to serve only as a data structure, not as an API. All operations on the <code class="docutils literal"><span class="pre">GraphBipartite</span></code> object should be handles by the parent <code class="docutils literal"><span class="pre">GraphInterface</span></code> object.</p>
-<p>All of the vertice and edge classes are subclasses of the <code class="docutils literal"><span class="pre">GraphElement</span></code> superclass. The basic property of each <code class="docutils literal"><span class="pre">GraphElement</span></code> is its unique <strong>id</strong>. The <code class="docutils literal"><span class="pre">IDProvider</span></code> class objects provides unique IDs for every new <code class="docutils literal"><span class="pre">GraphElement</span></code>.
+<p>The <code class="docutils literal notranslate"><span class="pre">GraphBipartite</span></code> class is meant to serve only as a data structure, not as an API. All operations on the <code class="docutils literal notranslate"><span class="pre">GraphBipartite</span></code> object should be handles by the parent <code class="docutils literal notranslate"><span class="pre">GraphInterface</span></code> object.</p>
+<p>All of the vertice and edge classes are subclasses of the <code class="docutils literal notranslate"><span class="pre">GraphElement</span></code> superclass. The basic property of each <code class="docutils literal notranslate"><span class="pre">GraphElement</span></code> is its unique <strong>id</strong>. The <code class="docutils literal notranslate"><span class="pre">IDProvider</span></code> class objects provides unique IDs for every new <code class="docutils literal notranslate"><span class="pre">GraphElement</span></code>.
 A unique ID allows for continuous tracking of graph elements throughout any graph transformations.</p>
 </div>
 <div class="section" id="vertex-class">
@@ -163,11 +164,11 @@ A unique ID allows for continuous tracking of graph elements throughout any grap
 </div></blockquote>
 <div class="section" id="equations">
 <h3>Equations<a class="headerlink" href="#equations" title="Permalink to this headline">¶</a></h3>
-<p><code class="docutils literal"><span class="pre">Equation</span></code> is a subclass of the <code class="docutils literal"><span class="pre">Vertex</span></code> class.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Equation</span></code> is a subclass of the <code class="docutils literal notranslate"><span class="pre">Vertex</span></code> class.</p>
 </div>
 <div class="section" id="variables">
 <span id="sec-graph-variables"></span><h3>Variables<a class="headerlink" href="#variables" title="Permalink to this headline">¶</a></h3>
-<p><code class="docutils literal"><span class="pre">Variables</span></code> is a subclass of the <code class="docutils literal"><span class="pre">Vertex</span></code> class. They carry qualitative information via the (non-exclusive) properties:</p>
+<p><code class="docutils literal notranslate"><span class="pre">Variables</span></code> is a subclass of the <code class="docutils literal notranslate"><span class="pre">Vertex</span></code> class. They carry qualitative information via the (non-exclusive) properties:</p>
 <blockquote>
 <div><ul class="simple">
 <li>isKnown - whether this variable is known</li>
@@ -180,7 +181,7 @@ A unique ID allows for continuous tracking of graph elements throughout any grap
 </div>
 <div class="section" id="edge-class">
 <span id="sec-graph-edges"></span><h2>Edge class<a class="headerlink" href="#edge-class" title="Permalink to this headline">¶</a></h2>
-<p>The <code class="docutils literal"><span class="pre">Edge</span></code> class encodes most of the structural information of the class, through the following properties:</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">Edge</span></code> class encodes most of the structural information of the class, through the following properties:</p>
 <blockquote>
 <div><ul class="simple">
 <li>weight - weight information reflecting the cost of the solution of the adjacent variable by the adjacent equation</li>
@@ -233,7 +234,7 @@ A unique ID allows for continuous tracking of graph elements throughout any grap
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.7',
+            VERSION:'0.8',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
@@ -242,6 +243,7 @@ A unique ID allows for continuous tracking of graph elements throughout any grap
       <script type="text/javascript" src="../_static/jquery.js"></script>
       <script type="text/javascript" src="../_static/underscore.js"></script>
       <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
