@@ -13,6 +13,8 @@ debug = false;
 
 gi = matcher.gi;
 
+binary_blob = getByteStreamFromArray(gi);
+
 % % Get the corresponding adjacency matrices
 % [AV2E, varIds, eqIndices, varIndices] = gi.getSubmodel(equIds,'direction','V2E');
 % [AE2V, varIds, eqIndices, varIndices] = gi.getSubmodel(equIds,'direction','E2V');
@@ -64,11 +66,11 @@ for i=pivot
         % Create temporary graph for Murty matching
         currEquIds = KH{i}.equIds;
         currVarIds = KH{i}.varIds;
-        tempGI = copy(gi);
-        tempSG = SubgraphGenerator(tempGI);
+%         tempGI = copy(gi);
+        tempSG = SubgraphGenerator(gi, binary_blob);
         tempGI = tempSG.buildSubgraph(currEquIds, currVarIds,'postfix','temp');
         tempMatcher = Matcher(tempGI);
-        Mmurty = tempMatcher.match('Murty'); % Find all possible matchings in increasing cost
+        Mmurty = tempMatcher.match('Murty', max_num_matchings); % Find all possible matchings in increasing cost
         
         % For every matching sequence
         for j=1:size(Mmurty,1)

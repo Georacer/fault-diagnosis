@@ -1,18 +1,23 @@
 classdef SubgraphGenerator < matlab.mixin.Copyable
     %SUBGRAPHGENERATOR Summary of this class goes here
-    %   Detailed explanation goes here
+    %   Does not edit passed GraphInterface gi
     
     properties
         gi = GraphInterface.empty;
         liUSM = DiagnosisModel.empty;
         MSOs = {};
         MTESs = {};
+        parent_blob = [];
     end
     
     methods
-        function obj = SubgraphGenerator(gi)
+        function obj = SubgraphGenerator(gi, parent_blob)
             % Constructor
             obj.gi = gi;
+            % Bring in parent blob
+            if nargin==2
+                obj.parent_blob = parent_blob;
+            end
         end
         function resp = setGraphInterface(this,gi)
             % Change the graph interface pointer
@@ -77,7 +82,11 @@ classdef SubgraphGenerator < matlab.mixin.Copyable
             pruneUnmatched = opts.pruneUnmatched;
             
             % Create a deep copy of the input graph
-            gi = copy(this.gi);
+            if isempty(this.parent_blob)
+                gi = copy(this.gi);
+            else
+                gi = getArrayFromByteStream(this.parent_blob);
+            end
             
             % Delete equations
             allIds = this.gi.reg.equIdArray;

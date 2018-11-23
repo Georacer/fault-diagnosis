@@ -43,8 +43,12 @@ if (length(equIds)~=length(varIds))
     error('Given submodel is not just-constrained (2)');
 end
 
-% Set impossible matchings
+% Set maximum amount of matchings examined
 if nargin<2
+    nnzEls = nnz(A);
+    numMatchings = factorial(nnzEls);
+end
+if (numMatchings == 0)
     nnzEls = nnz(A);
     numMatchings = factorial(nnzEls);
 end

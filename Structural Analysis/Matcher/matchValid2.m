@@ -98,6 +98,8 @@ numEqs = length(mso);
 M0weights = ones(1,numEqs)*inf;
 M0pool = cell(1,numEqs);
 
+binary_blob = getByteStreamFromArray(gi);
+
 for i=1:numEqs
     
     if debug; fprintf('*** Examining new M0\n'); end
@@ -109,12 +111,13 @@ for i=1:numEqs
     if debug; fprintf('and aliases: ');  fprintf('%s, ',aliases{:}); fprintf('\n'); end
     
     % Create a temporary M0 submodel
-    tempGI = copy(gi);
-    tempSG = SubgraphGenerator(tempGI);
+%     tempGI = copy(gi);
+    tempSG = SubgraphGenerator(gi,binary_blob);
     tempGI = tempSG.buildSubgraph(equIdsJust,'postfix','temp');
     tempGI.createAdjacency();
     
-    % Check if all equations can be matched to at least one variable
+    % Check if all equations can be matched to at least one variable %TODO is this reasonable? What if the whole thing
+    % is an AE system?
     A = tempGI.adjacency.E2V;
     if ~all(sum(A,2))
         if debug; warning('Tried to match a non-square system'); end
