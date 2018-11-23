@@ -20,7 +20,9 @@ gi = matcher.gi;
 % end
 
 V2E = gi.adjacency.V2E; % Use the V2E part to allow non-invertibilitities. This is filled with 1s and 0s
-A = gi.adjacency.E2V'.*V2E; % Multiply with E2V to take into account the edge costs.
+E2V = gi.adjacency.E2V'; % Use E2V to take into account the edge costs.
+E2V(E2V==0) = 1; % Override non-invertibilities; they should be enforced by V2E
+A = E2V.*V2E;
 equIds = gi.reg.equIdArray;
 varIds = gi.reg.varIdArray;
 
