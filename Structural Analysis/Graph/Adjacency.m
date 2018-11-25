@@ -5,6 +5,19 @@ classdef Adjacency < matlab.mixin.Copyable
     properties
         gi
         BD % Variables indexed first, then equations
+        BD_types % Adjacency matrix mask holding the edge types
+        
+        % Edge types
+        DEF_INT = 2;
+        DEF_DER = 3;
+        DEF_NI = 4;
+        DEF_AE = 5;
+        
+        % Edge costs
+        integrationCost = 100;
+        differentiationCost = 100;
+        nonInvertibleCost = 1;
+        
         numVars
         numEqs
         eqNames
@@ -31,6 +44,7 @@ classdef Adjacency < matlab.mixin.Copyable
             this.numEqs = this.gi.graph.numEqs;
             numEls = this.numVars + this.numEqs;
             this.BD = zeros(numEls,numEls);
+            this.BD_types = this.BD;
             E = this.gi.getEdgeList();
             
             for i=1:size(E,1)
@@ -40,10 +54,24 @@ classdef Adjacency < matlab.mixin.Copyable
                     varIndex = this.gi.getIndexById(id1);
                     equIndex = this.gi.getIndexById(id2);
                     this.BD(varIndex,this.numVars+equIndex) = 1;
-                else% E2V edge
+                    this.BD_types(varIndex,this.numVars+equIndex) = 1;
+                else % E2V edge
                     equIndex = this.gi.getIndexById(id1);
                     varIndex = this.gi.getIndexById(id2);
-                    this.BD(this.numVars+equIndex,varIndex) = E(i,3);
+                    this.BD(this.numVars+equIndex,varIndex) = E(i,3); % TODO Do I throw out edge cost by mistake here?
+                    edgeId = this.gi.getEdgeIdByVertices(id1, id2);
+                    if this.gi.isIntegral(edgeId)
+                        this.BD(this.numVars+equIndex, varIndex) = this.integrationCost;
+                        this.BD_types(this.numVars+equIndex, varIndex) = 2;
+                    elseif this.gi.isDerivative(edgeId)
+                        this.BD(this.numVars+equIndex, varIndex) = this.differentiationCost;
+                        this.BD_types(this.numVars+equIndex, varIndex) = 3;
+                    elseif this.gi.isNonSolvable(edgeId)
+                        this.BD(this.numVars+equIndex, varIndex) = this.nonInvertibleCost;
+                        this.BD_types(this.numVars+equIndex, varIndex) = 4;
+                    else
+                        this.BD_types(this.numVars+equIndex, varIndex) = 1;
+                    end
                 end
             end
             
