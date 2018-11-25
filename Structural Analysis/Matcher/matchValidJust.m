@@ -11,6 +11,8 @@ function [ M, exitcode] = matchValidJust( matcher )
 debug = false;
 % debug = true;
 
+max_num_matchings = 1e1;
+
 gi = matcher.gi;
 
 binary_blob = getByteStreamFromArray(gi);

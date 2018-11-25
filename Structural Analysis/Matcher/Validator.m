@@ -33,9 +33,8 @@ classdef Validator
             % Break all integrations and differentiations
             if obj.debug; fprintf('Validator/isValid: Breaking derivations\n'); end
             graphDir_NoDynamics = obj.graphDir;
-            graphTypes = obj.graphTypes;
-            [intEdges_rows, intEdges_cols] = find(graphTypes==obj.DEF_INT); % Find integral edges
-            [derEdges_rows, derEdges_cols] = find(graphTypes==obj.DEF_DER); % Find derivative edges
+            [intEdges_rows, intEdges_cols] = find(obj.graphTypes==obj.DEF_INT); % Find integral edges
+            [derEdges_rows, derEdges_cols] = find(obj.graphTypes==obj.DEF_DER); % Find derivative edges
             for i=1:length(intEdges_rows) % Delete integral edges
                 graphDir_NoDynamics(intEdges_rows(i),intEdges_cols(i)) = 0;
             end
