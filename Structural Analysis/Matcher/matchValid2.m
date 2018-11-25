@@ -7,14 +7,17 @@ p = inputParser;
 
 p.addRequired('matcher',@(x) true);
 p.addParameter('faultsOnly',true, @islogical);
+p.addParameter('maxMSOsExamined', 0, @isnumeric);
 
 p.parse(matcher, varargin{:});
 opts = p.Results;
 
 faultsOnly = opts.faultsOnly; % Generate only residuals which are sensitive to faults
+maxMSOsExamined = opts.maxMSOsExamined;
 
-debug = false;
-% debug = true;
+% debug = false;
+debug = true;
+profile on
 
 gi = matcher.gi;
 % Initialize valid matchings container
@@ -61,15 +64,33 @@ if faultsOnly
     end
 end
 
-examinations = 0;
 
 % Loop over the collected MSOs
+MSOsExamined = 0;
 MSOCosts = inf*ones(1,length(msoSet));
 MSOMatchings = cell(1,length(msoSet));
+examination_array = zeros(1,length(msoSet));
 for i=1:length(msoSet)
+    if debug; fprintf('matchValid2: Testing MSO %d/%d with size %d\n',i,length(msoSet),length(msoSet{i})); end
+    
+    % Test for faultable equations
+    if faultsOnly
+        eqsFaultable = gi.isFaultable(msoSet{i});
+        if ~any(eqsFaultable)
+            if debug; fprintf('matchValid2: The provided MSO is not susceptible to faults, and faultsOnly flag is true\n'); end
+            continue
+        end
+    end
+    
     [MSOMatchings{i}, MSOCosts(i)] = matchMSO(gi,msoSet{i});
-    examinations = examinations + length(msoSet{i}); % Add the size of the current MSO: one examined MJust for each equation in MSO.
+    examination_array(i) = length(msoSet{i}); % Add the size of the current MSO: one examined MJust for each equation in MSO.
+    MSOsExamined = MSOsExamined + 1;
+    if (MSOsExamined==maxMSOsExamined)
+        break;
+    end
 end
+examinations = sum(examination_array);
+
 
 % Pick the cheapest matching
 for i=1:length(msoSet)
@@ -82,7 +103,7 @@ for i=1:length(msoSet)
     end
 end
 
-if debug; fprintf('MSO processed in %d examinations\n',examinations); end
+if debug; fprintf('matchValid2: MSO processed in %d examinations\n',examinations); end
 end
 
 
