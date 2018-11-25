@@ -25,6 +25,7 @@ function [ results ] = structural_analysis( model, SAsettings )
 matchMethod = SAsettings.matchMethod;
 SOType = SAsettings.SOType;
 branchMethod = SAsettings.branchMethod;
+maxMSOsExamined = SAsettings.maxMSOsExamined;
 plotGraphInitial = SAsettings.plotGraphInitial;
 plotGraphOver = SAsettings.plotGraphOver;
 plotGraphRemaining = SAsettings.plotGraphRemaining;
@@ -49,6 +50,8 @@ name = graphInitial.name;
 
 stats.(name).name = name;
 stats.(name).timeCreateGI = timeCreateGI;
+stats.(name).num_valid_matchings = 0;
+stats.(name).num_invalid_matchings = 0;
 
 %% Create the overconstrained graph
 
@@ -266,16 +269,23 @@ for graph_index=1:length(graphs_conn)
     for i=1:length(SOindices)
         index = SOindices(i);
         fprintf('\n');
-        disp('Examining another SO graph')
         tempGI = SOSubgraphs(index);
+        fprintf('Examining another SO graph with size %d\n',length(tempGI.reg.equIdArray));
         matchers(i) = Matcher(tempGI); % Instantiate the matcher for this SO
         switch matchMethod
             case 'BBILP' % Use the BBILP method to match
                 matching = matchers(i).match('BBILP','branchMethod',branchMethod);
             case 'Exhaustive' % Use the exhaustive method to match
-                matching = matchers(i).match('Valid2');
+                matching = matchers(i).match('Valid2','maxMSOsExamined',maxMSOsExamined);
         end
         matchings_set{graph_index}(i) = {matchers(i).matchingSet};
+        % Store stat about valid matching
+        if ~isempty(matchers(i).matchingSet)
+            stats.(name).num_valid_matchings = stats.(name).num_valid_matchings + 1;
+        else
+            stats.(name).num_invalid_matchings = stats.(name).num_invalid_matchings + 1;
+        end
+        
         waitbar(i/length(SOSubgraphs),h);
         
         % Plot resulting matchings
