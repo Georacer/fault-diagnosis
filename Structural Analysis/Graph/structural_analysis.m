@@ -284,6 +284,8 @@ for graph_index=1:length(graphs_conn)
                 matching = matchers(i).match('BBILP','branchMethod',branchMethod);
             case {'Exhaustive','Flaugergues'} % Use the exhaustive method to match
                 matching = matchers(i).match('Valid2','maxMSOsExamined',maxMSOsExamined);
+            case {'SVE'} % Use the exhaustive method to match
+                matching = matchers(i).match('SVE');
         end
         matchings_set{graph_index}(i) = {matchers(i).matchingSet};
         % Store stat about valid matching
