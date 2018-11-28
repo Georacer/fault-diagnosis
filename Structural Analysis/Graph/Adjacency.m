@@ -28,24 +28,41 @@ classdef Adjacency < matlab.mixin.Copyable
     
     properties (Dependent)
         E2V
+        E2V_types
         V2E
+        V2E_types
     end
     
     methods
         
-        function obj = Adjacency(gi)
+        function obj = Adjacency(gi, type)
+            % Arguments:
+            %   type: 'force' will create non-invertible E2V edges and mark them as such in BD_types matrix
             obj.gi = gi;
-            obj.parseModel();
+            if nargin<2
+                type = [];
+            end
+            obj.parseModel(type);
         end
         
-        function parseModel(this)
+        function parseModel(this, type)
+            
+            if nargin<2
+                type = [];
+            end
+            
             % Create the graph adjacency matrix and other related objects
             this.numVars = this.gi.graph.numVars;
             this.numEqs = this.gi.graph.numEqs;
             numEls = this.numVars + this.numEqs;
             this.BD = zeros(numEls,numEls);
             this.BD_types = this.BD;
-            E = this.gi.getEdgeList();
+            
+            if strcmp(type,'force')
+                E = this.gi.getEdgeList('force');
+            else
+                E = this.gi.getEdgeList();
+            end
             
             for i=1:size(E,1)
                 id1 = E(i,1);
@@ -66,7 +83,7 @@ classdef Adjacency < matlab.mixin.Copyable
                     elseif this.gi.isDerivative(edgeId)
                         this.BD(this.numVars+equIndex, varIndex) = this.differentiationCost;
                         this.BD_types(this.numVars+equIndex, varIndex) = 3;
-                    elseif this.gi.isNonSolvable(edgeId)
+                    elseif this.gi.isNonSolvable(edgeId) 
                         this.BD(this.numVars+equIndex, varIndex) = this.nonInvertibleCost;
                         this.BD_types(this.numVars+equIndex, varIndex) = 4;
                     else
@@ -88,6 +105,14 @@ classdef Adjacency < matlab.mixin.Copyable
         
         function array = get.V2E(obj)
             array = obj.BD(1:obj.numVars,(obj.numVars+1):end);
+        end
+        
+        function array = get.E2V_types(obj)
+            array = obj.BD_types((obj.numVars+1):end,1:obj.numVars);
+        end
+        
+        function array = get.V2E_types(obj)
+            array = obj.BD_types(1:obj.numVars,(obj.numVars+1):end);
         end
         
         function table = getTable(this,selection)
