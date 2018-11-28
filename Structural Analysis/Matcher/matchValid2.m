@@ -8,12 +8,14 @@ p = inputParser;
 p.addRequired('matcher',@(x) true);
 p.addParameter('faultsOnly',true, @islogical);
 p.addParameter('maxMSOsExamined', 0, @isnumeric);
+p.addParameter('matchingsPerMSO', 0, @isnumeric);
 
 p.parse(matcher, varargin{:});
 opts = p.Results;
 
 faultsOnly = opts.faultsOnly; % Generate only residuals which are sensitive to faults
 maxMSOsExamined = opts.maxMSOsExamined;
+matchingsPerMSO = opts.matchingsPerMSO;
 
 % debug = false;
 debug = true;
@@ -82,7 +84,7 @@ for i=1:length(msoSet)
         end
     end
     
-    [MSOMatchings{i}, MSOCosts(i)] = matchMSO(gi,msoSet{i});
+    [MSOMatchings{i}, MSOCosts(i)] = matchMSO(gi,msoSet{i}, matchingsPerMSO);
     examination_array(i) = length(msoSet{i}); % Add the size of the current MSO: one examined MJust for each equation in MSO.
     MSOsExamined = MSOsExamined + 1;
     if (MSOsExamined==maxMSOsExamined)
@@ -108,7 +110,7 @@ end
 
 
 %% Find a valid matching for an MSO
-function [MValid, cost] = matchMSO(gi, mso)
+function [MValid, cost] = matchMSO(gi, mso, matchingsPerMSO)
 % Loop over available just-constrained submodels
 
 % debug = true;
@@ -145,7 +147,7 @@ for i=1:numEqs
         Mcurr = [];
     else
         tempMatcher = Matcher(tempGI);
-        Mcurr = tempMatcher.match('ValidJust');
+        Mcurr = tempMatcher.match('ValidJust', 'max_num_matchings', matchingsPerMSO);
         % Keep only the cheapest valid matching
         if ~isempty(Mcurr)
             Mcurr = Mcurr(1,:);

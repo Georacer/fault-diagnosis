@@ -94,11 +94,11 @@ classdef Adjacency < matlab.mixin.Copyable
             switch selection
                 case 'BD'
                     header = [this.varNames this.eqNames];
-                    table = array2table(this.BD,'RowNames',header,'VarNames',header);
+                    table = array2table(this.BD,'RowNames',header,'VariableNames',header);
                 case 'E2V'
-                    table = array2table(this.E2V,'RowNames',this.eqNames,'VarNames',this.varNames);
+                    table = array2table(this.E2V,'RowNames',this.eqNames,'VariableNames',this.varNames);
                 case 'V2E'
-                    table = array2table(this.V2E,'RowNames',this.varNames,'VarNames',this.eqNames);
+                    table = array2table(this.V2E,'RowNames',this.varNames,'VariableNames',this.eqNames);
                 otherwise
                     error('Available adjacency types are: BD, E2V and V2E');
             end        

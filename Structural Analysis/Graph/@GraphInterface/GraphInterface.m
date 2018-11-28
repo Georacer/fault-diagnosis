@@ -384,7 +384,7 @@ classdef GraphInterface < handle
             
             for i=1:length(ids)
                 
-                if gh.isVariable(ids(i));
+                if gh.isVariable(ids(i))
                     tempVect = gh.graph.variables(indices(i)).neighbourIdArray;
                     equIds = [equIds tempVect];
                     

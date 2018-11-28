@@ -1,4 +1,4 @@
-function [ M, exitcode] = matchValidJust( matcher )
+function [ M, exitcode] = matchValidJust( matcher, varargin )
 %MATCHVALID Summary of this function goes here
 % Assumes that there exists at least one matching which takes into account
 % the non-invertibilities (i.e. The E2V adjacency graph is a square system)
@@ -8,10 +8,18 @@ function [ M, exitcode] = matchValidJust( matcher )
 %           -3 - No valid matching found in one of the KH components
 %            1 - Integral edge in closed loop
 
+p = inputParser;
+
+p.addRequired('matcher',@(x) true);
+p.addParameter('max_num_matchings', 0, @isnumeric);
+
+p.parse(matcher, varargin{:});
+opts = p.Results;
+
+max_num_matchings = opts.max_num_matchings;
+
 debug = false;
 % debug = true;
-
-max_num_matchings = 1e1;
 
 gi = matcher.gi;
 
@@ -75,7 +83,7 @@ for i=pivot
         Mmurty = tempMatcher.match('Murty', max_num_matchings); % Find all possible matchings in increasing cost
         
         % For every matching sequence
-        for j=1:size(Mmurty,1)
+        for j=1:size(Mmurty,1) % TODO Check validitiy with more general Validator class
             hasIntegral = false;
             hasDifferential = false;
             edgeIds = Mmurty(j,:);
