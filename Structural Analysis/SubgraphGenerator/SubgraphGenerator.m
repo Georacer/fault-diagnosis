@@ -122,6 +122,57 @@ classdef SubgraphGenerator < matlab.mixin.Copyable
             gi.createAdjacency();
             gi.name = [gi.name postfix];
         end
+        function Splus = flaugergues(this)
+            % Flaugergues: Monitorable system derivation from Flaugergues2009
+            % V. Flaugergues, V. Cocquempot, M. Bayart, and M. Pengov, “Structural Analysis for FDI: a modified, 
+            % invertibility-based canonical decomposition,” in Proceedings of the 20th International Workshop on 
+            % Principles of Diagnosis, DX09, 2009, pp. 59–66.
+
+            % Generate LiUSM model
+            this.buildLiUSM();
+            
+            % Capture G+
+            Splus = this.getOver();
+            
+            % Create S+*
+            SplusStar = copy(Splus);
+            
+            % Delete non-invertible edges to get S+*
+            edge_ids = SplusStar.getEdgeIdByProperty('isNonSolvable');
+            if ~isempty(edge_ids)
+                SplusStar.deleteEdges(edge_ids);
+                SplusStar.createAdjacency(); % Update the adjacency matrix
+            end
+            
+            % Compute DM on S+*
+            sg = SubgraphGenerator(SplusStar);
+            sg.buildLiUSM();
+            dm = GetDMParts(sg.liUSM.X); % Get DM parts anew
+            
+            % IF S+*- == [] DONE
+            if isempty(dm.Mm.row) % Mm has no equations
+                return;
+            % ELSE
+            else
+            % Find non-reachable variables VNR
+                varInd_nr = dm.Mm.col; % Get nonreachable variable Ids
+                varIds_unknown = SplusStar.getVariablesUnknown();
+                varIds_nr = varIds_unknown(varInd_nr);
+            % Find corresponding equations CNR of the original graph
+                equIds_nr = unique(Splus.getEquations(varIds_nr));
+                
+            % Form S+R by subtracting them
+                Splus.deleteVariables(varIds_nr);
+                Splus.deleteEquations(equIds_nr);
+                Splus.createAdjacency();
+            % Start over
+                this.setGraphInterface(Splus);
+                Splus = this.flaugergues();
+                return;
+            end
+                
+            
+        end
         function [ gi ] = getOver( this )
             %GETOVER Over-constrained partition
             %   Return a new graph object, which contains only the over-constrained

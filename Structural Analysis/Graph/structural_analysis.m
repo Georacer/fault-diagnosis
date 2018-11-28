@@ -37,6 +37,13 @@ tic;
 graphInitial = GraphInterface(); % Instantiate a GraphInterface
 graphInitial.readModel(model); % Create the structural model
 graphInitial.createAdjacency(); % Also create the adjacency matrix
+
+% If matchMethod = Flaugergues, the initial model needs to be modified.
+if strcmp(matchMethod,'Flaugergues')
+    sg = SubgraphGenerator(graphInitial);
+    graphInitial = sg.flaugergues();
+end
+
 timeCreateGI = toc; % Save the creattion time
 
 % Create a GraphViz plot of the initial graph in the model folder
@@ -275,7 +282,7 @@ for graph_index=1:length(graphs_conn)
         switch matchMethod
             case 'BBILP' % Use the BBILP method to match
                 matching = matchers(i).match('BBILP','branchMethod',branchMethod);
-            case 'Exhaustive' % Use the exhaustive method to match
+            case {'Exhaustive','Flaugergues'} % Use the exhaustive method to match
                 matching = matchers(i).match('Valid2','maxMSOsExamined',maxMSOsExamined);
         end
         matchings_set{graph_index}(i) = {matchers(i).matchingSet};
