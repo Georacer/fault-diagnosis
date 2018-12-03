@@ -19,7 +19,6 @@ matchingsPerMSO = opts.matchingsPerMSO;
 
 % debug = false;
 debug = true;
-profile on
 
 gi = matcher.gi;
 % Initialize valid matchings container
@@ -33,7 +32,7 @@ end
 
 % Check if provided graph contains only unknown variables
 if ~(isempty(gi.getMatchedEqus()) && isempty(gi.getMatchedVars()))
-    error('Expecting a completely unkown subgraph to match');
+    error('Expecting a completely unknown subgraph to match');
 end
 
 % Check if structural redundancy degree is 1

@@ -185,7 +185,7 @@ classdef Validator
         end
         
         function [graphReduced, typesReduced, newVarIds, newEquIds, varIdMap, equIdMap] = reduceSCCs(obj, graph, types, oldVarIds, oldEquIds, SCCs)
-            
+        % reduceSCCs Conmpact the Strongly Connected Components of a fully directed adjacency matrix
             if isempty(SCCs) % Nothing to do here
                 graphReduced = graph;
                 typesReduced = types;

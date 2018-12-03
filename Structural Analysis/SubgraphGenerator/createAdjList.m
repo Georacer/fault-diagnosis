@@ -1,6 +1,5 @@
 function [ adjList ] = createAdjList( adj, varargin )
 %CREATEADJLIST Convert an adjacency matrix to an adjacency list
-%   Not called currently by any function
 
 p = inputParser;
 
