@@ -277,7 +277,7 @@ for graph_index=1:length(graphs_conn)
         index = SOindices(i);
         fprintf('\n');
         tempGI = SOSubgraphs(index);
-        fprintf('Examining another SO graph with size %d\n',length(tempGI.reg.equIdArray));
+        fprintf('Examining SO graph %d/%d with size %d\n', i, length(SOindices), length(tempGI.reg.equIdArray));
         matchers(i) = Matcher(tempGI); % Instantiate the matcher for this SO
         switch matchMethod
             case 'BBILP' % Use the BBILP method to match
@@ -320,7 +320,7 @@ for graph_index=1:length(graphs_conn)
     profile off
     
     % Printout the matchings found for this WCC
-    fprintf('\nResulting valid matchings:\n');
+    fprintf('\nResulting matchings:\n');
     for i=1:length(matchers)
         disp(matchers(i).matchingSet);
         stats.(name).matchingSets{graph_index}(i) = {matchers(i).matchingSet};
