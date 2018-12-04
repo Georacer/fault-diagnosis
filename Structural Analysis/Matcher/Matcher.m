@@ -55,7 +55,7 @@ classdef Matcher < matlab.mixin.Copyable
                     this.matchingSet = resp;
                 case 'Valid2'
                     resp = matchValid2(this,varargin{:});
-                    this.gi.applyMatching(resp);
+                    this.gi.applyMatching(resp{1});
                     this.matchingSet = resp;
                 case 'BBILP'
                     resp = matchBBILP(this,varargin{:});

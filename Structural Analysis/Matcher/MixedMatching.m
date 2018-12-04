@@ -10,12 +10,14 @@ p = inputParser;
 p.addRequired('mh',@(x) true);
 p.addParameter('faultsOnly',true, @islogical);
 p.addParameter('maxMSOsExamined', 0, @isnumeric);
+p.addParameter('exitAtFirstValid', true, @islogical);
 
 p.parse(mh, varargin{:});
 opts = p.Results;
 
 faultsOnly = opts.faultsOnly; % Generate only residuals which are sensitive to faults
 maxMSOsExamined = opts.maxMSOsExamined;
+exitAtFirstValid = opts.exitAtFirstValid;
 
 debug = true;
 % debug = false;
@@ -72,10 +74,11 @@ if faultsOnly
 end
 
 % Loop over the collected MSOs
+PSOCosts = inf*ones(1,0);
+PSOMatchings = cell(1,0);
 MSOsExamined = 0;
-MSOCosts = inf*ones(1,0);
-MSOMatchings = cell(1,0);
 examination_array = zeros(1,length(msoSet)); % How many residual generators have been examined
+valid_matching_found = false;
 for i=1:length(msoSet)
     if debug; fprintf('Mixed: Testing MSO %d/%d with size %d\n',i,length(msoSet),length(msoSet{i})); end
     
@@ -89,23 +92,55 @@ for i=1:length(msoSet)
     end
     
     [new_matchings, new_costs] = matchMSO(gi,msoSet{i});
-    MSOMatchings = [MSOMatchings new_matchings];
-    MSOCosts = [MSOCosts new_costs];
+    PSOMatchings = [PSOMatchings new_matchings];
+    PSOCosts = [PSOCosts new_costs];
     examination_array(i) = length(msoSet{i}); % Add the size of the current MSO: one examined MJust for each equation in MSO.
     MSOsExamined = MSOsExamined + 1;
     if (MSOsExamined==maxMSOsExamined)
         break;
     end
+    % Check if a valid matching has been produced
+    if exitAtFirstValid
+        gi_blob = getByteStreamFromArray(gi); % Freeze a copy of this PSO
+        for m_cell = new_matchings
+            matching = m_cell{1};
+            if isempty(matching)
+                break;
+            end
+            temp_gi = getArrayFromByteStream(gi_blob); % Restore the PSO
+            temp_gi.applyMatching(matching); % Apply the current matching to it
+
+            equIds = temp_gi.getEquations(matching);
+            varIds = gi.getVariablesUnknown(equIds);
+            if length(varIds)~=length(equIds)
+                continue;
+            end
+            temp_gi.createAdjacency();
+            adjacency = temp_gi.adjacency;
+            numVars = temp_gi.adjacency.numVars;
+            numEqs = temp_gi.adjacency.numEqs;
+            validator = Validator(adjacency.BD, adjacency.BD_types, numVars, numEqs);
+            offendingEdges = validator.isValid();
+            if isempty(offendingEdges)
+                % Matching is valid
+                valid_matching_found = true;
+                break;
+            end
+        end
+        if valid_matching_found
+            break;
+        end
+    end
 end
 examinations = sum(examination_array);
-if debug; fprintf('Mixed: MSO processed in %d examinations\n',examinations); end
+if debug; fprintf('Mixed: PSO processed in %d examinations\n',examinations); end
 
 % Sort matchings by cost
-[costs_sorted,pivot] = sort(MSOCosts);
-M = cell(size(MSOMatchings));
+[costs_sorted,pivot] = sort(PSOCosts);
+M = cell(size(PSOMatchings));
 i = 1;
 for p = pivot
-    M(i) = MSOMatchings(p);
+    M(i) = PSOMatchings(p);
     i = i+1;
 end
 
@@ -148,7 +183,6 @@ for i=1:numEqs
     if ~(num_vars == num_equs)
         error('Tried to match a non-square system');
     else
-        tempMatcher = Matcher(tempGI);
         Mcurr = findCalculationSequence(tempGI);
     end
     

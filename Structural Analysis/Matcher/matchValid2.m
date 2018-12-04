@@ -1,4 +1,4 @@
-function [ Mvalid ] = matchValid2( matcher, varargin )
+function [ M ] = matchValid2( matcher, varargin )
 %MATCHVALID Find valid residuals in provided PSO
 %   Extends matchValid: is also applicable in MTESs
 %   Assumes the related graph is an MTES
@@ -9,6 +9,7 @@ p.addRequired('matcher',@(x) true);
 p.addParameter('faultsOnly',true, @islogical);
 p.addParameter('maxMSOsExamined', 0, @isnumeric);
 p.addParameter('matchingsPerMSO', 0, @isnumeric);
+p.addParameter('exitAtFirstValid', true, @islogical);
 
 p.parse(matcher, varargin{:});
 opts = p.Results;
@@ -16,13 +17,14 @@ opts = p.Results;
 faultsOnly = opts.faultsOnly; % Generate only residuals which are sensitive to faults
 maxMSOsExamined = opts.maxMSOsExamined;
 matchingsPerMSO = opts.matchingsPerMSO;
+exitAtFirstValid = opts.exitAtFirstValid;
 
 % debug = false;
 debug = true;
 
 gi = matcher.gi;
 % Initialize valid matchings container
-Mvalid = [];
+M = [];
 
 eqsFaultable = gi.getEquIdByProperty('isFaultable');
 if (faultsOnly && isempty(eqsFaultable))
@@ -68,9 +70,10 @@ end
 
 % Loop over the collected MSOs
 MSOsExamined = 0;
-MSOCosts = inf*ones(1,length(msoSet));
-MSOMatchings = cell(1,length(msoSet));
+PSOCosts = inf*ones(1,0);
+PSOMatchings = cell(1,0);
 examination_array = zeros(1,length(msoSet));
+valid_matching_found = false;
 for i=1:length(msoSet)
     if debug; fprintf('matchValid2: Testing MSO %d/%d with size %d\n',i,length(msoSet),length(msoSet{i})); end
     
@@ -83,28 +86,59 @@ for i=1:length(msoSet)
         end
     end
     
-    [MSOMatchings{i}, MSOCosts(i)] = matchMSO(gi,msoSet{i}, matchingsPerMSO);
+    [new_matchings, new_costs] = matchMSO(gi,msoSet{i}, matchingsPerMSO);
+    PSOMatchings = [PSOMatchings new_matchings];
+    PSOCosts = [PSOCosts new_costs];
     examination_array(i) = length(msoSet{i}); % Add the size of the current MSO: one examined MJust for each equation in MSO.
     MSOsExamined = MSOsExamined + 1;
     if (MSOsExamined==maxMSOsExamined)
         break;
     end
-end
-examinations = sum(examination_array);
+    % Check if a valid matching has been produced
+    if exitAtFirstValid
+        gi_blob = getByteStreamFromArray(gi); % Freeze a copy of this PSO
+        for m_cell = new_matchings
+            matching = m_cell{1};
+            if isempty(matching)
+                break;
+            end
+            temp_gi = getArrayFromByteStream(gi_blob); % Restore the PSO
+            temp_gi.applyMatching(matching); % Apply the current matching to it
 
-
-% Pick the cheapest matching
-for i=1:length(msoSet)
-    [~,pivot] = sort(MSOCosts);
-    index = pivot(1);
-    if isinf(MSOCosts(index)) % No valid matching found
-        Mvalid = [];
-    else
-        Mvalid = MSOMatchings{index};
+            equIds = temp_gi.getEquations(matching);
+            varIds = gi.getVariablesUnknown(equIds);
+            if length(varIds)~=length(equIds)
+                continue;
+            end
+            temp_gi.createAdjacency();
+            adjacency = temp_gi.adjacency;
+            numVars = temp_gi.adjacency.numVars;
+            numEqs = temp_gi.adjacency.numEqs;
+            validator = Validator(adjacency.BD, adjacency.BD_types, numVars, numEqs);
+            offendingEdges = validator.isValid();
+            if isempty(offendingEdges)
+                % Matching is valid
+                valid_matching_found = true;
+                break;
+            end
+        end
+        if valid_matching_found
+            break;
+        end
     end
 end
+examinations = sum(examination_array);
+if debug; fprintf('matchValid2: PSO processed in %d examinations\n',examinations); end
 
-if debug; fprintf('matchValid2: MSO processed in %d examinations\n',examinations); end
+% Sort matchings by cost
+[costs_sorted,pivot] = sort(PSOCosts);
+M = cell(size(PSOMatchings));
+i = 1;
+for p = pivot
+    M(i) = PSOMatchings(p);
+    i = i+1;
+end
+
 end
 
 
@@ -188,7 +222,7 @@ if any(isfinite(M0weights)) %Process matching of this MS0
     % Search for cheapest matching weight
     [cost, pivot] = sort(M0weights);
     i = pivot(1);
-    MValid = M0pool{i};
+    MValid = M0pool(i);
     cost = cost(1);
     
     if debug; fprintf('The selected matching for this MSO is (edgeIds): ');  fprintf('%d, ',MValid); fprintf('\nPlease extend with a residual\n'); end
