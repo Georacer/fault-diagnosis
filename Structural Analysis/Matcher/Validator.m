@@ -12,8 +12,8 @@ classdef Validator
         DEF_NI = 4;
         DEF_AE = 5;
         
-%         debug = true;
-        debug = false;
+        debug = true;
+%         debug = false;
         
     end
     
@@ -107,10 +107,10 @@ classdef Validator
                 relGraph = types_NoAE.*graph_NoAE; % Keep only the directed part
                 E2V = relGraph(equIndices,varIndices);
                 [row, col] = find(E2V==obj.DEF_NI);
-                for i=1:length(row)
+                for j=1:length(row)
                     IDs = [varIds_NoAE equIds_NoAE];
-                    equId = IDs(equIndices(row(i)));
-                    varId = IDs(varIndices(col(i)));
+                    equId = IDs(equIndices(row(j)));
+                    varId = IDs(varIndices(col(j)));
 %                     equId = equIds_NoAE(row(i));
 %                     varId = varIds_NoAE(col(i));
                     offendingEdges(end+1,:) = [equId varId];
@@ -129,10 +129,10 @@ classdef Validator
                 relGraph = types_NoAE.*graph_NoAE; % Keep only the directed part
                 E2V = relGraph(equIndices,varIndices);
                 [row, col] = find(E2V==obj.DEF_DER);
-                for i=1:length(row)
+                for j=1:length(row)
                     IDs = [varIds_NoAE equIds_NoAE];
-                    equId = IDs(equIndices(row(i)));
-                    varId = IDs(varIndices(col(i)));
+                    equId = IDs(equIndices(row(j)));
+                    varId = IDs(varIndices(col(j)));
 %                     equId = equIds_NoAE(row(i));
 %                     varId = varIds_NoAE(col(i));
                     offendingEdges(end+1,:) = [equId varId];
