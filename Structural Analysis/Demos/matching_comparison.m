@@ -24,7 +24,7 @@
 % Simply run this script. The results will be plotted. Estimated duration is about 3mins, depending on your machine.
 
 
-close all
+close all hidden
 clear
 clc
 
@@ -38,12 +38,18 @@ opMode = 'continuous';
 modelArray = {};
 
 % Select the models to test
-modelArray{end+1} = g005a(); % UAV model described in Fravolini, M., Campa, G., & Napolitano, M. (2008).
+% modelArray{end+1} = g005a(); % UAV model described in Fravolini, M., Campa, G., & Napolitano, M. (2008).
+modelArray{end+1} = g005b();
+% modelArray{end+1} = g014g();
+% modelArray{end+1} = g039();
+% modelArray{end+1} = g040();
 
 % Define the matching method set to test
-% matchMethodSet = {'BBILP', 'Exhaustive'};
-% matchMethodSet = {'Exhaustive'};
-matchMethodSet = {'BBILP'};
+% matchMethodSet = {'BBILP','Flaugergues','Mixed'};
+% matchMethodSet = {'BBILP'};
+% matchMethodSet = {'BBILP2'};
+% matchMethodSet = {'Flaugergues'};
+matchMethodSet = {'Mixed'};
 
 % Define the Structurally Overdetermined set of graphs to examine
 SOTypeSet = {'MTES'};
@@ -62,7 +68,8 @@ for matchIndex = 1:length(matchMethodSet)
         SA_settings.matchMethod = matchMethod;
         SA_settings.SOType = SOType;
         SA_settings.branchMethod = branchMethod;
-        SA_settings.maxMSOsExamined = 1;
+        SA_settings.maxMSOsExamined = 0;
+        SA_settings.exitAtFirstValid = true;
         SA_settings.plotGraphInitial = false;
         SA_settings.plotGraphOver = false;
         SA_settings.plotGraphRemaining = false;
@@ -81,50 +88,74 @@ for matchIndex = 1:length(matchMethodSet)
             %% Perform Structural Analsysis and Matching, extract residual generators
             SA_results = structural_analysis(model, SA_settings);
             
-%             %% Validate matchings
-%             % TODO Does not apply for graphs with disconnected subgraphs
-%             PSOs = SA_results.SOSubgraphs_set{1};
-%             matchings = SA_results.matchings_set{1};
-% %             matchings = 
-% %             graph_initial = SA_results.gi;
-% %             binary_blob = getByteStreamFromArray(graph_initial);
-% %             sg_initial = SubgraphGenerator(graph_intial, binary_blob);
-%             valid_matchings = 0;
-%             
-%             for i=1:length(matchings)
-%                 if isempty(matchings{i})
-%                     % No matching was found
-%                     break;
-%                 end
-%                 PSOs(i).createAdjacency();
-%                 adjacency = PSOs(i).adjacency;
-%                 numVars = PSOs(i).adjacency.numVars;
-%                 numEqs = PSOs(i).adjacency.numEqs;
-%                 validator = Validator(adjacency.BD, adjacency.BD_type, numVars, numEqs);
-%                 offendingEdges = validator.isValid();
-%                 if ~isempty(offendingEdges)
-%                     % Matching is not valid
-%                     break;
-%                 end
-%                 valid_matchings = valid_matchings + 1;
-%             end
-%             
+            %% Validate matchings
+            % TODO Does not apply for graphs with disconnected subgraphs
+            PSOs = SA_results.SOSubgraphs_set{1};
+            matchings = SA_results.matchings_set{1};
+            valid_matchings = 0;
+            total_matching_array = zeros(1,length(matchings)); % Holds the total number of generated matchings
+            valid_pso_array = zeros(1,length(PSOs));
+            valid_matching_cell = cell(1,length(PSOs));
+            graphInitial = SA_results.gi;
+            
+            for i=1:length(matchings)
+                if isempty(matchings{i})
+                    % No matching was found
+                    continue;
+                end        
+                
+                gi = PSOs(i);
+                gi_blob = getByteStreamFromArray(gi); % Freeze a copy of this PSO
+                matchings_this_pso = matchings{i};
+                if ~iscell(matchings_this_pso)
+                    matchings_this_pso = {matchings_this_pso};
+                end
+                total_matching_array(i) = length(matchings_this_pso);
+                valid_matching_cell{i} = {};
+                
+                valid_found = false;
+                
+                for j=1:length(matchings_this_pso)
+                    gi = getArrayFromByteStream(gi_blob); % Restore the PSO
+                    m = matchings_this_pso{j};
+                    gi.applyMatching(m); % Apply the current matching to it
+                    
+                    equIds = gi.getEquations(m);
+                    varIds = graphInitial.getVariablesUnknown(equIds);
+                    if length(varIds)~=length(equIds)
+                        continue;
+                    end
+
+                    gi.createAdjacency();
+                    adjacency = gi.adjacency;
+                    numVars = gi.adjacency.numVars;
+                    numEqs = gi.adjacency.numEqs;
+                    validator = Validator(adjacency.BD, adjacency.BD_types, numVars, numEqs);
+                    offendingEdges = validator.isValid();
+                    if ~isempty(offendingEdges)
+                        % Matching is not valid
+                        continue;
+                    end
+                    % Mark this PSO as one with a valid matching
+                    if ~valid_found
+                        valid_pso_array(i) = 1;
+                        valid_found = true;
+                    end
+                    
+                    valid_matchings = valid_matchings + 1; % Cound the valid matchings
+                    valid_matching_cell{i}{end+1} = m; % Store this valid matching in this PSO container
+%                     break; % One valid matching was found for this PSO. This is enough
+                end
+            end
+            
 %             fprintf('Valid matchings %d/%d\n',valid_matchings, length(matchings));
             
             %% Display the total number of residual generators found
             
-            fprintf('Matching Statistics\n');
-            fprintf('===================\n');
-            counter = 0;
-            for i=1:length(SA_results.matchings_set)
-                for j=1:length(SA_results.matchings_set{i})
-                    if ~isempty(SA_results.matchings_set{i}{j})
-                        counter = counter + 1;
-                    end
-                end
-            end
+            fprintf('Matching Statistics for system %s with method %s\n',model.name, matchMethod);
+            fprintf('================================================\n');
             
-            fprintf('Total number of valid residuals found: %d\n',counter);
+            fprintf('Number of PSOs with valid matchings: %d/%d\n',sum(valid_pso_array),length(valid_pso_array));
             
             graphName = SA_results.gi.name;
             
@@ -133,7 +164,7 @@ for matchIndex = 1:length(matchMethodSet)
             for i=1:length(SA_results.stats.(graphName).ResGenSets)
                 numSets = numSets + length(SA_results.stats.(graphName).ResGenSets{i});
             end
-            fprintf('Total number of PSOs: %d\n',numSets);
+%             fprintf('Total number of PSOs: %d\n',numSets);
             
             total = 0;
             for j=1:length(SA_results.stats.(graphName).ResGenSets)
@@ -146,23 +177,23 @@ for matchIndex = 1:length(matchMethodSet)
             
             % Average matching size
             total = 0;
-            counterValid = 0;
-            counterEmpty = 0;
-            for i=1:length(SA_results.stats.(graphName).matchingSets)
-                for j=1:length(SA_results.stats.(graphName).matchingSets{i})
-                    matching = SA_results.stats.(graphName).matchingSets{i}{j};
-                    if ~isempty(matching)
-                        total = total+length(matching);
-                        counterValid = counterValid + 1;
-                    else
-                        counterEmpty = counterEmpty + 1;
+            for i=1:1
+                for j=1:length(valid_matching_cell) % Select subgraph
+                    matchings_this_pso = valid_matching_cell{j}; % Select PSO
+                    for k=1:length(matchings_this_pso) % Select matching
+                        matching = matchings_this_pso{k};
+                        if ~isempty(matching)
+                            total = total+length(matching);
+                        else
+                        end
                     end
                 end
             end
-            avgSize = total/counterValid;
-            fprintf('Number of valid matchings: %d\n',counterValid);
+            avgSize = total/valid_matchings;
+            fprintf('Number of resulting valid matchings: %d\n',valid_matchings);
             fprintf('Mean matching size: %g\n',avgSize);
-            fprintf('Number of invalid matchings: %d\n',counterEmpty);
+            fprintf('Number of invalid matchings: %d\n',sum(total_matching_array)-valid_matchings);
+            fprintf('\n');
             
             if strcmp(opMode,'breaking')
                 input('Press Enter to proceed to the next step...');
@@ -200,7 +231,12 @@ for matchIndex = 1:length(matchMethodSet)
             end
             
             %% Process statistics and save
-            stats = SA_results.stats;
+            
+            stats.(model.name) = SA_results.stats.(graphName);            
+            
+            stats.(model.name).num_valid_matchings = valid_matchings;
+            stats.(model.name).num_valid_psos = sum(valid_pso_array);
+            stats.(model.name).num_invalid_matchings = sum(total_matching_array) - valid_matchings;
             fileName = sprintf('%s.mat',matchMethod);
             
             % If no statistics have previously been saved
@@ -223,7 +259,7 @@ for matchIndex = 1:length(matchMethodSet)
                         recordedSamples = oldStats.(newFieldName).samples + 1;
                         oldStats.(newFieldName).samples = recordedSamples;
                         assert(all(cellfun(@(x,y) isequal(x,y),stats.(newFieldName).ResGenSets,oldStats.(newFieldName).ResGenSets)),'Newer version of graph has different ResGenSets');
-                        assert(all(cellfun(@(x,y) isequal(x,y),stats.(newFieldName).matchingSets,oldStats.(newFieldName).matchingSets)),'Newer version of graph has differente matchingSets');
+                        assert(all(cellfun(@(x,y) isequal(x,y),stats.(newFieldName).matchingSets,oldStats.(newFieldName).matchingSets)),'Newer version of graph has different matchingSets');
                         oldStats.(newFieldName).timeSetGen = stats.(newFieldName).timeSetGen/recordedSamples + oldStats.(newFieldName).timeSetGen*(recordedSamples-1)/recordedSamples;
                         oldStats.(newFieldName).timeMakeSG = stats.(newFieldName).timeMakeSG/recordedSamples + oldStats.(newFieldName).timeMakeSG*(recordedSamples-1)/recordedSamples;
                         oldStats.(newFieldName).timeSolveILP = stats.(newFieldName).timeSolveILP/recordedSamples + oldStats.(newFieldName).timeSolveILP*(recordedSamples-1)/recordedSamples;
@@ -251,77 +287,54 @@ end
 return
 
 
-%% Benchmark comparisons between BBILP and exhaustive search
+%% Benchmark comparisons between matching algorithms
 % Plots the comparison results
 
 clear
-close all 
+close all hidden
  
 % TODO: Generate automatically log filenames
 
-matchMethodSet = {'BBILP','Valid2'};
+matchMethodSet = {'BBILP','Flaugergues', 'Mixed'};
+point_graphic = {'s', '^', 'd'};
 
 file_names = {};
 for matching_string = matchMethodSet
    file_names{end+1} = sprintf('%s.mat',matching_string{1});
 end
+names = {'g005b'}; 
+text_offset = [20 20];
 
+data = cell(1,length(file_names));
+model_name = names{1};
 
-% exhaustive_MTES = 'Exhaustive_DFS_MTES';
-% BBILP_MTES = 'BBILP_DFS_MTES'; 
- 
-% files_MTES = {BBILP_MTES, exhaustive_MTES}; 
- 
-x1 = (1:3:(2*length(file_names)+1)) + 0.5; 
- 
-names = {'g005a'}; 
-numExperiments = length(names); 
-clear stats 
-if length(x1==1)
-    barWidth = 1;
-else
-    barWidth = 1/diff(x1(1:2)); 
-end
- 
-% data_MTES = zeros(3,numExperiments); 
-% data_MSO = data_MTES; 
-
-data = zeros(length(file_names),2);
-
-% Load MTES data 
-timeSetGen = zeros(length(file_names),length(names)); 
-timeMakeSG = timeSetGen; 
-timeSolveILP = timeSetGen; 
-for i=1:length(file_names) 
-    load(file_names{i}); 
-    for j=1:length(names)
-        data(i,1) = stats.(names{j}).num_valid_matchings;
-        data(i,2) = stats.(names{j}).num_invalid_matchings;
-    end 
+for i=1:length(data)
     clear stats 
-end 
- 
-fh = figure(); 
- 
-h1 = barh([x1],[data],'stacked','BarWidth',barWidth); % this should make a stacked bar graph located at the x1 coordinates 
-set(gca,'nextplot','add') %add on to the current graph 
- 
+    point.name = matchMethodSet{i};
+    load(file_names{i}); 
+    point.num_valid_psos = stats.(model_name).num_valid_psos;
+    point.time = stats.(model_name).timeSolveILP;
+    point.graphic = point_graphic{i};
+    data{i} = point;
+end
+
+fh = figure();
+ah = gca;
+hold on
+for i=1:length(data)
+    point = data{i};
+    scatter(point.num_valid_psos, point.time, 100, point.graphic, 'filled');
+    text(point.num_valid_psos, point.time + text_offset(2), point.name, 'VerticalAlignment', 'bottom', 'HorizontalAlignment', 'center', 'FontSize', 12);
+end
+%  
 % Set axis properties 
 ah = fh.Children; 
-ah.YLim = [0 7]; 
-ah.XLim = [ah.XLim(1) ah.XLim(2)+2]; 
-ah.YTick = 0:7; 
-ah.YTickLabel = {'','','BBILP','','','Valid2','','',}; 
-ah.YLabel.String = 'Matching Method'; 
-ah.XLabel.String = 'Number of Residual Generators'; 
- 
-% Place explanatory text 
-for i=1:length(x1) 
-    x_coord = sum(data(i,:)); 
-    text(x_coord+0.1,x1(i),'MTES'); 
-end 
- 
-legend({names{:}},'Location','SE'); 
-set(ah,'xgrid','on') 
+ah.YLim = [0 400]; 
+ah.XLim = [2 7]; 
+% set(ah, 'YScale', 'log');
+ah.YLabel.String = 'Time (s)'; 
+ah.XLabel.String = sprintf('Number of PSOs with a Realizable Matching (Out of %d Total)',length(stats.(model_name).ResGenSets{1})); 
+
+grid on
 ah.GridColor = [0.2, 0.2, 0.2];  % [R, G, B] 
-ah.GridAlpha = 0.9;
+ah.GridAlpha = 0.3;
