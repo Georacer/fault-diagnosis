@@ -67,6 +67,18 @@ if faultsOnly
     end
 end
 
+% Sort the msos in order of sise
+mso_size = zeros(1,length(msoSet));
+for i=1:length(mso_size)
+    mso_size(i) = length(msoSet{i});
+end    
+[~,pivot] = sort(mso_size);
+old_msoSet = msoSet;
+i = 1;
+for p = pivot
+    msoSet(i) = old_msoSet(p);
+    i = i+1;
+end
 
 % Loop over the collected MSOs
 MSOsExamined = 0;
