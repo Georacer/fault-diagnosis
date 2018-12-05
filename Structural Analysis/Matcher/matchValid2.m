@@ -5,11 +5,11 @@ function [ M ] = matchValid2( matcher, varargin )
 
 p = inputParser;
 
-p.addRequired('matcher',@(x) true);
-p.addParameter('faultsOnly',true, @islogical);
+p.addRequired('matcher', @(x) true);
+p.addParameter('faultsOnly', true, @islogical);
 p.addParameter('maxMSOsExamined', 0, @isnumeric);
 p.addParameter('matchingsPerMSO', 0, @isnumeric);
-p.addParameter('exitAtFirstValid', true, @islogical);
+p.addParameter('exitAtFirstValid', false, @islogical);
 
 p.parse(matcher, varargin{:});
 opts = p.Results;
@@ -87,8 +87,10 @@ for i=1:length(msoSet)
     end
     
     [new_matchings, new_costs] = matchMSO(gi,msoSet{i}, matchingsPerMSO);
-    PSOMatchings = [PSOMatchings new_matchings];
-    PSOCosts = [PSOCosts new_costs];
+    if ~isempty(new_matchings)
+        PSOMatchings = [PSOMatchings new_matchings];
+        PSOCosts = [PSOCosts new_costs];
+    end
     examination_array(i) = length(msoSet{i}); % Add the size of the current MSO: one examined MJust for each equation in MSO.
     MSOsExamined = MSOsExamined + 1;
     if (MSOsExamined==maxMSOsExamined)

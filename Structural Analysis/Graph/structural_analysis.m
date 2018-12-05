@@ -26,6 +26,7 @@ matchMethod = SAsettings.matchMethod;
 SOType = SAsettings.SOType;
 branchMethod = SAsettings.branchMethod;
 maxMSOsExamined = SAsettings.maxMSOsExamined;
+exitAtFirstValid = SAsettings.exitAtFirstValid;
 plotGraphInitial = SAsettings.plotGraphInitial;
 plotGraphOver = SAsettings.plotGraphOver;
 plotGraphRemaining = SAsettings.plotGraphRemaining;
@@ -282,12 +283,14 @@ for graph_index=1:length(graphs_conn)
         switch matchMethod
             case 'BBILP' % Use the BBILP method to match
                 matching = matchers(i).match('BBILP','branchMethod',branchMethod);
+            case 'BBILP2' % Use the BBILP method to match
+                matching = matchers(i).match('BBILP2','branchMethod',branchMethod,'exitAtFirstValid',exitAtFirstValid);
             case {'Exhaustive','Flaugergues'} % Use the exhaustive method to match
-                matching = matchers(i).match('Valid2','maxMSOsExamined',maxMSOsExamined);
+                matching = matchers(i).match('Valid2','maxMSOsExamined',maxMSOsExamined,'exitAtFirstValid',exitAtFirstValid);
             case {'SVE'} % Use the exhaustive method to match
                 matching = matchers(i).match('SVE');
             case {'Mixed'} % Use the Mixed causality matching from Svard2010
-                matching = matchers(i).match('Mixed');
+                matching = matchers(i).match('Mixed','exitAtFirstValid',exitAtFirstValid);
             otherwise
                 error('Unknown match method %s',matchMethod);
         end
