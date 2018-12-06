@@ -66,13 +66,22 @@ classdef Evaluator < handle
             obj.expressions = sym.empty;
             for i=1:length(obj.scc)
                 if ~gi.getPropertyById(scc(i),'isDynamic')  % This equation is not a differentiation
-                    if isempty(obj.gi.getExpressionById(scc(i)))
-                        error('No expression was provided with equation %d',scc(i));
+                    equation_expression = obj.gi.getExpressionById(obj.scc(i));
+                    if isempty(equation_expression)
+                        error('No expression was provided with equation %d',obj.scc(i));
+                    end
+                    if obj.debug
+                        fprintf('Evaluator: building expression: %s\n', equation_expression{:});
                     end
                     try
-                        obj.expressions(i) = sym(obj.gi.getExpressionById(scc(i)));
+                        obj.expressions(i) = sym(equation_expression{:});
                     catch e
                         rethrow(e);
+%                         if strcmp(e.identifier, 'symbolic:specfunc:ExpectingArithmeticalExpression')
+%                             rethrow(e); % Matlab failed to create the arithmetic expression
+%                         else
+%                             error('Unknown symbolic toolbox error');
+%                         end
                     end
                 end
             end
@@ -104,7 +113,7 @@ classdef Evaluator < handle
                         try
                             obj.expressions_solved_handle = matlabFunction(obj.expressions_solved, 'Vars', obj.sym_var_input_array, 'Outputs', obj.gi.getAliasById(obj.var_matched_ids));
                         catch e
-                            if obj.debug; fprintf('Evaluator: Failed to instantiate singular SCC evaluation'); end
+                            if obj.debug; fprintf('Evaluator: Failed to instantiate singular SCC evaluation\n'); end
                             rethrow(e);
                         end
                     else  % This is a residual generator
