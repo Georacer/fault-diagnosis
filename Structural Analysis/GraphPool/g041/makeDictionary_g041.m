@@ -50,19 +50,19 @@ dictionary.setValue([], {'CD0'}, 0.03);
 dictionary.setValue([], {'CDa'}, 0.30);
 
 %Input Initializations
-dictionary.setValue(484, {'dtc'}, 0);
-dictionary.setValue(490, {'dac'}, 0);
-dictionary.setValue(496, {'dec'}, 0);
-dictionary.setValue(502, {'drc'}, 0);
+dictionary.setValue([], {'dtc'}, 0);
+dictionary.setValue([], {'dac'}, 0);
+dictionary.setValue([], {'dec'}, 0);
+dictionary.setValue([], {'drc'}, 0);
 
 %Measurement Initializations
 dictionary.setValue([], {'Vam'}, 0);
 dictionary.setValue([], {'pm'}, 0);
 dictionary.setValue([], {'qm'}, 0);
 dictionary.setValue([], {'rm'}, 0);
-dictionary.setValue([], {'phim'}, 0);
-dictionary.setValue([], {'thetam'}, 0);
-dictionary.setValue([], {'psim'}, 0);
+dictionary.setValue([], {'Phim'}, 0);
+dictionary.setValue([], {'Thetam'}, 0);
+dictionary.setValue([], {'Psim'}, 0);
 
 %Fault Initializations
 dictionary.setValue([], {'fseq1'}, 0);
@@ -82,9 +82,9 @@ dictionary.setValue([], {'fseq11'}, 0);
 dictionary.setValue([], {'u'}, 0);
 dictionary.setValue([], {'v'}, 0);
 dictionary.setValue([], {'w'}, 0);
-dictionary.setValue([], {'phi'}, 0);
-dictionary.setValue([], {'theta'}, 0);
-dictionary.setValue([], {'psi'}, 0);
+dictionary.setValue([], {'Phi'}, 0);
+dictionary.setValue([], {'Theta'}, 0);
+dictionary.setValue([], {'Psi'}, 0);
 dictionary.setValue([], {'p'}, 0);
 dictionary.setValue([], {'q'}, 0);
 dictionary.setValue([], {'r'}, 0);
@@ -114,8 +114,8 @@ graphInitial.setLimits([], {'Vam'}, [-1 1]);
 graphInitial.setLimits([], {'pm'}, [-1 1]);
 graphInitial.setLimits([], {'qm'}, [-1 1]);
 graphInitial.setLimits([], {'rm'}, [-1 1]);
-graphInitial.setLimits([], {'phim'}, [-1 1]);
-graphInitial.setLimits([], {'thetam'}, [-1 1]);
-graphInitial.setLimits([], {'psim'}, [-1 1]);
+graphInitial.setLimits([], {'Phim'}, [-1 1]);
+graphInitial.setLimits([], {'Thetam'}, [-1 1]);
+graphInitial.setLimits([], {'Psim'}, [-1 1]);
 
 end
