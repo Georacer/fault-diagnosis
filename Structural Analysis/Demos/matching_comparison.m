@@ -47,9 +47,9 @@ modelArray{end+1} = g005b();
 % Define the matching method set to test
 % matchMethodSet = {'BBILP','Flaugergues','Mixed'};
 % matchMethodSet = {'BBILP'};
-% matchMethodSet = {'BBILP2'};
+matchMethodSet = {'BBILP2'};
 % matchMethodSet = {'Flaugergues'};
-matchMethodSet = {'Mixed'};
+% matchMethodSet = {'Mixed'};
 
 % Define the Structurally Overdetermined set of graphs to examine
 SOTypeSet = {'MTES'};
@@ -297,6 +297,7 @@ close all hidden
 
 matchMethodSet = {'BBILP','Flaugergues', 'Mixed'};
 point_graphic = {'s', '^', 'd'};
+methodTitle = {'BBILP','Reachable SubGraph', 'Mixed Causality'};
 
 file_names = {};
 for matching_string = matchMethodSet
@@ -310,7 +311,7 @@ model_name = names{1};
 
 for i=1:length(data)
     clear stats 
-    point.name = matchMethodSet{i};
+    point.name = methodTitle{i};
     load(file_names{i}); 
     point.num_valid_psos = stats.(model_name).num_valid_psos;
     point.time = stats.(model_name).timeSolveILP;
