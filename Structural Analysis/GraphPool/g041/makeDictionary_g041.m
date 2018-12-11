@@ -20,7 +20,7 @@ dictionary.setValue([], {'Cyp'}, 0);
 dictionary.setValue([], {'Cyr'}, 0);
 dictionary.setValue([], {'Cyda'}, 0);
 dictionary.setValue([], {'Cydr'}, -0.17);
-dictionary.setValue([], {'b'}, 2.8956);
+dictionary.setValue([], {'AR'}, 2.8956);
 dictionary.setValue([], {'Sprop'}, 0.2027);
 dictionary.setValue([], {'Cprop'}, 1);
 dictionary.setValue([], {'Kmotor'}, 80);
