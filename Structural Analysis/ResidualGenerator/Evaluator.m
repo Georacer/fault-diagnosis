@@ -105,6 +105,9 @@ classdef Evaluator < handle
                             warning('vpasolve could not solve for expression');
                             try
                                 obj.expressions_solved = solve(obj.expressions, obj.sym_var_matched_array); % Store the pre-solved expressions
+                                if isempty(obj.expressions_solved)
+                                    error('solve could not solve for expression');
+                                end
                             catch e
                                 if obj.debug; fprintf('Evaluator: Failed to solve singular SCC\n'); end
                                 rethrow(e);  %This equation cannot be solved at all with MATLAB's computer methods
