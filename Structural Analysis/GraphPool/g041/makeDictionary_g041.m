@@ -56,7 +56,7 @@ dictionary.setValue([], {'dec'}, 0);
 dictionary.setValue([], {'drc'}, 0);
 
 %Measurement Initializations
-dictionary.setValue([], {'Vam'}, 0);
+dictionary.setValue([], {'Vam'}, 15);
 dictionary.setValue([], {'pm'}, 0);
 dictionary.setValue([], {'qm'}, 0);
 dictionary.setValue([], {'rm'}, 0);
@@ -79,7 +79,7 @@ dictionary.setValue([], {'fseq11'}, 0);
 
 %Disturbances Initializations
 %State Initializations
-dictionary.setValue([], {'u'}, 0);
+dictionary.setValue([], {'u'}, 15);
 dictionary.setValue([], {'v'}, 0);
 dictionary.setValue([], {'w'}, 0);
 dictionary.setValue([], {'Phi'}, 0);
@@ -110,7 +110,7 @@ graphInitial.setLimits([], {'fseq10'}, [-1 1]);
 graphInitial.setLimits([], {'fseq11'}, [-1 1]);
 
 %Measured variable limits Initializations
-graphInitial.setLimits([], {'Vam'}, [-1 1]);
+graphInitial.setLimits([], {'Vam'}, [5 20]);
 graphInitial.setLimits([], {'pm'}, [-1 1]);
 graphInitial.setLimits([], {'qm'}, [-1 1]);
 graphInitial.setLimits([], {'rm'}, [-1 1]);
