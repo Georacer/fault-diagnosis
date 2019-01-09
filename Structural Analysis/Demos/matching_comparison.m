@@ -6,22 +6,19 @@
 % Website: https://github.com/Georacer
 % November 2018; Last revision: -
 
-% FIXME
-% This demo is a comparison between the classical, exhaustive approach of extracting valid residual generators from
-% Structurally Overdetermined subgraphs, applied on Structural Graphs.
-% The comparison is done in terms of matching methodology ( Branch and Bound ILP vs Exhaustive search) and Structurally
-% Overdetermined search selection (MTES vs MSO).
-% Many system models, pulled from relevant literature are used in the comparison.
+% This demo is a comparison between structural matching algorithms, specifically:
+% * Reachable subgraph methodology from Flaugergues2009
+% * Mixed matching methodology from Svard2010
+% * Our BBILP methodology
+% The methodologies are applied onto a fixed-wing UAV model subject to actuator and sensor faults.
 
-% FIXME
 % This demo script involves:
 % * Generation of the Structural Models
 % * Extraction of PSOs for maximum fault isolation
-% * Finding valid matchings for each subgraph
+% * Finding valid matchings with each methodology and timing the procedure
 
-% FIXME
 % INSTRUCTIONS:
-% Simply run this script. The results will be plotted. Estimated duration is about 3mins, depending on your machine.
+% Simply run this script. The results will be plotted. Estimated duration is about 7mins, depending on your machine.
 
 
 close all hidden
@@ -38,18 +35,10 @@ opMode = 'continuous';
 modelArray = {};
 
 % Select the models to test
-% modelArray{end+1} = g005a(); % UAV model described in Fravolini, M., Campa, G., & Napolitano, M. (2008).
-modelArray{end+1} = g005b();
-% modelArray{end+1} = g014g();
-% modelArray{end+1} = g039();
-% modelArray{end+1} = g040();
+modelArray{end+1} = g005b(); % UAV model described in Fravolini, M., Campa, G., & Napolitano, M. (2008).
 
 % Define the matching method set to test
-% matchMethodSet = {'BBILP','Flaugergues','Mixed'};
-% matchMethodSet = {'BBILP'};
-matchMethodSet = {'BBILP2'};
-% matchMethodSet = {'Flaugergues'};
-% matchMethodSet = {'Mixed'};
+matchMethodSet = {'BBILP','Flaugergues','Mixed'};
 
 % Define the Structurally Overdetermined set of graphs to examine
 SOTypeSet = {'MTES'};
@@ -144,11 +133,8 @@ for matchIndex = 1:length(matchMethodSet)
                     
                     valid_matchings = valid_matchings + 1; % Cound the valid matchings
                     valid_matching_cell{i}{end+1} = m; % Store this valid matching in this PSO container
-%                     break; % One valid matching was found for this PSO. This is enough
                 end
             end
-            
-%             fprintf('Valid matchings %d/%d\n',valid_matchings, length(matchings));
             
             %% Display the total number of residual generators found
             
@@ -164,7 +150,6 @@ for matchIndex = 1:length(matchMethodSet)
             for i=1:length(SA_results.stats.(graphName).ResGenSets)
                 numSets = numSets + length(SA_results.stats.(graphName).ResGenSets{i});
             end
-%             fprintf('Total number of PSOs: %d\n',numSets);
             
             total = 0;
             for j=1:length(SA_results.stats.(graphName).ResGenSets)
@@ -284,18 +269,14 @@ if strcmp(opMode,'breaking')
     clc
 end
 
-return
-
 
 %% Benchmark comparisons between matching algorithms
 % Plots the comparison results
 
 clear
 close all hidden
- 
-% TODO: Generate automatically log filenames
 
-matchMethodSet = {'BBILP','Flaugergues', 'Mixed'};
+matchMethodSet = {'BBILP','Flaugergues', 'Mixed'};  % Should be the same as in the previous section
 point_graphic = {'s', '^', 'd'};
 methodTitle = {'BBILP','Reachable SubGraph', 'Mixed Causality'};
 

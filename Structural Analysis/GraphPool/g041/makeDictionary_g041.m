@@ -7,7 +7,7 @@ dictionary = Dictionary(variable_ids, variable_aliases, inf*ones(size(variable_i
 dictionary.setValue([], {'m'}, 13.5);
 dictionary.setValue([], {'G1'}, 0.1215);
 dictionary.setValue([], {'G2'}, 0.7747);
-dictionary.setValue([], {'G5'}, 0.8534);
+dictionary.setValue([], {'G5'}, 0.8234);
 dictionary.setValue([], {'G6'}, 0.1061);
 dictionary.setValue([], {'G7'}, -0.1683);
 dictionary.setValue([], {'g'}, 9.81);
