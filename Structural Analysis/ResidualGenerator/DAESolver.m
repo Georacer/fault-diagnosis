@@ -44,9 +44,12 @@ classdef DAESolver < Evaluator
             obj.dt = value;
         end
         
-        function [] = reset_state(obj)
+        function [] = reset_state(obj, values)
+            if nargin<2
+                values = [];
+            end
             for i=1:length(obj.sub_evaluators)
-                obj.sub_evaluators{i}.reset_state();
+                obj.sub_evaluators{i}.reset_state(values);
             end
         end
         

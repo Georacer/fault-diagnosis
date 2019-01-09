@@ -74,7 +74,13 @@ classdef Differentiator < Evaluator
 %             obj.state = value;
 %         end
 
-        function [] = reset_state(obj)
+        function [] = reset_state(obj, values)
+            if nargin<2
+                values = [];
+            end
+            if ~isempty(values)
+                obj.initial_state = values.getValue(obj.integral_id);
+            end
             obj.prev_state = obj.initial_state;
             obj.values.setValue(obj.integral_id, [], obj.prev_state);
         end

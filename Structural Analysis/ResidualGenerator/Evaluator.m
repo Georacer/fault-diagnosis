@@ -171,7 +171,7 @@ classdef Evaluator < handle
             obj.answer(var_mask) = value;
         end
         
-        function [] = reset_state(obj)
+        function [] = reset_state(obj, values)
             % Empty method, to be overriden by Differentiator and DAESolver
         end
         
