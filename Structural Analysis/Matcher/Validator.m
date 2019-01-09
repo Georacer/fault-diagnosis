@@ -12,8 +12,8 @@ classdef Validator
         DEF_NI = 4;
         DEF_AE = 5;
         
-        debug = true;
-%         debug = false;
+%         debug = true;
+        debug = false;
         
     end
     
@@ -25,9 +25,47 @@ classdef Validator
             obj.numEqs = numEqs;
         end
         
-        function offendingEdges = isValid(obj)
+        function offendingEdges = isValid(obj, force_complete)
+            
+            if nargin<2
+                force_complete = false;  % Force the matching to be complete on the variables
+            end
             
             offendingEdges = []; % Container for edges invalidating the matching
+            
+            % Ensure the matching is complete on the variables it covers
+            if force_complete
+                E2V = obj.graphDir(numVars+1:end,1:numVars);
+                V2E = obj.graphDir(1:numVars,numVars+1)';
+                
+                % Ensure all equations are matched to at most one variable
+                for row_idx = 1:size(E2V,1)
+                    row = E2V(row_idx,:);
+                    if sum(row)>1
+                        var_idx_array = find(row);
+                        for var_idx = var_idx_array
+                            offendingEdges(end+1,:) = [row_idx, var_idx];
+                        end
+                    end
+                end
+                
+                % Ensure all variables are matched to at most one equation
+                for col_idx = 1:size(E2V,2)
+                    col = E2V(:,col_idx);
+                    if sum(col)>1
+                        col_idx_array = find(col);
+                        for equ_idx = col_idx_array
+                            offendingEdges(end+1,:) = [equ_idx, col_idx];
+                        end
+                    end
+                end
+                
+                if ~isempty(offendingEdges)
+                    if obj.debug; fprintf('Validator/isValid: INVALID - edge set passed is not a matching\n'); end
+                    return;
+                end
+            end
+            
             
             
             % Break all integrations and differentiations
