@@ -2,8 +2,8 @@ function [ evaluators_cell ] = create_evaluators( gi, digraph, solution_order, d
 %CREATE_EVALUATORS Convert the solution order into Evaluator objets
 %   Detailed explanation goes here
 
-% debug = false;
-debug = true;
+debug = false;
+% debug = true;
 
 if nargin < 4
     dt = 0.01;
