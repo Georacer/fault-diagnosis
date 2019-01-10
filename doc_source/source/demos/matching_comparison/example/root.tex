@@ -1,0 +1,21 @@
+%% Compile with: pdflatex -synctex=1 -interaction=nonstopmode root.tex
+
+\documentclass[math]{standalone}
+
+%% Package includes
+\usepackage{amsmath} % assumes amsmath package installed
+\usepackage{amssymb}  % assumes amsmath package installed
+\usepackage{mathtools} % Used to import the define sybmol
+\usepackage{IEEEtrantools}
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+
+\begin{document}
+\begin{IEEEeqnarray}{rrcl}
+	        &              \dots & \IEEEnonumber* &  \\
+	   e_2: & \quad	\dot{\alpha} &       =        & ( - F_x \sin(\alpha) + F_z \cos(\alpha))/(m V \cos(\beta)) + q - (p \cos(\alpha) + r \sin(\alpha)) tan(\beta)                                     \\
+	e_{14}: &                  V &       =        & {C_{m,q} q c} / \left( 2 \left( \frac{M}{\bar{q} S c} - C_{m,0} - C_{m,\alpha} \alpha  -  C_{m,\delta_e} \delta_e\right)\right) \label{eq:v-inversion} \\
+	        &              \dots &                &
+\end{IEEEeqnarray}
+\end{document}

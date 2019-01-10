@@ -16,4 +16,5 @@ Each demo has a corresponding script in the ``Demos`` folder.
     matching_intro/matching_intro
     mavlink/mavlink
     bbilp_vs_exhaustive/bbilp_vs_exhaustive
+    matching_comparison/matching_comparison
     fault_response/fault_response
