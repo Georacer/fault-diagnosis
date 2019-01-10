@@ -9,7 +9,7 @@
 % * Implementation of every residual generator
 % * Calculation of the residuals using a stored log
 
-% close all
+close all hidden
 clear
 clc
 
@@ -17,16 +17,20 @@ clc
 
 % Select the mode of operation
 opMode = 'continuous';
-opMode = 'breaking';
+% opMode = 'breaking';
 
 % Select the MAVLink model for processing
 modelArray = {};
 
-modelArray{end+1} = g032();
+% modelArray{end+1} = g032();
+% modelArray{end+1} = g005b();
+modelArray{end+1} = g041();
 
 % Specify the graph matching method
 matchMethod = 'BBILP';
+% matchMethod = 'BBILP2';
 % matchMethod = 'Exhaustive';
+% matchMethod = 'Mixed';
 
 % Specify the desired PSO type
 SOType = 'MTES';
@@ -41,11 +45,13 @@ branchMethod = 'DFS';
 SA_settings.matchMethod = matchMethod;
 SA_settings.SOType = SOType;
 SA_settings.branchMethod = branchMethod;
-SA_settings.plotGraphInitial = true;
-SA_settings.plotGraphOver = true;
-SA_settings.plotGraphRemaining = true;
-SA_settings.plotGraphDisconnected = true;
-SA_settings.plotGraphPSO = true;
+SA_settings.maxMSOsExamined = 0;
+SA_settings.exitAtFirstValid = false;
+SA_settings.plotGraphInitial = false;
+SA_settings.plotGraphOver = false;
+SA_settings.plotGraphRemaining = false;
+SA_settings.plotGraphDisconnected = false;
+SA_settings.plotGraphPSO = false;
 SA_settings.plotGraphMatched = true;
 
 %% For each model
@@ -67,12 +73,18 @@ for modelIndex=1:length(modelArray)
         end
     end
     
+    %% Validate matchings
+    % TODO Does not apply for graphs with disconnected subgraphs    
+    validateMatchings(SA_results, SA_settings);
+    
     fprintf('Total number of valid residuals found: %d\n',counter);
     
     if strcmp(opMode,'breaking')
         input('\nPress Enter to proceed to the next step...');
         clc
     end
+    
+%     return;
     
     %% Do detectability analysis
     
@@ -103,7 +115,7 @@ for modelIndex=1:length(modelArray)
             stats.(fieldNames{i}).samples = 1;
         end
         save(fileName,'stats');
-        return;
+%         return;
     end
     loadedData = load(fileName,'stats');
     oldStats = loadedData.stats;
@@ -130,11 +142,52 @@ for modelIndex=1:length(modelArray)
     
     %% Build the residual generators
     
-    RG_settings.dt = 1;  % Select the time step, if needed
+    RG_settings.dt = 0.01;  % Select the time step, if needed
     
     tic
     RG_results = get_res_gens(SA_results, RG_settings);
     time_generate_residual_generators = toc
+    
+    %% Find which of the PSOs actually got a residual
+    % Warning: works only for a single connected subgraph
+    realizable_matching_mask = zeros(1,length(SA_results.matchings_set{1}));
+    for i=1:length(realizable_matching_mask)
+        if ~isempty(SA_results.matchings_set{1}{i})
+            realizable_matching_mask(i) = 1;
+        end
+    end
+    
+    realizable_residuals_mask = zeros(size(realizable_matching_mask));
+    for i=1:length(realizable_residuals_mask)
+        if ~isempty(RG_results.res_gen_cell{i})
+            realizable_residuals_mask(i) = 1;
+        end
+    end
+    
+    fprintf('Initial realizable matching array: %d elements\n', sum(realizable_matching_mask));
+    disp(realizable_matching_mask);
+    fprintf('Actual implemented residuals: %d\n', sum(realizable_residuals_mask));
+    disp(realizable_residuals_mask);
+    
+    % Build the fault detection and isolation matrices anew
+
+    % Build actual detectablilty matrix
+    new_res_gens_set = SA_results.res_gens_set{1}(logical(realizable_residuals_mask));
+    new_matchings_set = SA_results.matchings_set{1}(logical(realizable_residuals_mask));
+    FSStruct = generateFSM(SA_results.gi, {new_res_gens_set}, {new_matchings_set});
+    
+    fprintf('Faults not covered:\n');
+    SA_results.gi.getExpressionById(SA_results.gi.getEquations(FSStruct.non_detectable_fault_ids))
+    
+    % Build actual isolability matrix
+    IMStruct = generateIM(SA_results.gi, FSStruct);
+    plotIM(IMStruct);
+    
+    if strcmp(opMode,'breaking')
+        input('\nPress Enter to proceed to the next step...');
+        clc
+    end
+    
     
     %% Find which of the residual generators are dynamic
     
@@ -154,7 +207,7 @@ for modelIndex=1:length(modelArray)
     fprintf('Percentage of valid res_gens: %g\n', sum(dynamic_vector>=0)/length(dynamic_vector));
     fprintf('Percentage of dynamic over valid res_gens: %g\n', sum(dynamic_vector>0)/sum(dynamic_vector>=0));
     
-%     return
+    return
     
 %     clc
     
