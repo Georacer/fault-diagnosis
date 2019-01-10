@@ -15,8 +15,16 @@ for i=1:length(varIndices)
     equId = this.edges(edgeIndices(i)).equId;
     edgeId = this.edges(edgeIndices(i)).id;
     if debug; fprintf('removeEdgeFromVar: Removing edge %d and equation %d from variable %d\n',edgeId, equId, this.variables(varIndices(i)).id); end
-    this.variables(varIndices(i)).edgeIdArray = setdiff(this.variables(varIndices(i)).edgeIdArray,edgeId);
-    this.variables(varIndices(i)).neighbourIdArray = setdiff(this.variables(varIndices(i)).neighbourIdArray,equId);
+    
+    new_edgeIdArray = this.variables(varIndices(i)).edgeIdArray;
+    idx_to_del = new_edgeIdArray==edgeId;
+    new_edgeIdArray(idx_to_del)=[];
+    this.variables(varIndices(i)).edgeIdArray = new_edgeIdArray;
+    
+    new_neighbourIdArray = this.variables(varIndices(i)).neighbourIdArray;
+    idx_to_del = new_neighbourIdArray==equId;
+    new_neighbourIdArray(idx_to_del)=[];
+    this.variables(varIndices(i)).neighbourIdArray = new_neighbourIdArray;
 end
 
 resp = true;

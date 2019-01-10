@@ -15,6 +15,10 @@ if nargin<2
     return
 end
 
+if nargin<3
+    fileName = 'calc_sequence.csv';
+end
+
 if nargin<4
     format = 'single';
 end
@@ -22,6 +26,8 @@ end
 if nargin<5
     useAlias = false;
 end
+
+RGids = solutionOrder{end};
 
 if isempty(fileName)
     if useAlias

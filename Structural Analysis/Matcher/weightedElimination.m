@@ -1,6 +1,6 @@
 function M = weightedElimination( mh, varargin )
-%WEIGHTEDELIMINATION Summary of this function goes here
-%   Detailed explanation goes here
+%WEIGHTEDELIMINATION Single-variable elimination, following the cheapest path
+%   Returns a signle matching
 
 obeyCausality = true;
 

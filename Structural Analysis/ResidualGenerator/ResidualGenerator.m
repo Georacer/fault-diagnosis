@@ -98,10 +98,13 @@ classdef ResidualGenerator < handle
             input_ids = unique(input_ids);
         end
         
-        function [ ] = reset_state(obj)
-            % Reset state variables
+        function [ ] = reset_state(obj, values)
+            % Reset state variables to new values dictionary
+            if nargin<2
+                values = [];
+            end
             for i=1:length(obj.evaluators_list)
-                obj.evaluators_list{i}.reset_state();
+                obj.evaluators_list{i}.reset_state(values);
             end
         end
         

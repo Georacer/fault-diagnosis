@@ -1,24 +1,30 @@
-function [ Mvalid ] = matchValid2( matcher, varargin )
+function [ M ] = matchValid2( matcher, varargin )
 %MATCHVALID Find valid residuals in provided PSO
 %   Extends matchValid: is also applicable in MTESs
 %   Assumes the related graph is an MTES
 
 p = inputParser;
 
-p.addRequired('matcher',@(x) true);
-p.addParameter('faultsOnly',true, @islogical);
+p.addRequired('matcher', @(x) true);
+p.addParameter('faultsOnly', true, @islogical);
+p.addParameter('maxMSOsExamined', 0, @isnumeric);
+p.addParameter('matchingsPerMSO', 0, @isnumeric);
+p.addParameter('exitAtFirstValid', false, @islogical);
 
 p.parse(matcher, varargin{:});
 opts = p.Results;
 
 faultsOnly = opts.faultsOnly; % Generate only residuals which are sensitive to faults
+maxMSOsExamined = opts.maxMSOsExamined;
+matchingsPerMSO = opts.matchingsPerMSO;
+exitAtFirstValid = opts.exitAtFirstValid;
 
-debug = false;
-% debug = true;
+% debug = false;
+debug = true;
 
 gi = matcher.gi;
 % Initialize valid matchings container
-Mvalid = [];
+M = [];
 
 eqsFaultable = gi.getEquIdByProperty('isFaultable');
 if (faultsOnly && isempty(eqsFaultable))
@@ -28,7 +34,7 @@ end
 
 % Check if provided graph contains only unknown variables
 if ~(isempty(gi.getMatchedEqus()) && isempty(gi.getMatchedVars()))
-    error('Expecting a completely unkown subgraph to match');
+    error('Expecting a completely unknown subgraph to match');
 end
 
 % Check if structural redundancy degree is 1
@@ -61,33 +67,97 @@ if faultsOnly
     end
 end
 
-examinations = 0;
+% Sort the msos in order of sise
+mso_size = zeros(1,length(msoSet));
+for i=1:length(mso_size)
+    mso_size(i) = length(msoSet{i});
+end    
+[~,pivot] = sort(mso_size);
+old_msoSet = msoSet;
+i = 1;
+for p = pivot
+    msoSet(i) = old_msoSet(p);
+    i = i+1;
+end
 
 % Loop over the collected MSOs
-MSOCosts = inf*ones(1,length(msoSet));
-MSOMatchings = cell(1,length(msoSet));
+MSOsExamined = 0;
+PSOCosts = inf*ones(1,0);
+PSOMatchings = cell(1,0);
+examination_array = zeros(1,length(msoSet));
+valid_matching_found = false;
 for i=1:length(msoSet)
-    [MSOMatchings{i}, MSOCosts(i)] = matchMSO(gi,msoSet{i});
-    examinations = examinations + length(msoSet{i}); % Add the size of the current MSO: one examined MJust for each equation in MSO.
-end
+    if debug; fprintf('matchValid2: Testing MSO %d/%d with size %d\n',i,length(msoSet),length(msoSet{i})); end
+    
+    % Test for faultable equations
+    if faultsOnly
+        eqsFaultable = gi.isFaultable(msoSet{i});
+        if ~any(eqsFaultable)
+            if debug; fprintf('matchValid2: The provided MSO is not susceptible to faults, and faultsOnly flag is true\n'); end
+            continue
+        end
+    end
+    
+    [new_matchings, new_costs] = matchMSO(gi,msoSet{i}, matchingsPerMSO);
+    if ~isempty(new_matchings)
+        PSOMatchings = [PSOMatchings new_matchings];
+        PSOCosts = [PSOCosts new_costs];
+    end
+    examination_array(i) = length(msoSet{i}); % Add the size of the current MSO: one examined MJust for each equation in MSO.
+    MSOsExamined = MSOsExamined + 1;
+    if (MSOsExamined==maxMSOsExamined)
+        break;
+    end
+    % Check if a valid matching has been produced
+    if exitAtFirstValid
+        gi_blob = getByteStreamFromArray(gi); % Freeze a copy of this PSO
+        for m_cell = new_matchings
+            matching = m_cell{1};
+            if isempty(matching)
+                break;
+            end
+            temp_gi = getArrayFromByteStream(gi_blob); % Restore the PSO
+            temp_gi.applyMatching(matching); % Apply the current matching to it
 
-% Pick the cheapest matching
-for i=1:length(msoSet)
-    [~,pivot] = sort(MSOCosts);
-    index = pivot(1);
-    if isinf(MSOCosts(index)) % No valid matching found
-        Mvalid = [];
-    else
-        Mvalid = MSOMatchings{index};
+            equIds = temp_gi.getEquations(matching);
+            varIds = gi.getVariablesUnknown(equIds);
+            if length(varIds)~=length(equIds)
+                continue;
+            end
+            temp_gi.createAdjacency();
+            adjacency = temp_gi.adjacency;
+            numVars = temp_gi.adjacency.numVars;
+            numEqs = temp_gi.adjacency.numEqs;
+            validator = Validator(adjacency.BD, adjacency.BD_types, numVars, numEqs);
+            offendingEdges = validator.isValid();
+            if isempty(offendingEdges)
+                % Matching is valid
+                valid_matching_found = true;
+                break;
+            end
+        end
+        if valid_matching_found
+            break;
+        end
     end
 end
+examinations = sum(examination_array);
+if debug; fprintf('matchValid2: PSO processed in %d examinations\n',examinations); end
 
-if debug; fprintf('MSO processed in %d examinations\n',examinations); end
+% Sort matchings by cost
+[costs_sorted,pivot] = sort(PSOCosts);
+M = cell(size(PSOMatchings));
+i = 1;
+for p = pivot
+    M(i) = PSOMatchings(p);
+    i = i+1;
+end
+
 end
 
 
 %% Find a valid matching for an MSO
-function [MValid, cost] = matchMSO(gi, mso)
+function [MValid, cost] = matchMSO(gi, mso, matchingsPerMSO)
 % Loop over available just-constrained submodels
 
 % debug = true;
@@ -97,6 +167,8 @@ numEqs = length(mso);
 
 M0weights = ones(1,numEqs)*inf;
 M0pool = cell(1,numEqs);
+
+binary_blob = getByteStreamFromArray(gi);
 
 for i=1:numEqs
     
@@ -109,19 +181,20 @@ for i=1:numEqs
     if debug; fprintf('and aliases: ');  fprintf('%s, ',aliases{:}); fprintf('\n'); end
     
     % Create a temporary M0 submodel
-    tempGI = copy(gi);
-    tempSG = SubgraphGenerator(tempGI);
+%     tempGI = copy(gi);
+    tempSG = SubgraphGenerator(gi,binary_blob);
     tempGI = tempSG.buildSubgraph(equIdsJust,'postfix','temp');
     tempGI.createAdjacency();
     
-    % Check if all equations can be matched to at least one variable
+    % Check if all equations can be matched to at least one variable %TODO is this reasonable? What if the whole thing
+    % is an AE system?
     A = tempGI.adjacency.E2V;
     if ~all(sum(A,2))
         if debug; warning('Tried to match a non-square system'); end
         Mcurr = [];
     else
         tempMatcher = Matcher(tempGI);
-        Mcurr = tempMatcher.match('ValidJust');
+        Mcurr = tempMatcher.match('ValidJust', 'max_num_matchings', matchingsPerMSO);
         % Keep only the cheapest valid matching
         if ~isempty(Mcurr)
             Mcurr = Mcurr(1,:);
@@ -163,7 +236,7 @@ if any(isfinite(M0weights)) %Process matching of this MS0
     % Search for cheapest matching weight
     [cost, pivot] = sort(M0weights);
     i = pivot(1);
-    MValid = M0pool{i};
+    MValid = M0pool(i);
     cost = cost(1);
     
     if debug; fprintf('The selected matching for this MSO is (edgeIds): ');  fprintf('%d, ',MValid); fprintf('\nPlease extend with a residual\n'); end
