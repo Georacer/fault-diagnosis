@@ -55,7 +55,42 @@ Before discussing the results, let's go over some key areas of the script:
     matchMethodSet = {'BBILP','Flaugergues','Mixed'};
 
 
-The model under examination is set to ``g005b`` and the set of matching algorithms to be run are appended in the ``matchMethodSet`` array.
+The model under examination is set to ``g005b``, whose equations are:
+
+.. math::
+
+    \begin{align}
+    e_{1}:&\quad 0 & = & \dot{V} - (F_x \cos(\alpha) \cos(\beta) + F_y \sin(\beta) + F_z \sin(\alpha) \cos(\beta))/m \label{eq:kstart} \\
+    e_{2}:&\quad 0 & = & \dot{\alpha} - ( - F_x \sin(\alpha) + F_z \cos(\alpha))/(m V \cos(\beta)) - q + (p \cos(\alpha) + r \sin(\alpha)) tan(\beta) \\
+    e_{3}:&\quad 0 & = & \dot{b} - ( - F_x \cos(\alpha) \sin(\beta) + F_y \cos(\beta) - F_z \sin(\alpha) \sin(\beta))/(m V) - p \sin(\alpha) + r \cos(\alpha) \\
+    e_{4}:&\quad 0 & = & \dot{p} - P_l L - P_n N - P_{pq} p q - P_{qr} q r \\
+    e_{5}:&\quad 0 & = & \dot{q} - Q_m M - Q_{pp} p^2 - Q_{pr} p r - Q_{rr} r^2 \\
+    e_{6}:&\quad 0 & = & \dot{r} - R_l L - R_n N - R_{pq} p q - R_{qr} q r \\
+    e_{7}:&\quad 0 & = & \dot{\psi} - (q \sin(\phi) + r \cos(\phi))/\cos(\theta) \\
+    e_{8}:&\quad 0 & = & \dot{\theta} - q \cos(\phi) + r \sin(\phi) \\
+    e_{9}:&\quad 0 & = & \dot{\phi} - p - \tan(\theta) \sin(\phi) q - \tan(\theta) \cos(\phi) r \label{eq:kend}\\
+    e_{10}:&\quad 0 & = &  - X_a + (C_{X,0} + C_{X,\alpha} \alpha + C_{X,\delta_e} \delta_e) \bar{q} S \label{eq:aerostart}\\
+    e_{11}:&\quad 0 & = &  - Y_a + (C_{Y,0} + C_{Y,\beta} \beta + C_{Y,p} p b/2/V + C_{Y,r} r b/2/V + C_{Y,\delta_a} \delta_a + C_{Y,\delta_e} \delta_e) \bar{q} S \\
+    e_{12}:&\quad 0 & = &  - Z_a + (C_{Z,0} + C_{Z,\alpha} \alpha + C_{Z,q} q c/2/V + C_{Z,\delta_e} \delta_e) \bar{q} S \\
+    e_{13}:&\quad 0 & = &  - L + (C_{l,0} + C_{l,\beta} \beta + C_{l,p} p b/2/V C_{l,r} r b/2/V + C_{l,\delta_a} \delta_a + C_{l,\delta_e} \delta_e) \bar{q} S b \\
+    e_{14}:&\quad 0 & = &  - M + (C_{m,0} + C_{m,\alpha} \alpha + C_{m,q} q c/2/V + C_{m,\delta_e} \delta_e) \bar{q} S c \label{eq:M}\\
+    e_{15}:&\quad 0 & = &  - N + (C_{n,0} + C_{n,\beta} \beta + C_{n,p} p b/2/V + C_{n,r} r b/2/V + C_{n,\delta_a} \delta_a + C_{n,\delta_e} \delta_e) \bar{q} S b \label{eq:aeroend}\\
+    e_{16}:&\quad 0 & = &  - X_{gr} - m g \sin(\theta) \label{eq:gravstart}\\
+    e_{17}:&\quad 0 & = &  - Y_{gr} + m g \cos(\theta) \sin(\phi) \\
+    e_{18}:&\quad 0 & = &  - Z_{gr} + m g \cos(\theta) \cos(\phi) \label{eq:gravend}\\
+    e_{19}:&\quad 0 & = &  - F_x + X_a + X_t + X_{gr} \\
+    e_{20}:&\quad 0 & = &  - F_y + Y_a + Y_{gr} \\
+    e_{21}:&\quad 0 & = &  - F_z + Z_a + Z_{gr} \\
+    e_{22}:&\quad 0 & = &  - X_t + X_{t,c} \label{eq:inpstart}\\
+    e_{23}:&\quad 0 & = &  - \delta_a + d_{a,c} \\
+    e_{24}:&\quad 0 & = &  - \delta_e + d_{e,c} \\
+    e_{25}:&\quad 0 & = &  - \delta_e + d_{r,c} \label{eq:inpend}\\
+    e_{26}:&\quad 0 & = &  - V + V_m \label{eq:airdatastart}\\
+    e_{27}:&\quad 0 & = &  - \alpha + \alpha_m \\
+    e_{28}:&\quad 0 & = &  - \beta + \beta_m \label{eq:airdataend}
+    \end{align}
+
+The set of matching algorithms to be run are appended in the ``matchMethodSet`` array.
 
 .. code-block:: matlab
 

@@ -15,6 +15,7 @@ Each demo has a corresponding script in the ``Demos`` folder.
     basic_functionality/basic_functionality
     matching_intro/matching_intro
     mavlink/mavlink
+    fwuav_fdi/fwuav_fdi
     bbilp_vs_exhaustive/bbilp_vs_exhaustive
     matching_comparison/matching_comparison
     fault_response/fault_response

@@ -204,9 +204,6 @@ end
 
 %% Read a log file and play it back onto the residuals
 
-clear
-load('g041_res.mat');
-
 % Import data series
 state_data = importdata('GraphPool/g041/UAV_recording.bag_states.csv');
 state_time_idx = find(strcmp(state_data.colheaders, '%time'));
@@ -303,8 +300,6 @@ for i=1:length(RG_results.res_gen_cell)
         rg.reset_state(RG_results.values);
     end
 end
-
-% Initialize integrators
 
 % Evaluate the residuals
 RE_results = evaluateResiduals(SA_results, RG_results, data_resampled);  % Evaluate the residual generator bank
