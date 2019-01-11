@@ -1,0 +1,355 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Automated Fault Diagnosis in a Fixed-Wing UAV &mdash; fault-diangosis 0.9 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="fault-diangosis 0.9 documentation" href="../../index.html"/>
+        <link rel="up" title="Demos" href="../index.html"/>
+        <link rel="next" title="Branch-and-Bound ILP Matching Calculation Cost" href="../bbilp_vs_exhaustive/bbilp_vs_exhaustive.html"/>
+        <link rel="prev" title="Residual Generation for a MAVLink UAV" href="../mavlink/mavlink.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="../../index.html" class="icon icon-home"> fault-diangosis
+        
+
+        
+        </a>
+
+        
+          
+          
+            <div class="version">
+              0.9
+            </div>
+          
+        
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../model/index.html">Model Input</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../graph/index.html">Graph Representation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../graph_interface/index.html">The graph interface API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../display/index.html">Graph display</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../subgraph_generator/index.html">Subgraph Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../matcher/index.html">Graph matching methods</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Demos</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../basic_functionality/basic_functionality.html">Basic functionality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../matching_intro/matching_intro.html">Introduction to matching</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mavlink/mavlink.html">Residual Generation for a MAVLink UAV</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Automated Fault Diagnosis in a Fixed-Wing UAV</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#running-the-test-script">Running the Test Script</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#structural-analysis">Structural Analysis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#residual-generator-implementation">Residual Generator Implementation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#application-on-a-flight-log">Application on a Flight Log</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../bbilp_vs_exhaustive/bbilp_vs_exhaustive.html">Branch-and-Bound ILP Matching Calculation Cost</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../matching_comparison/matching_comparison.html">Comparison Between Matching Algorithms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fault_response/fault_response.html">Estimating Fault Sensitivity</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributors.html">Contributors</a></li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">fault-diangosis</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Demos</a> &raquo;</li>
+      
+    <li>Automated Fault Diagnosis in a Fixed-Wing UAV</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="automated-fault-diagnosis-in-a-fixed-wing-uav">
+<span id="chap-fwuav-fdi"></span><h1>Automated Fault Diagnosis in a Fixed-Wing UAV<a class="headerlink" href="#automated-fault-diagnosis-in-a-fixed-wing-uav" title="Permalink to this headline">¶</a></h1>
+<p>UAVs represent very tightly coupled subsystems with small time constants.
+These obstacles make UAVs an especially challenging platform for Fault Diagnosis.
+While fault diagnosis in other platforms focuses mostly on selecting the optimal subset from a large pool of available residual generators, in the case of UAVs merely populating such a pool with a sufficient number of residuals is a challenge.</p>
+<p>To demonstrate this problem and also showcase how <cite>fault-diagnosis</cite> tackles the FDI problem,
+we will use the model ‘’g041’‘, a fixed-wing UAV, taken from the book <em>Small Unmanned Aircraft</em> by Beard and McLain.</p>
+<p>All actuators and the sensors for angular velocities (p, q, r), Euler angles (φ, θ, ψ) and airspeed (Va ) are considered to be subject to faults.</p>
+<p>This demo script will cover:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Generating the structural model</li>
+<li>Extracting Proper Structurally Overdetermined (PSO) submodels for maximum fault isolation</li>
+<li>Finding realizable matchings for all PSOs, if possible</li>
+<li>Implementing corresponding residual generator functions for each matching</li>
+<li>Loading a dataset containing data of a flight under fault and calculating the residual signals.</li>
+</ol>
+</div></blockquote>
+<div class="section" id="running-the-test-script">
+<h2>Running the Test Script<a class="headerlink" href="#running-the-test-script" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="structural-analysis">
+<h3>Structural Analysis<a class="headerlink" href="#structural-analysis" title="Permalink to this headline">¶</a></h3>
+<p>Simply execute the <code class="docutils literal notranslate"><span class="pre">fwuav_fdi.m</span></code> script, located in the <code class="docutils literal notranslate"><span class="pre">Demos</span></code> folder. It will take about 3.5 minutes to finish, depending on your machine.</p>
+<p>Let’s go over the script, step by step.</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">% Select the MAVLink model for processing</span>
+<span class="n">model</span> <span class="p">=</span> <span class="n">g041</span><span class="p">();</span> <span class="c">% Fixed-wing aircraft, modeled after Beard/McLain&#39;s Small Unmanned Aircraft Book</span>
+
+<span class="p">[</span><span class="c">...]</span>
+
+<span class="c">%% Perform Structural Analsysis and Matching, extract residual generators</span>
+<span class="n">SA_results</span> <span class="p">=</span> <span class="n">structural_analysis</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">SA_settings</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Initially, the model description is loaded and Structural Analsysis is performed.
+35 PSOs are generated and an optimal, realizable matching is sought for each one.
+The ‘’SA_results’’ structure contains the results.</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">% Inspection: Display the total number of residual generators found</span>
+<span class="n">counter</span> <span class="p">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="k">for</span> <span class="nb">i</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="nb">length</span><span class="p">(</span><span class="n">SA_results</span><span class="p">.</span><span class="n">matchings_set</span><span class="p">)</span>
+    <span class="k">for</span> <span class="nb">j</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="nb">length</span><span class="p">(</span><span class="n">SA_results</span><span class="p">.</span><span class="n">matchings_set</span><span class="p">{</span><span class="nb">i</span><span class="p">})</span>
+        <span class="k">if</span> <span class="o">~</span><span class="nb">isempty</span><span class="p">(</span><span class="n">SA_results</span><span class="p">.</span><span class="n">matchings_set</span><span class="p">{</span><span class="nb">i</span><span class="p">}(</span><span class="nb">j</span><span class="p">))</span>
+            <span class="n">counter</span> <span class="p">=</span> <span class="n">counter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="k">end</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>A sanity check is performed, to count the non-empty matching sets; some PSOs may very well have no realizable solution.
+The following output occurs:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Matching</span> <span class="n">Statistics</span> <span class="k">for</span> <span class="n">system</span> <span class="n">g041</span> <span class="k">with</span> <span class="n">method</span> <span class="n">BBILP2</span><span class="p">:</span>
+<span class="o">================================================</span>
+<span class="n">Number</span> <span class="n">of</span> <span class="n">PSOs</span> <span class="k">with</span> <span class="n">non</span><span class="o">-</span><span class="n">empty</span> <span class="n">matchings</span><span class="p">:</span> <span class="mi">25</span><span class="o">/</span><span class="mi">35</span>
+<span class="n">Average</span> <span class="n">PSO</span> <span class="n">size</span><span class="p">:</span> <span class="mf">20.7429</span>
+<span class="n">Number</span> <span class="n">of</span> <span class="n">resulting</span> <span class="n">non</span><span class="o">-</span><span class="n">empty</span> <span class="n">matchings</span><span class="p">:</span> <span class="mi">25</span>
+<span class="n">Mean</span> <span class="n">matching</span> <span class="n">size</span><span class="p">:</span> <span class="mf">20.56</span>
+</pre></div>
+</div>
+<p>Unfortunately, matching sets for only 25 PSOs were available.
+This will affect the isolability capabilities of our diagnostic system.</p>
+<p>Detectability and Isolability analyses are run:</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">%% Do detectability analysis</span>
+
+<span class="c">% Create the Fault Signature Matrix and related information</span>
+<span class="n">FSStruct</span> <span class="p">=</span> <span class="n">generateFSM</span><span class="p">(</span><span class="n">SA_results</span><span class="p">.</span><span class="n">gi</span><span class="p">,</span> <span class="n">SA_results</span><span class="p">.</span><span class="n">res_gens_set</span><span class="p">,</span> <span class="n">SA_results</span><span class="p">.</span><span class="n">matchings_set</span><span class="p">);</span>
+
+<span class="n">fprintf</span><span class="p">(</span><span class="s">&#39;Faults not covered:\n&#39;</span><span class="p">);</span>
+<span class="n">SA_results</span><span class="p">.</span><span class="n">gi</span><span class="p">.</span><span class="n">getExpressionById</span><span class="p">(</span><span class="n">SA_results</span><span class="p">.</span><span class="n">gi</span><span class="p">.</span><span class="n">getEquations</span><span class="p">(</span><span class="n">FSStruct</span><span class="p">.</span><span class="n">non_detectable_fault_ids</span><span class="p">))</span>
+
+<span class="c">%% Do isolability analysis</span>
+
+<span class="c">% Create the Isolation Matrix and related information</span>
+<span class="n">IMStruct</span> <span class="p">=</span> <span class="n">generateIM</span><span class="p">(</span><span class="n">SA_results</span><span class="p">.</span><span class="n">gi</span><span class="p">,</span> <span class="n">FSStruct</span><span class="p">);</span>
+<span class="n">plotIM</span><span class="p">(</span><span class="n">IMStruct</span><span class="p">);</span>
+<span class="n">title</span><span class="p">(</span><span class="s">&#39;Ideal Isolability Matrix&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>The resulting Isolability Matrix is</p>
+<img alt="../../_images/ism_before.png" src="../../_images/ism_before.png" />
+<p>Faults 1 and 3, affecting the throttle and elevator inputs are not detectable at all.</p>
+</div>
+<div class="section" id="residual-generator-implementation">
+<h3>Residual Generator Implementation<a class="headerlink" href="#residual-generator-implementation" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">RG_settings</span><span class="p">.</span><span class="n">dt</span> <span class="p">=</span> <span class="mf">0.01</span><span class="p">;</span>  <span class="c">% Select the time step, if needed</span>
+
+<span class="n">tic</span>
+<span class="n">RG_results</span> <span class="p">=</span> <span class="n">get_res_gens</span><span class="p">(</span><span class="n">SA_results</span><span class="p">,</span> <span class="n">RG_settings</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>The discovered matching sets are then implemented. A time step of 0.01 seconds is selected, to reflect the flight log sampling rate.</p>
+<p>However, MATLAB’s symbolic toolbox was not able to implement all of the residuals.
+Notably, it had the most difficulty in solving systems of simultaneous algebraic equations.
+Other symbolic algebra pakages, such as <em>SymPy</em> may fare better.</p>
+<p>In the end only 16 residual generators could be implemented, 50% of which represent dynamic systems (include an ODE or a DAE).</p>
+<p>The actual isolation matrix becomes:</p>
+<img alt="../../_images/ism_after.png" src="../../_images/ism_after.png" />
+</div>
+<div class="section" id="application-on-a-flight-log">
+<h3>Application on a Flight Log<a class="headerlink" href="#application-on-a-flight-log" title="Permalink to this headline">¶</a></h3>
+<p>Let us now run a dataset of a flight log through this bank of residual generators.
+The dataset was created by our <a class="reference external" href="https://github.com/Georacer/last_letter">last_letter simulator</a> based on the ROS framework.
+The mathematical model of this example was inserted.
+A fault in the gyroscope x-axis was simulated: at t=50s the gyro reading freezes.</p>
+<p>A bag file was captured and the measured timeseries were extracted as ‘’.csv’’ files, in order to parse them in MATLAB.
+The data was resampled and aligned, in order to pass them to the residual generator bank.</p>
+<p>The bank of residual generators can process the datalog offline or online:</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">% Initialize residual generators</span>
+<span class="k">for</span> <span class="nb">i</span><span class="p">=</span><span class="mi">1</span><span class="p">:</span><span class="nb">length</span><span class="p">(</span><span class="n">RG_results</span><span class="p">.</span><span class="n">res_gen_cell</span><span class="p">)</span>
+    <span class="n">rg</span> <span class="p">=</span> <span class="n">RG_results</span><span class="p">.</span><span class="n">res_gen_cell</span><span class="p">{</span><span class="nb">i</span><span class="p">};</span>
+    <span class="k">if</span> <span class="o">~</span><span class="nb">isempty</span><span class="p">(</span><span class="n">rg</span><span class="p">)</span>
+        <span class="n">rg</span><span class="p">.</span><span class="n">reset_state</span><span class="p">(</span><span class="n">RG_results</span><span class="p">.</span><span class="n">values</span><span class="p">);</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c">% Evaluate the residuals</span>
+<span class="n">RE_results</span> <span class="p">=</span> <span class="n">evaluateResiduals</span><span class="p">(</span><span class="n">SA_results</span><span class="p">,</span> <span class="n">RG_results</span><span class="p">,</span> <span class="n">data_resampled</span><span class="p">);</span>  <span class="c">% Evaluate the residual generator bank</span>
+</pre></div>
+</div>
+<p>The residual timeseries are plotted, here with focus on the time interval around the fault.</p>
+<img alt="../../_images/residuals.png" src="../../_images/residuals.png" />
+<p>The fault occurrence is marked with a verticla red line and the residuals which are sensitive to it have an orange background.</p>
+<p>The residuals which do not depend on the fault do not increase in magnitude after the fault occurrence.
+On the other hand, almost all of the relevant residuals are quite sensitive to the fault with the exception of the one in row 3, column 1.
+This is a known shortcoming of Structural Analysis when employed for Fault Diagnosis.
+Because of the qualitative abstraction, the residual generators are only nominally sensitive to the faults they cover, in the sense that the fault variables appear in the residual generator expression.
+However, the fault contribution on the residual signal cannot be quantified, especially in such non-linear and dynamic systems.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../bbilp_vs_exhaustive/bbilp_vs_exhaustive.html" class="btn btn-neutral float-right" title="Branch-and-Bound ILP Matching Calculation Cost" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../mavlink/mavlink.html" class="btn btn-neutral" title="Residual Generation for a MAVLink UAV" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>Except where otherwise noted, this documentation is licensed under <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC Attribution-Share Alike 3.0 Unported</a>.</p>
+
+<div style="float:right;"><a href="https://github.com/Georacer/mavlink-inspector/issues/new?title=Automated%20Fault%20Diagnosis%20in%20a%20Fixed-Wing%20UAV%20-%20&body=URL:%20../../demos/fwuav_fdi/fwuav_fdi%0ATitle:%20Automated%20Fault%20Diagnosis%20in%20a%20Fixed-Wing%20UAV%0A%0APlease%20update%20this%20description%20and%20the%20issue%20title">Page bug</a></div>
+
+    <p>
+
+    </p>
+  </div>
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.9',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
