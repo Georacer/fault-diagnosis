@@ -25,6 +25,8 @@ function [ results ] = structural_analysis( model, SAsettings )
 matchMethod = SAsettings.matchMethod;
 SOType = SAsettings.SOType;
 branchMethod = SAsettings.branchMethod;
+maxMSOsExamined = SAsettings.maxMSOsExamined;
+exitAtFirstValid = SAsettings.exitAtFirstValid;
 plotGraphInitial = SAsettings.plotGraphInitial;
 plotGraphOver = SAsettings.plotGraphOver;
 plotGraphRemaining = SAsettings.plotGraphRemaining;
@@ -36,6 +38,13 @@ tic;
 graphInitial = GraphInterface(); % Instantiate a GraphInterface
 graphInitial.readModel(model); % Create the structural model
 graphInitial.createAdjacency(); % Also create the adjacency matrix
+
+% If matchMethod = Flaugergues, the initial model needs to be modified.
+if strcmp(matchMethod,'Flaugergues')
+    sg = SubgraphGenerator(graphInitial);
+    graphInitial = sg.flaugergues();
+end
+
 timeCreateGI = toc; % Save the creattion time
 
 % Create a GraphViz plot of the initial graph in the model folder
@@ -49,6 +58,8 @@ name = graphInitial.name;
 
 stats.(name).name = name;
 stats.(name).timeCreateGI = timeCreateGI;
+stats.(name).num_valid_matchings = 0;
+stats.(name).num_invalid_matchings = 0;
 
 %% Create the overconstrained graph
 
@@ -266,16 +277,31 @@ for graph_index=1:length(graphs_conn)
     for i=1:length(SOindices)
         index = SOindices(i);
         fprintf('\n');
-        disp('Examining another SO graph')
         tempGI = SOSubgraphs(index);
+        fprintf('Examining SO graph %d/%d with size %d\n', i, length(SOindices), length(tempGI.reg.equIdArray));
         matchers(i) = Matcher(tempGI); % Instantiate the matcher for this SO
         switch matchMethod
             case 'BBILP' % Use the BBILP method to match
                 matching = matchers(i).match('BBILP','branchMethod',branchMethod);
-            case 'Exhaustive' % Use the exhaustive method to match
-                matching = matchers(i).match('Valid2');
+            case 'BBILP2' % Use the BBILP method to match
+                matching = matchers(i).match('BBILP2','branchMethod',branchMethod,'exitAtFirstValid',exitAtFirstValid);
+            case {'Exhaustive','Flaugergues'} % Use the exhaustive method to match
+                matching = matchers(i).match('Valid2','maxMSOsExamined',maxMSOsExamined,'exitAtFirstValid',exitAtFirstValid);
+            case {'SVE'} % Use the exhaustive method to match
+                matching = matchers(i).match('SVE');
+            case {'Mixed'} % Use the Mixed causality matching from Svard2010
+                matching = matchers(i).match('Mixed','exitAtFirstValid',exitAtFirstValid);
+            otherwise
+                error('Unknown match method %s',matchMethod);
         end
         matchings_set{graph_index}(i) = {matchers(i).matchingSet};
+        % Store stat about valid matching
+        if ~isempty(matchers(i).matchingSet)
+            stats.(name).num_valid_matchings = stats.(name).num_valid_matchings + 1;
+        else
+            stats.(name).num_invalid_matchings = stats.(name).num_invalid_matchings + 1;
+        end
+        
         waitbar(i/length(SOSubgraphs),h);
         
         % Plot resulting matchings
@@ -297,7 +323,7 @@ for graph_index=1:length(graphs_conn)
     profile off
     
     % Printout the matchings found for this WCC
-    fprintf('\nResulting valid matchings:\n');
+    fprintf('\nResulting matchings:\n');
     for i=1:length(matchers)
         disp(matchers(i).matchingSet);
         stats.(name).matchingSets{graph_index}(i) = {matchers(i).matchingSet};

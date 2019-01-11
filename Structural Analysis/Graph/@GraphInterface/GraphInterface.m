@@ -384,7 +384,7 @@ classdef GraphInterface < handle
             
             for i=1:length(ids)
                 
-                if gh.isVariable(ids(i));
+                if gh.isVariable(ids(i))
                     tempVect = gh.graph.variables(indices(i)).neighbourIdArray;
                     equIds = [equIds tempVect];
                     
@@ -442,21 +442,28 @@ classdef GraphInterface < handle
         end
         function E = getEdgeList(gh, option)
             % Returns an E(m,3) matrix, which lists all of the m edges of the graph
-            %OPTIONAL: option - [V2E, E2V] return only V2E/E2V edges
+            % Arguments:
+            %   option: V2E - print only variable to equation edges
+            %           E2V - print only equation to variable edges
+            %           force - force-print non-invertible edge as well
             
             % debug = true;
             debug = false;
             
             noV2E = false;
             noE2V = false;
+            force = false;
             
             if nargin==2
-                if option == 'V2E'
-                    noE2V = true;
-                elseif option == 'E2V'
-                    noV2E = true;
-                else
-                    error('Unknown argument %s\n',option);
+                switch option
+                    case 'V2E'
+                        noE2V = true;                        
+                    case 'E2V'
+                        noV2E = true;                        
+                    case 'force'
+                        force = true;
+                    otherwise
+                        error('Unknown argument %s\n',option);
                 end
             end
             
@@ -472,24 +479,24 @@ classdef GraphInterface < handle
                 if gh.graph.variables(varIndex).isKnown
                     % No operation
                 end
-                if gh.graph.variables(varIndex).isMeasured
+                if gh.graph.variables(varIndex).isMeasured && ~force
                     flagE2V = false;
                     if debug; fprintf('The E->V direction is disabled, because the variable is measured\n'); end
                 end
-                if gh.graph.variables(varIndex).isInput
+                if gh.graph.variables(varIndex).isInput && ~force
                     flagE2V = false; % From equation to variable
                     if debug; fprintf('The E->V direction is disabled, because the variable is an input\n'); end
                 end
                 if gh.graph.variables(varIndex).isOutput
                     % No operation
                 end
-                if gh.graph.edges(i).isMatched
+                if gh.graph.edges(i).isMatched && ~force
                     flagV2E = false;
                     if debug; fprintf('The V->E direction is disabled, because the edge is matched\n'); end
-                elseif gh.isMatched(varId)
+                elseif gh.isMatched(varId) && ~force
                     flagE2V = false;
                     if debug; fprintf('The E->V direction is disabled, because the variable is matched\n'); end
-                elseif ~gh.isMatchable(gh.graph.edges(i).id)
+                elseif ~gh.isMatchable(gh.graph.edges(i).id) && ~force
                     flagE2V = false; % Equation to Variable
                     if debug; fprintf('The E->V direction is disabled, because the variable cannot be matched\n'); end
                 end
@@ -1938,8 +1945,14 @@ classdef GraphInterface < handle
                 
             end
         end
-        function resp = createAdjacency(gi)
-            gi.adjacency = Adjacency(gi);
+        function resp = createAdjacency(gi, type)
+            % Build the adjacency matrix
+            % Arguments:
+            %   type: 'force' will create non-invertible E2V edges and mark them as such in BD_types matrix
+            if nargin<2
+                type = [];
+            end
+            gi.adjacency = Adjacency(gi, type);
         end
     
     end

@@ -15,7 +15,9 @@ residuals = zeros(length(res_gen_cell), length(time_vector)); % Initialize the r
 
 %% Zero-out disturbance variables
 dist_ids = gi.getVarIdByProperty('isDisturbance');
-values.setValue(dist_ids, [], zeros(size(dist_ids)));
+if ~isempty(dist_ids)
+    values.setValue(dist_ids, [], zeros(size(dist_ids)));
+end
 
 %% Build the variable ids and aliases
 
@@ -38,7 +40,7 @@ for i=1:length(time_vector)
     % Copy the current input values (each residual generator has its own Dictionary)
     values.setValue(var_ids, var_aliases, input_value)
     
-    % Iterate over each residual generator
+    % Iterate over each realized residual generator
     for j = 1:length(res_gen_cell)
         res_gen = res_gen_cell{j};
         

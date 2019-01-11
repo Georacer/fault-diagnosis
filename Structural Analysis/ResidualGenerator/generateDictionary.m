@@ -50,7 +50,7 @@ ids = setdiff(input_ids,[fault_ids dist_ids]);  % Leave faults out, will be cove
 if ~isempty(ids)
     aliases = gi.getAliasById(ids);
     for i=1:length(ids)
-        s = sprintf('dictionary.setValue(%d, {''%s''}, 0);\n', ids(i), aliases{i}); fprintf(fileID, s);
+        s = sprintf('dictionary.setValue([], {''%s''}, 0);\n', aliases{i}); fprintf(fileID, s);
     end
     s = '\n';  fprintf(fileID,s);
 end
@@ -76,11 +76,13 @@ s = '\n';  fprintf(fileID,s);
 % Initialize disturbances to 0
 s = '%%Disturbances Initializations\n'; fprintf(fileID,s);
 disturbance_ids = gi.getVarIdByProperty('isDisturbance');
-disturbance_aliases = gi.getAliasById(disturbance_ids);
-for i=1:length(disturbance_ids)
-    s = sprintf('dictionary.setValue([], {''%s''}, 0);\n', disturbance_aliases{i}); fprintf(fileID, s);
+if ~isempty(disturbance_ids)
+    disturbance_aliases = gi.getAliasById(disturbance_ids);
+    for i=1:length(disturbance_ids)
+        s = sprintf('dictionary.setValue([], {''%s''}, 0);\n', disturbance_aliases{i}); fprintf(fileID, s);
+    end
+    s = '\n';  fprintf(fileID,s);
 end
-s = '\n';  fprintf(fileID,s);
 
 % Initialize states to 0
 s = '%%State Initializations\n'; fprintf(fileID,s);

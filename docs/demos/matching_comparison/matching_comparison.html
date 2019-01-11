@@ -1,0 +1,355 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Comparison Between Matching Algorithms &mdash; fault-diangosis 0.9 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="fault-diangosis 0.9 documentation" href="../../index.html"/>
+        <link rel="up" title="Demos" href="../index.html"/>
+        <link rel="next" title="Estimating Fault Sensitivity" href="../fault_response/fault_response.html"/>
+        <link rel="prev" title="Branch-and-Bound ILP Matching Calculation Cost" href="../bbilp_vs_exhaustive/bbilp_vs_exhaustive.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="../../index.html" class="icon icon-home"> fault-diangosis
+        
+
+        
+        </a>
+
+        
+          
+          
+            <div class="version">
+              0.9
+            </div>
+          
+        
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../model/index.html">Model Input</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../graph/index.html">Graph Representation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../graph_interface/index.html">The graph interface API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../display/index.html">Graph display</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../subgraph_generator/index.html">Subgraph Generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../matcher/index.html">Graph matching methods</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Demos</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../basic_functionality/basic_functionality.html">Basic functionality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../matching_intro/matching_intro.html">Introduction to matching</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mavlink/mavlink.html">Residual Generation for a MAVLink UAV</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fwuav_fdi/fwuav_fdi.html">Automated Fault Diagnosis in a Fixed-Wing UAV</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../bbilp_vs_exhaustive/bbilp_vs_exhaustive.html">Branch-and-Bound ILP Matching Calculation Cost</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Comparison Between Matching Algorithms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#the-contestants">The Contestants</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bbilp">BBILP</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#reachable-subgraph">Reachable Subgraph</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#mixed-causality-matching">Mixed Causality Matching</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#comparison-procedure">Comparison Procedure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#running-the-test-script">Running the Test Script</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#results">Results</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../fault_response/fault_response.html">Estimating Fault Sensitivity</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributors.html">Contributors</a></li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">fault-diangosis</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Demos</a> &raquo;</li>
+      
+    <li>Comparison Between Matching Algorithms</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="comparison-between-matching-algorithms">
+<span id="chap-matching-comparison"></span><h1>Comparison Between Matching Algorithms<a class="headerlink" href="#comparison-between-matching-algorithms" title="Permalink to this headline">¶</a></h1>
+<p>In the previous demo, <a class="reference internal" href="../bbilp_vs_exhaustive/bbilp_vs_exhaustive.html#chap-bbilp-vs-exh"><span class="std std-ref">Branch-and-Bound ILP Matching Calculation Cost</span></a>, Branch and Bound ILP (BBILP) was compared to the basic Exhaustive search for valid matchings. In this demo, we shall compare BBILP with two other state-of-the-art matching algorithms.</p>
+<div class="section" id="the-contestants">
+<h2>The Contestants<a class="headerlink" href="#the-contestants" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="bbilp">
+<h3>BBILP<a class="headerlink" href="#bbilp" title="Permalink to this headline">¶</a></h3>
+<p>This algorithm has been presented extendedly in <a class="reference internal" href="../bbilp_vs_exhaustive/bbilp_vs_exhaustive.html#chap-bbilp-vs-exh"><span class="std std-ref">Branch-and-Bound ILP Matching Calculation Cost</span></a> and will not be further explained.</p>
+</div>
+<div class="section" id="reachable-subgraph">
+<h3>Reachable Subgraph<a class="headerlink" href="#reachable-subgraph" title="Permalink to this headline">¶</a></h3>
+<p>This algorithm revolves around the idea of a reachable subgraph, one whose variables can always participate in a realizable matching. In other words, all complete matchings on the reachable subgraph are also realizable matchings. This subgraph is generated through recursive pruning of the initial graph, based on which variables of the over-constrained graph are reachable from causal matchings.</p>
+<p>On this, hopefully much more confined and smaller subgraph, an Exhaustive matching search is carried out. This approach was first presented in the publication “V. Flaugergues, V. Cocquempot, M. Bayart, and M. Pengov, “Structural Analysis for FDI: a modified, invertibility-based canonical decomposition,””</p>
+<p>In practice, this approach does not work as well, because it cannot include non-invertible edges in algebraic loops, leading to poorer detectability performance. Additionally, it cannot discriminate whether an integration/differentiation is performed inside or outside of a dynamic system (ODE or DAE).</p>
+</div>
+<div class="section" id="mixed-causality-matching">
+<h3>Mixed Causality Matching<a class="headerlink" href="#mixed-causality-matching" title="Permalink to this headline">¶</a></h3>
+<p>On the other hand, the Mixed Causality algorithm (from “C. Svard and M. Nyberg, “Residual Generators for Fault Diagnosis Using Computation Sequences With Mixed Causality Applied to Automotive Systems,”” is able to identify dynamic systems and allow/disallow integrations accordingly. However, it cannot to the same for non-invertible edges.</p>
+</div>
+</div>
+<div class="section" id="comparison-procedure">
+<h2>Comparison Procedure<a class="headerlink" href="#comparison-procedure" title="Permalink to this headline">¶</a></h2>
+<p>This demonstration uses the demo script <code class="docutils literal notranslate"><span class="pre">matching_comparison.m</span></code>, which:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Selects the benchmark model, a fixed-wing UAV from “Fravolini, M., Campa, G., &amp; Napolitano, M. (2008)”, and builds its structural model</li>
+<li>Extracts the PSO set from the model</li>
+<li>Searches for valid residual generators for each one, once for each matching methodology, while timing the procedure</li>
+</ol>
+</div></blockquote>
+</div>
+<div class="section" id="running-the-test-script">
+<h2>Running the Test Script<a class="headerlink" href="#running-the-test-script" title="Permalink to this headline">¶</a></h2>
+<p>Simply execute the <code class="docutils literal notranslate"><span class="pre">matching_comparison.m</span></code> script, located in the <code class="docutils literal notranslate"><span class="pre">Demos</span></code> folder. It will take about 7 minutes to finish, depending on your machine.</p>
+<p>Before discussing the results, let’s go over some key areas of the script:</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">% Select the models to test</span>
+<span class="n">modelArray</span><span class="p">{</span><span class="k">end</span><span class="o">+</span><span class="mi">1</span><span class="p">}</span> <span class="p">=</span> <span class="n">g005b</span><span class="p">();</span> <span class="c">% UAV model described in Fravolini, M., Campa, G., &amp; Napolitano, M. (2008).</span>
+
+<span class="c">% Define the matching method set to test</span>
+<span class="n">matchMethodSet</span> <span class="p">=</span> <span class="p">{</span><span class="s">&#39;BBILP&#39;</span><span class="p">,</span><span class="s">&#39;Flaugergues&#39;</span><span class="p">,</span><span class="s">&#39;Mixed&#39;</span><span class="p">};</span>
+</pre></div>
+</div>
+<p>The model under examination is set to <code class="docutils literal notranslate"><span class="pre">g005b</span></code>, whose equations are:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{align}
+e_{1}:&amp;\quad 0 &amp; = &amp; \dot{V} - (F_x \cos(\alpha) \cos(\beta) + F_y \sin(\beta) + F_z \sin(\alpha) \cos(\beta))/m \label{eq:kstart} \\
+e_{2}:&amp;\quad 0 &amp; = &amp; \dot{\alpha} - ( - F_x \sin(\alpha) + F_z \cos(\alpha))/(m V \cos(\beta)) - q + (p \cos(\alpha) + r \sin(\alpha)) tan(\beta) \\
+e_{3}:&amp;\quad 0 &amp; = &amp; \dot{b} - ( - F_x \cos(\alpha) \sin(\beta) + F_y \cos(\beta) - F_z \sin(\alpha) \sin(\beta))/(m V) - p \sin(\alpha) + r \cos(\alpha) \\
+e_{4}:&amp;\quad 0 &amp; = &amp; \dot{p} - P_l L - P_n N - P_{pq} p q - P_{qr} q r \\
+e_{5}:&amp;\quad 0 &amp; = &amp; \dot{q} - Q_m M - Q_{pp} p^2 - Q_{pr} p r - Q_{rr} r^2 \\
+e_{6}:&amp;\quad 0 &amp; = &amp; \dot{r} - R_l L - R_n N - R_{pq} p q - R_{qr} q r \\
+e_{7}:&amp;\quad 0 &amp; = &amp; \dot{\psi} - (q \sin(\phi) + r \cos(\phi))/\cos(\theta) \\
+e_{8}:&amp;\quad 0 &amp; = &amp; \dot{\theta} - q \cos(\phi) + r \sin(\phi) \\
+e_{9}:&amp;\quad 0 &amp; = &amp; \dot{\phi} - p - \tan(\theta) \sin(\phi) q - \tan(\theta) \cos(\phi) r \label{eq:kend}\\
+e_{10}:&amp;\quad 0 &amp; = &amp;  - X_a + (C_{X,0} + C_{X,\alpha} \alpha + C_{X,\delta_e} \delta_e) \bar{q} S \label{eq:aerostart}\\
+e_{11}:&amp;\quad 0 &amp; = &amp;  - Y_a + (C_{Y,0} + C_{Y,\beta} \beta + C_{Y,p} p b/2/V + C_{Y,r} r b/2/V + C_{Y,\delta_a} \delta_a + C_{Y,\delta_e} \delta_e) \bar{q} S \\
+e_{12}:&amp;\quad 0 &amp; = &amp;  - Z_a + (C_{Z,0} + C_{Z,\alpha} \alpha + C_{Z,q} q c/2/V + C_{Z,\delta_e} \delta_e) \bar{q} S \\
+e_{13}:&amp;\quad 0 &amp; = &amp;  - L + (C_{l,0} + C_{l,\beta} \beta + C_{l,p} p b/2/V C_{l,r} r b/2/V + C_{l,\delta_a} \delta_a + C_{l,\delta_e} \delta_e) \bar{q} S b \\
+e_{14}:&amp;\quad 0 &amp; = &amp;  - M + (C_{m,0} + C_{m,\alpha} \alpha + C_{m,q} q c/2/V + C_{m,\delta_e} \delta_e) \bar{q} S c \label{eq:M}\\
+e_{15}:&amp;\quad 0 &amp; = &amp;  - N + (C_{n,0} + C_{n,\beta} \beta + C_{n,p} p b/2/V + C_{n,r} r b/2/V + C_{n,\delta_a} \delta_a + C_{n,\delta_e} \delta_e) \bar{q} S b \label{eq:aeroend}\\
+e_{16}:&amp;\quad 0 &amp; = &amp;  - X_{gr} - m g \sin(\theta) \label{eq:gravstart}\\
+e_{17}:&amp;\quad 0 &amp; = &amp;  - Y_{gr} + m g \cos(\theta) \sin(\phi) \\
+e_{18}:&amp;\quad 0 &amp; = &amp;  - Z_{gr} + m g \cos(\theta) \cos(\phi) \label{eq:gravend}\\
+e_{19}:&amp;\quad 0 &amp; = &amp;  - F_x + X_a + X_t + X_{gr} \\
+e_{20}:&amp;\quad 0 &amp; = &amp;  - F_y + Y_a + Y_{gr} \\
+e_{21}:&amp;\quad 0 &amp; = &amp;  - F_z + Z_a + Z_{gr} \\
+e_{22}:&amp;\quad 0 &amp; = &amp;  - X_t + X_{t,c} \label{eq:inpstart}\\
+e_{23}:&amp;\quad 0 &amp; = &amp;  - \delta_a + d_{a,c} \\
+e_{24}:&amp;\quad 0 &amp; = &amp;  - \delta_e + d_{e,c} \\
+e_{25}:&amp;\quad 0 &amp; = &amp;  - \delta_e + d_{r,c} \label{eq:inpend}\\
+e_{26}:&amp;\quad 0 &amp; = &amp;  - V + V_m \label{eq:airdatastart}\\
+e_{27}:&amp;\quad 0 &amp; = &amp;  - \alpha + \alpha_m \\
+e_{28}:&amp;\quad 0 &amp; = &amp;  - \beta + \beta_m \label{eq:airdataend}
+\end{align}\end{split}\]</div>
+<p>The set of matching algorithms to be run are appended in the <code class="docutils literal notranslate"><span class="pre">matchMethodSet</span></code> array.</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="c">%% Perform Structural Analsysis and Matching, extract residual generators</span>
+<span class="n">SA_results</span> <span class="p">=</span> <span class="n">structural_analysis</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">SA_settings</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>As before, the structural analysis procedure is performed, within a loop which selects a different matching procedure each time. 21 PSOs are found and are forwarded for matching.</p>
+<div class="highlight-matlab notranslate"><div class="highlight"><pre><span></span><span class="n">m</span> <span class="p">=</span> <span class="n">matchings_this_pso</span><span class="p">{</span><span class="nb">j</span><span class="p">};</span>
+<span class="n">gi</span><span class="p">.</span><span class="n">applyMatching</span><span class="p">(</span><span class="n">m</span><span class="p">);</span>
+
+<span class="n">equIds</span> <span class="p">=</span> <span class="n">gi</span><span class="p">.</span><span class="n">getEquations</span><span class="p">(</span><span class="n">m</span><span class="p">);</span>
+<span class="n">varIds</span> <span class="p">=</span> <span class="n">graphInitial</span><span class="p">.</span><span class="n">getVariablesUnknown</span><span class="p">(</span><span class="n">equIds</span><span class="p">);</span>
+<span class="k">if</span> <span class="nb">length</span><span class="p">(</span><span class="n">varIds</span><span class="p">)</span><span class="o">~=</span><span class="nb">length</span><span class="p">(</span><span class="n">equIds</span><span class="p">)</span>
+    <span class="k">continue</span><span class="p">;</span>
+<span class="k">end</span>
+
+<span class="n">gi</span><span class="p">.</span><span class="n">createAdjacency</span><span class="p">();</span>
+<span class="n">adjacency</span> <span class="p">=</span> <span class="n">gi</span><span class="p">.</span><span class="n">adjacency</span><span class="p">;</span>
+<span class="n">numVars</span> <span class="p">=</span> <span class="n">gi</span><span class="p">.</span><span class="n">adjacency</span><span class="p">.</span><span class="n">numVars</span><span class="p">;</span>
+<span class="n">numEqs</span> <span class="p">=</span> <span class="n">gi</span><span class="p">.</span><span class="n">adjacency</span><span class="p">.</span><span class="n">numEqs</span><span class="p">;</span>
+<span class="n">validator</span> <span class="p">=</span> <span class="n">Validator</span><span class="p">(</span><span class="n">adjacency</span><span class="p">.</span><span class="n">BD</span><span class="p">,</span> <span class="n">adjacency</span><span class="p">.</span><span class="n">BD_types</span><span class="p">,</span> <span class="n">numVars</span><span class="p">,</span> <span class="n">numEqs</span><span class="p">);</span>
+<span class="n">offendingEdges</span> <span class="p">=</span> <span class="n">validator</span><span class="p">.</span><span class="n">isValid</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>After each method has produced a matching set for each PSO, the matching set is examined for realizability. Afterwards it is applied on the PSO. Afterwards, it is examined if it is complete. Finally, the <code class="docutils literal notranslate"><span class="pre">validator</span></code> object is used to verify that:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>No open-loop integrations take place</li>
+<li>No open-loop non-invertible evaluations take place</li>
+<li>No differentiations are applied inside dynamic systems</li>
+</ol>
+</div></blockquote>
+<p>If all of the above constraints are satisfied, then a matching can actually be implemented as a residual generator function. Still, one should be careful that even though the residual generator population procedure can be automated, symbolic algebra libraries may fail to instantiate some well-posed evaluations.</p>
+</div>
+<div class="section" id="results">
+<h2>Results<a class="headerlink" href="#results" title="Permalink to this headline">¶</a></h2>
+<p>Let us take an overall view on the results, as presented by the following figure:</p>
+<img alt="../../_images/matching_comparison.png" src="../../_images/matching_comparison.png" />
+<p>On the horizontal axis is the number of PSOs (out of the 21 total) for which a realizable matching was actually found by each corresponding algorithm. It turns out that it is impossible to find realizable matchings for all of the PSOs of the model.</p>
+<p>On the vertical axis is the elapsed time of each algorithm.</p>
+<p>Our BBILP methodology managed to produce the largest amount of realizable matchings. In fact, this is the maximum feasible number, because BBILP has the same, maximum scope over the candidate matching sets, similar to Exhaustive search. Additionally, it is the fastest, taking 9.3 seconds.</p>
+<p>Next, the Mixed Causality methodology managed to find only 3 realizable matchings. It didn’t manage to find the realizable matchings for the other 3 PSOs where such a matching existed because it couldn’t acknowledge that the matchings it produced were in fact not realizable. It required 70 seconds.</p>
+<p>Finally, the Reachable Subgraph approach managed to find 4 realizable matchings but required 349 seconds.</p>
+<p>To provide an example on why the other two methodologies failed to find realizable matchings for all 6 PSOs, consider the an example from this same model. The Reachable Subgraph method produced a matching implying a residual generator, part of which was:</p>
+<img alt="../../_images/root.png" src="../../_images/root.png" />
+<p>Essentially, (<span class="math notranslate nohighlight">\(e_{14}\)</span>) was chosen to be solved for <span class="math notranslate nohighlight">\(V\)</span> in a back-substitution chain, which is not realizable;
+the denominator of (<span class="math notranslate nohighlight">\(e_{14}\)</span>) is very likely to become 0 for a combination of (<span class="math notranslate nohighlight">\(M\)</span>, <span class="math notranslate nohighlight">\(\alpha\)</span>, <span class="math notranslate nohighlight">\(\delta_e\)</span>) within the flight envelope of the UAV.
+For that reason, the edge <span class="math notranslate nohighlight">\(\overrightarrow{(V, e_{14})}\)</span> had been marked as non-invertible in the initial Structural Graph.</p>
+<p>Instead, our BBILP algorithm chooses a matching where <span class="math notranslate nohighlight">\(V\)</span> is a state variable for the DAE underlying the residual, using (<span class="math notranslate nohighlight">\(e_{1}\)</span>) to calculate its derivative and then integrate it.
+This results in a realizable residual.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../fault_response/fault_response.html" class="btn btn-neutral float-right" title="Estimating Fault Sensitivity" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../bbilp_vs_exhaustive/bbilp_vs_exhaustive.html" class="btn btn-neutral" title="Branch-and-Bound ILP Matching Calculation Cost" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>Except where otherwise noted, this documentation is licensed under <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC Attribution-Share Alike 3.0 Unported</a>.</p>
+
+<div style="float:right;"><a href="https://github.com/Georacer/mavlink-inspector/issues/new?title=Comparison%20Between%20Matching%20Algorithms%20-%20&body=URL:%20../../demos/matching_comparison/matching_comparison%0ATitle:%20Comparison%20Between%20Matching%20Algorithms%0A%0APlease%20update%20this%20description%20and%20the%20issue%20title">Page bug</a></div>
+
+    <p>
+
+    </p>
+  </div>
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.9',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

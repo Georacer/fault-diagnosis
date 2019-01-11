@@ -9,7 +9,7 @@ classdef Matcher < matlab.mixin.Copyable
         matchedEdgeArray = [];
         causality = 'None'; % None, Integral, Differential, Mixed, Realistic
         causalitySet = {'None', 'Integral', 'Differential', 'Mixed', 'Realistic'}
-        matcherSet = {'Murty', 'WeightedElimination', 'ValidJust', 'Valid', 'Valid2', 'BBILP'};
+        matcherSet = {'Murty', 'WeightedElimination', 'SVE', 'Mixed', 'ValidJust', 'Valid', 'Valid2', 'BBILP', 'BBILP2'};
         matchingSet = []; % Set of edge IDs
     end
     
@@ -42,6 +42,9 @@ classdef Matcher < matlab.mixin.Copyable
                 case 'WeightedElimination'
                     resp = weightedElimination(this,varargin{:});
                     this.matchingSet = resp;
+                case 'SVE'
+                    resp = SVE(this,varargin{:});
+                    this.matchingSet = resp;
                 case 'ValidJust'
                     resp = matchValidJust(this,varargin{:});
                     this.gi.applyMatching(resp);
@@ -52,8 +55,10 @@ classdef Matcher < matlab.mixin.Copyable
                     this.matchingSet = resp;
                 case 'Valid2'
                     resp = matchValid2(this,varargin{:});
-                    this.gi.applyMatching(resp);
-                    this.matchingSet = resp;
+                    if ~isempty(resp)
+                        this.gi.applyMatching(resp{1});
+                        this.matchingSet = resp;
+                    end
                 case 'BBILP'
                     resp = matchBBILP(this,varargin{:});
                     if ~isempty(resp)
@@ -62,6 +67,18 @@ classdef Matcher < matlab.mixin.Copyable
                     else
                         warning('Unable to find complete valid matching. Cannot apply');
                     end
+                case 'BBILP2'
+                    resp = matchBBILP2(this,varargin{:});
+                    if ~isempty(resp)
+                        this.gi.applyMatching(resp{1});
+                        this.matchingSet = resp;
+                    else
+                        warning('Unable to find complete valid matching. Cannot apply');
+                    end
+                case 'Mixed'
+                    resp = MixedMatching(this,varargin{:});
+                    this.gi.applyMatching(resp{1});
+                    this.matchingSet = resp;
                 otherwise
                     error('Unhandled matcher case');
             end

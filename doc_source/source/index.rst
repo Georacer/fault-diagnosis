@@ -11,6 +11,9 @@ MATLAB libraries for fault-diangosis in dynamic, large-scale systems
 
 `fault-diagnosis` is research software in MATLAB, targeted for fault diagnosis in large-scale systems. It employs methodologies of Structural Analysis for qualitative abstraction and efficient extraction of residual-generators.
 
+This software is open-source and its source code can be found in this github repository: https://github.com/Georacer/fault-diagnosis
+
+
 Overview
 ========
 `fault-diangosis` uses the methodology of Structural Analysis to perform Fault Diagnosis, which performs a qualitative abstraction of the mathematical model of a system into a bipartite Structural Graph. Graph methodologies are then applied onto that graph for the extraction of residual generators.

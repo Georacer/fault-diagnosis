@@ -98,17 +98,21 @@ classdef BBILPChild < matlab.mixin.Copyable
         
         function findMatching(obj)
             
+            % Obtain the cheapest unconstrained matching
+            [permutations, cost] = munkres(obj.E2V);
+            
             obj.BDMatched = obj.BD;
+            % Disable all E2V edges
             obj.BDMatched(:,1:obj.numVars) = inf;
             
-            [permutations, cost] = munkres(obj.E2V);
+            % Apply it to the bidirectional adjacency matrix
             matching = [];
             iCounter = 1;
             for i=1:length(permutations)
                 if permutations(i) % Enter only if this equation is matched
                     % Disable the V2E direction for matched edges
                     obj.BDMatched(permutations(i),i+obj.numVars)=inf;
-                    % Enable the E2V direction for matched edges
+                    % Re-enable the E2V direction for matched edges
                     obj.BDMatched(i+obj.numVars,permutations(i))=1;
                     
                     % Find and store the matching edge id
@@ -122,6 +126,7 @@ classdef BBILPChild < matlab.mixin.Copyable
                     iCounter = iCounter+1;
                 end
             end
+            % Store the matching set
             obj.setMatching(matching);
             if length(matching)<obj.numVars % Matching is not complete on variables
                 obj.setCost(inf);
@@ -133,12 +138,12 @@ classdef BBILPChild < matlab.mixin.Copyable
         
         function resp = isMatchingValid(obj)
             
-            if length(obj.matching)<obj.numVars % No complete matching found]
+            if length(obj.matching)<obj.numVars % No complete matching found
                 resp = false;
                 obj.offendingEdges = [];
                 return;
             end
-            
+
             % Convert inf edges to 0
             graphDir = obj.BDMatched;
             graphDir(graphDir==inf) = 0;
