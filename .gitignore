@@ -32,3 +32,6 @@ logs
 
 # GraphViz model files
 Structural\ Analysis/GraphPool/*/graphs
+
+# Visual Studio Code configurations
+doc_source/.vscode
