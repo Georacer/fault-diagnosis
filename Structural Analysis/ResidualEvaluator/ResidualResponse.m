@@ -1,6 +1,6 @@
 classdef ResidualResponse < handle
-    %RESIDUALSENSITIVITY Summary of this class goes here
-    %   Detailed explanation goes here
+    %RESIDUALSENSITIVITY Evaluate the residual response to one or more variables
+    %   Maximum and/or minimum responses can be calculated.
     
     properties
         gi

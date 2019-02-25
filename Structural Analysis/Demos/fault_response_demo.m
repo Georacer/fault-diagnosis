@@ -20,21 +20,10 @@ opMode = 'breaking';
 % Select the airplane Angle-of-Sideslip Sensor and kinematic model
 model = g032b();
 
-% Specify the graph matching method
-matchMethod = 'BBILP';
-
-% Specify the desired PSO type
-SOType = 'MTES';
-
-% Specify the Brand & Bound ILP branching method
-branchMethod = 'DFS';
-
 %% Perform Structural Analsysis and Matching, extract residual generators
 
 % Build the options structure
-SA_settings.matchMethod = matchMethod;
-SA_settings.SOType = SOType;
-SA_settings.branchMethod = branchMethod;
+SA_settings = SAsettings_defaults();
 SA_settings.plotGraphInitial = true;
 SA_settings.plotGraphOver = true;
 SA_settings.plotGraphRemaining = true;
