@@ -63,7 +63,7 @@ while (~isempty(activeSet))
     activeSet(probIndex) = []; % 
     
     if lb>=U % Kill the child
-    if debug; fprintf('matchBBILP: Child cost not lower than current upper bound\n'); end
+        if debug; fprintf('matchBBILP: Child cost not lower than current upper bound\n'); end
     else
         examinations = examinations+1;
         if subprob.isMatchingValid() % Test if solution is complete
