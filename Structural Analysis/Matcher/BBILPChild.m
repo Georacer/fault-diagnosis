@@ -76,16 +76,22 @@ classdef BBILPChild < matlab.mixin.Copyable
             
         end
         
-        function prohibitEdge(obj, edgeId)
-            varId = obj.gi.getVariables(edgeId);
-            equId = obj.gi.getEquations(edgeId);
-            varIndex = find(obj.varIdArray==varId);
-            equIndex = find(obj.equIdArray==equId);
-            if (~isempty(varIndex))&&(~isempty(equIndex))
-                obj.E2V(equIndex,varIndex) = inf;
-                obj.BD(obj.numVars+equIndex,varIndex) = inf;
+        function prohibitEdges(obj, edgeIds)
+            % Find new edges
+            new_edges = setdiff(edgeIds, obj.edgesInhibited);
+            for edgeId = new_edges
+                varId = obj.gi.getVariables(edgeId);
+                equId = obj.gi.getEquations(edgeId);
+                varIndex = find(obj.varIdArray==varId);
+                equIndex = find(obj.equIdArray==equId);
+                if (~isempty(varIndex))&&(~isempty(equIndex))
+                    obj.E2V(equIndex,varIndex) = inf;
+                    obj.BD(obj.numVars+equIndex,varIndex) = inf;
+                else
+                    error('Requested inhibition of non-existing edge');
+                end
             end
-            obj.edgesInhibited = [obj.edgesInhibited edgeId];
+            obj.edgesInhibited = [obj.edgesInhibited new_edges];
         end
         
         function setCost(obj,cost)

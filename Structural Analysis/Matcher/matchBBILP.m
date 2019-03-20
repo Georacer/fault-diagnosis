@@ -23,6 +23,7 @@ branchMethod = opts.branchMethod;
 gi = matcher.gi;
 
 C = BBILPChild(gi);
+past_children = containers.Map; % A tally of which children have already been examined
 
 C.findMatching();
 % C.matching
@@ -55,34 +56,63 @@ while (~isempty(activeSet))
     
     
     probIndex = chooseProblem(setCosts,branchMethod); % Choose a subproblem
+    
+    % Pop a child
+    
     lb = setCosts(probIndex); % Pop the cost
-    if debug; fprintf('matchBBILP: Popping child with cost %d\n',lb); end
     setCosts(probIndex) = [];
-    
     subprob = activeSet{probIndex}; % Pop the subproblem
-    activeSet(probIndex) = []; % 
+    activeSet(probIndex) = []; %
     
-    if lb>=U % Kill the child
-        if debug; fprintf('matchBBILP: Child cost not lower than current upper bound\n'); end
-    else
-        examinations = examinations+1;
-        if subprob.isMatchingValid() % Test if solution is complete
-            if debug; fprintf('matchBBILP: Found a valid solution, setting upper bound\n'); end
-            U = lb;
-            Mvalid = subprob.matching;
-        else % Break into children and go on
-            edgeCandidates = subprob.getOffendingEdges;
-            if debug; fprintf('matchBBILP: Producing %d children\n',length(edgeCandidates)); end
-            for i=1:length(edgeCandidates)
-                childProb = subprob.createChild;
-                childProb.prohibitEdge(edgeCandidates(i));
-                childProb.findMatching();
-%                 childProb.matching
-                activeSet{end+1} = childProb;
-                setCosts(end+1) = childProb.cost;
+    if debug
+        fprintf('matchBBILP: Popped child [');
+        fprintf('%d, ',subprob.edgesInhibited);
+        fprintf('] with cost %d\n',lb);
+    end
+    
+    % Create children
+    edgeCandidates = subprob.matching;
+    for i=1:length(edgeCandidates)
+        % Check if this child has already been created
+        restriction = unique([subprob.edgesInhibited edgeCandidates(i)]);
+        key = num2str(restriction);
+        if ~past_children.isKey(key)
+            past_children(key) = true;
+            childProb = subprob.createChild;
+            childProb.prohibitEdges(restriction);
+            childProb.findMatching();
+            if debug
+                fprintf('matchBBILP: Produced child [ ');
+                fprintf('%d, ', restriction);
+                fprintf('] ');
+            end
+            lb = childProb.cost; % Extract the lower-bound cost
+            if lb>=U % if cost is higher than current best, kill the child
+                if debug; fprintf('but cost not lower than current upper bound\n'); end
+            else % Else examine the child
+                examinations = examinations+1;
+                if childProb.isMatchingValid() % if solution is valid, store it
+                    if debug; fprintf('and found a valid solution, setting upper bound\n'); end
+                    U = lb;
+                    Mvalid = childProb.matching;
+                else % Else store the child and proceed to next
+                    activeSet{end+1} = childProb;
+                    setCosts(end+1) = childProb.cost;
+                    if debug; fprintf('and stored it\n'); end
+                end
+            end
+        else
+            if debug
+                fprintf('matchBBILP: Child [ ');
+                fprintf('%d, ', restriction);
+                fprintf('] already exists\n');
             end
         end
     end
+    
+    
+    
+
 
 end
 
