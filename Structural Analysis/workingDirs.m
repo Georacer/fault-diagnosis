@@ -2,6 +2,7 @@
 
 addpath(genpath('GraphPool'));
 addpath(genpath('3rd party libraries/matlab_networks_routines'));
+addpath(genpath('3rd party libraries/GrTheory'));
 addpath(genpath('3rd party research/FaultDiagnosisToolbox'));
 addpath(genpath('3rd party libraries/munkres'));
 addpath(genpath('3rd party libraries/tarjan'));
