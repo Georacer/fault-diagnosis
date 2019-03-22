@@ -1,14 +1,14 @@
 function [ results ] = parseEdgeMask( vertex_ids, edge_list, edge_mask )
 %PARSEEDGEMASK Read a set of edges and return the sequence of vertices which they cover
-%   Given a graph defined by the edge_list and whose vertices have ids vertex_ids, the function is give an edge_mask.
+%   Given a graph defined by the edge_list and whose vertices have ids vertex_ids, the function is given an edge_mask.
 %   The columns of the edge_mask mark which edges from the edge_list belong to a sequence. This function orders the
-%   sequence by order of vertex appearance and returns the pivot vector for the edge list and the sorted vertices.
+%   sequence by order of vertex appearance and returns the sorted vertices.
 % INPUTS:
 %       vertex_ids: a 1 x |V| vector of vertex IDs
 %       edge_list: a |E| x 2 array, representing the edge list
 %       edge_mask: a |E| x N array, containing N columns selecting from the |E| edges
 % OUTPUT:
-%       
+%       results: a N x 1 cell vector, containg sequences of vertex ids
 
 % Sanitize input
 if size(edge_list,1) ~= size(edge_mask,1)
@@ -36,7 +36,7 @@ for i=1:size(edge_mask,2)
         
         while edge(2)~=start
             % Find a neighbouring edge
-            [row, col] = find(ismember(edges, edge(2))); % breaks on non-circular paths
+            [row, col] = find(ismember(edges, edge(2)), 1, 'first'); % breaks on non-circular paths
             if isempty(row) % If no follow-up vertex could be found
                 sequence(seq_idx) = edge(2); % Add the parent vertex
                 seq_idx = seq_idx + 1;

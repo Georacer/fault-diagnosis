@@ -3,13 +3,26 @@ classdef BBILPChild < matlab.mixin.Copyable
     %   Detailed explanation goes here
     
     properties
-        BD = [];
-        BDMatched = [];
+        BD = [];  % Adjacency matrix, variables indexed first, then equations
+        BDMatched = [];  % Matched (directed) adjacency matrix, variables indexed first, then equations
         E2V = [];
         BD_type = [];
         cost = inf;
         matching = [];
-        offendingEdges = [];
+        offendingEdges = [];  % IDs of the edges violating the matching validity
+        offendingEdgesTypes = [];  % See definitions below
+        % Edge types
+        DEF_INT = 2;
+        DEF_DER = 3;
+        DEF_NI = 4;
+        % Invalid edge justification
+        DEF_NI_IN_DYN = 1; % Edge is non-invertible and in a dynamic loop
+        DEF_DER_IN_DYN = 2; % Edge is derivative and in a dynamic loop
+        DEF_NI_IN_PATH = 3; % Edge is non-invertible and in a path
+        DEF_INT_IN_PATH = 4; % Edge is integral and in a path
+        DEF_MULTI_MATCH = 5; % Edge is matched to multiple vertices
+        DEF_RES_GEN_MATCHED = 6; % An equation marked for residual generation has been matched
+        
         edgesInhibited = [];
         equIdArray = [];
         varIdArray = [];
@@ -18,6 +31,9 @@ classdef BBILPChild < matlab.mixin.Copyable
         gi = GraphInterface.empty;
         
         depth = 0;
+        
+        debug = false;
+%         debug = true;
     end
     
     methods
@@ -55,13 +71,13 @@ classdef BBILPChild < matlab.mixin.Copyable
                     if ~isempty(edgeId)
                         if gi.isIntegral(edgeId)
                             obj.BD(iCount+obj.numVars,jCount) = integrationCost;
-                            obj.BD_type(iCount+obj.numVars,jCount) = 2;
+                            obj.BD_type(iCount+obj.numVars,jCount) = obj.DEF_INT;
                         elseif gi.isDerivative(edgeId)
                             obj.BD(iCount+obj.numVars,jCount) = differentiationCost;
-                            obj.BD_type(iCount+obj.numVars,jCount) = 3;
+                            obj.BD_type(iCount+obj.numVars,jCount) = obj.DEF_DER;
                         elseif gi.isNonSolvable(edgeId)
                             obj.BD(iCount+obj.numVars,jCount) = nonInvertibleCost;
-                            obj.BD_type(iCount+obj.numVars,jCount) = 4;
+                            obj.BD_type(iCount+obj.numVars,jCount) = obj.DEF_NI;
                         else
                             % This is a normal edge
                         end
@@ -158,7 +174,10 @@ classdef BBILPChild < matlab.mixin.Copyable
             
             validator = Validator(graphDir, graphTypes, obj.numVars, obj.numEqs);
             offendingEdges = validator.isValid();
+            offendingEdgesIDs = [];
+            offendingEdgesTypes = [];
             
+            % Convert offendingEdges array from N x 3 index pairs to edge IDs array
             if ~isempty(offendingEdges)
                 equIndices = offendingEdges(:,1);
                 varIndices = offendingEdges(:,2);
@@ -168,17 +187,22 @@ classdef BBILPChild < matlab.mixin.Copyable
                 for i=1:length(edgeIds)
                     edgeIds(i) = obj.gi.getEdgeIdByVertices(equIds(i),varIds(i));
                 end
-                offendingEdges = edgeIds;
+                offendingEdgesIDs = edgeIds;
+                offendingEdgesTypes = offendingEdges(:,3)';
             end
                
             % Manual override, check if a matched equation has been marked for residual generator
             extra_offending_edges = obj.check_res_gens(obj.matching);
-            offendingEdges = unique([offendingEdges extra_offending_edges]);
+            if ~isempty(extra_offending_edges)
+                offendingEdgesIDs = unique([offendingEdgesIDs extra_offending_edges]);
+                offendingEdgesTypes = [offendingEdgesTypes obj.DEF_RES_GEN_MATCHED*ones(1, length(extra_offending_edges))];
+            end
             
-            if isempty(offendingEdges)
+            if isempty(offendingEdgesIDs)
                 resp = true;
             else
-                obj.offendingEdges = offendingEdges;
+                obj.offendingEdges = offendingEdgesIDs;
+                obj.offendingEdgesTypes = offendingEdgesTypes;
                 resp = false;
             end
             
@@ -199,9 +223,188 @@ classdef BBILPChild < matlab.mixin.Copyable
             edgeIds = obj.offendingEdges;
         end
         
+        function branching_edges = get_branching_edges(obj)
+            % Return edge IDs. Their restriction will drive the branching procedure, creating subproblems.
+            % Only subproblems with invalid matchings get branched.
+            
+            branching_edges = [];
+            
+            % Gather the offending edges
+            % Edge IDs available in obj.offedingEdges
+            % Invalidity justification available in obj.offendingEdgesTypes
+            % Fully directed adjacency graph available at ojb.BDMatched, variables indexed first, then equations
+            
+            % Create the adjacency matrix
+            BD = obj.BD;
+            BD(BD==inf) = 0;
+            BDMatched = obj.BDMatched;
+            BDMatched(BDMatched==inf) = 0;
+                
+            % Find the branching edges according to each violation category
+            for i=1:length(obj.offendingEdges)
+                
+                % Parse the offending edge
+                offendingEdge = obj.offendingEdges(i);
+                equ_id = obj.gi.getEquations(offendingEdge);
+                var_id = obj.gi.getVariables(offendingEdge);
+                
+                equ_idx = find(obj.equIdArray==equ_id) + obj.numVars;
+                var_idx = find(obj.varIdArray==var_id);
+                
+                % The offender edge is a candidate for restriction
+                branching_edges(end+1) = offendingEdge;
+                
+                % The other case is that the offending edge stays in the matching but throws other edges out of it.
+                offenseType = obj.offendingEdgesTypes(i);
+                switch offenseType
+                        
+                    case {obj.DEF_NI_IN_PATH, obj.DEF_NI_IN_DYN} % Edge is non-invertible and in a path or Edge is non-invertible and in a dynamic loop 
+                        % Need to force this edge into an algebraic loop:
+                        % Restrict the entry edges of algebraic loops in which this edge is part of (in the undirected
+                        % graph)
+                        
+                        % Find the loops containing this edge
+                        [ cycles, edge_list ] = findCyclesWithEdge( BD, [equ_idx, var_idx]);
+                        [ results ] = parseEdgeMask( [obj.varIdArray obj.equIdArray], edge_list, cycles );
+                        
+                        edge_cycles = obj.vertexSeq2edgeSeq(results, obj.gi);
+                        
+                        % If there are such loops...
+                        if ~isempty(edge_cycles)
+                            cycle_entries = [];
+                            for cycle_idx = 1:length(edge_cycles)
+                                
+                                % Make sure they are algebraic
+                                loop_edge_ids = edge_cycles{cycle_idx};
+                                if any(obj.gi.isIntegral(loop_edge_ids))
+                                    continue;
+                                end
+                                
+                                % Find their entry edges
+                                var_ids = obj.gi.getVariables(loop_edge_ids);
+                                all_edge_ids = obj.gi.getEdges(var_ids);
+                                cycle_entries = [cycle_entries setdiff(all_edge_ids, loop_edge_ids)];
+                            end
+                            
+                            % Restrict them
+                            branching_edges = [branching_edges cycle_entries];
+                        end                        
+                        
+                    case obj.DEF_DER_IN_DYN % Edge is derivative and in a dynamic loop
+                        
+                        % Get fully directed (matched) graph obj.BDMatched (already available)
+                        
+                        % Find the loop in which the edge participates
+                        SCCs = tarjan(createAdjList(BDMatched)); % Find all Strongly Connected Components of matched graph
+                        for scc_idx = 1:length(SCCs)
+                            scc = SCCs{scc_idx};
+                            if all(ismember([equ_idx, var_idx], scc))
+                                % SCC found
+                                break;
+                            end
+                        end
+                        
+                        % Find its edges
+                        all_ids = [obj.varIdArray, obj.equIdArray];                        
+                        vertex_ids = all_ids(sort(scc));
+                        edge_list = adj2edgeL(BDMatched(scc,scc));
+                        edge_mask = ones(size(edge_list,1), 1);
+                        
+                        [ results ] = parseEdgeMask( vertex_ids, edge_list(:,1:2), edge_mask );
+                        edge_cycles = obj.vertexSeq2edgeSeq(results, obj.gi);
+                        
+                        % Verify that the edge is part of only one cycle
+                        if length(edge_cycles)>1
+                            error('Each edge of the matched graph should participate in only 1 SCC');
+                        end
+                        
+                        % Find the loop exits
+                        loop_edges = edge_cycles{1};
+                        loop_matched_edge_ids = intersect(obj.matching, loop_edges);
+                        for edge_id = loop_matched_edge_ids
+                            var_id = obj.gi.getVariables(edge_id);
+                            var_edges = obj.gi.getEdges(var_id);
+                            % Check if this variable is used outside of this loop
+                            if ~all(ismember(var_edges, loop_edges))
+                                branching_edges(end+1) = edge_id; % Restrict this loop exit edge
+                            end
+                        end
+                        
+                    case obj.DEF_INT_IN_PATH % Edge is integral and in a path
+                        % Need to force this edge into a dynamic loop:
+                        % Restrict the entry edges of dynamic loops in which this edge is part of (in the undirected
+                        % graph)
+                        
+                        % Find the loops containing this edge
+                        [ cycles, edge_list ] = findCyclesWithEdge( BD, [equ_idx, var_idx]);
+                        [ results ] = parseEdgeMask( [obj.varIdArray obj.equIdArray], edge_list, cycles );
+                        
+                        edge_cycles = obj.vertexSeq2edgeSeq(results, obj.gi);
+                        
+                        % If there are such loops...
+                        if ~isempty(edge_cycles)
+                            cycle_entries = [];
+                            for cycle_idx = 1:length(edge_cycles)
+                                
+                                % Make sure they are dynamic
+                                loop_edge_ids = edge_cycles{cycle_idx};
+                                if ~any(obj.gi.isIntegral(loop_edge_ids))
+                                    continue;
+                                end
+                                
+                                % Find their entry edges
+                                var_ids = obj.gi.getVariables(loop_edge_ids);
+                                all_edge_ids = obj.gi.getEdges(var_ids);
+                                cycle_entries = [cycle_entries setdiff(all_edge_ids, loop_edge_ids)];
+                            end
+                            
+                            % Restrict them
+                            branching_edges = [branching_edges cycle_entries];
+                        end        
+                                                
+                        
+                    case obj.DEF_MULTI_MATCH % Edge is matched to multiple vertices
+                        error('This type of offense should not be handled within BBILP context');
+                        
+                    case obj.DEF_RES_GEN_MATCHED % Edge belongs to an equation marked for residual generation
+                        continue;
+                        
+                    otherwise
+                        error('Unknown offense type %d. Cannot handle', offenseType);
+                end
+            end
+            
+            % Verify each edge is staged only once for restriction
+            branching_edges = unique(branching_edges);
+            
+        end
+        
         function childObj = createChild(obj)
             childObj = copy(obj);
             childObj.depth = obj.depth+1;
+        end
+        
+        function edge_cycles = vertexSeq2edgeSeq(obj, results, gi)
+           % Convert a sequence of vertex IDs to a sequence of edge IDs
+           % INPUTS:
+           %    results: A cell vector, containing a numerical sequence of vertex IDs
+           %    gi: A GraphInterface, to query edge IDs
+           % OUTPUTS:
+           %    edge_cycles: A cell vector, containing a numerical sequence of edge IDs
+            edge_cycles = cell(1,length(results));
+            for cycle_idx=1:size(results,2)
+                sequence = results{cycle_idx};
+                cycle_edge_ids = [];
+                for edge_idx=1:(length(sequence)-1)
+                    parent_id = sequence(edge_idx);
+                    child_id = sequence(edge_idx+1);
+                    edge_id = gi.getEdgeIdByVertices(parent_id, child_id);
+                    if ~isempty(edge_id)
+                        cycle_edge_ids(end+1) = edge_id;
+                    end
+                end
+                edge_cycles(cycle_idx) = {cycle_edge_ids};
+            end
         end
 
     end

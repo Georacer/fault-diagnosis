@@ -2,8 +2,8 @@ function [ Mvalid ] = matchBBILP( matcher, varargin )
 %MATCHVALID Find valid residuals in provided MTES
 %   Uses Branch-and-Bound Integer Linear Programming
 
-debug = false;
-% debug = true;
+% debug = false;
+debug = true;
 
 if debug
     if ~evalin('base','exist(''examinations'')')
@@ -71,10 +71,12 @@ while (~isempty(activeSet))
     end
     
     % Create children
-    edgeCandidates = subprob.matching;
-    for i=1:length(edgeCandidates)
+    branching_edges = subprob.get_branching_edges();
+    for i=1:length(branching_edges)
         % Check if this child has already been created
-        restriction = unique([subprob.edgesInhibited edgeCandidates(i)]);
+        restriction = unique([subprob.edgesInhibited branching_edges(i)]);  % This is likely unnecessary:
+        % the subproblem cannot have a branching edge already inhibited, because inhibited edges cannot partake in a
+        % matching, hance they cannot be thrown as violating validity
         key = num2str(restriction);
         if ~past_children.isKey(key)
             past_children(key) = true;
@@ -82,7 +84,9 @@ while (~isempty(activeSet))
             childProb.prohibitEdges(restriction);
             childProb.findMatching();
             if debug
-                fprintf('matchBBILP: Produced child [ ');
+                fprintf('matchBBILP: Produced child with matching [ ');
+                fprintf('%d, ', childProb.matching);
+                fprintf('] and restricted edges [ ');
                 fprintf('%d, ', restriction);
                 fprintf('] ');
             end
@@ -98,21 +102,17 @@ while (~isempty(activeSet))
                 else % Else store the child and proceed to next
                     activeSet{end+1} = childProb;
                     setCosts(end+1) = childProb.cost;
-                    if debug; fprintf('and stored it\n'); end
+                    if debug; fprintf('and pushed it\n'); end
                 end
             end
         else
             if debug
-                fprintf('matchBBILP: Child [ ');
+                fprintf('matchBBILP: Child with restriction [ ');
                 fprintf('%d, ', restriction);
                 fprintf('] already exists\n');
             end
         end
     end
-    
-    
-    
-
 
 end
 

@@ -3,7 +3,7 @@ classdef Validator
     %   Detailed explanation goes here
     
     properties
-        graphDir = [];
+        graphDir = [];  % Fully directed adjacency matrix, variables indexed first, then equations
         graphTypes = [];
         numVars = 0;
         numEqs = 0;
@@ -12,8 +12,15 @@ classdef Validator
         DEF_NI = 4;
         DEF_AE = 5;
         
-%         debug = true;
-        debug = false;
+        % Invalid edge justification
+        DEF_NI_IN_DYN = 1; % Edge is non-invertible and in a dynamic loop
+        DEF_DER_IN_DYN = 2; % Edge is derivative and in a dynamic loop
+        DEF_NI_IN_PATH = 3; % Edge is non-invertible and in a path
+        DEF_INT_IN_PATH = 4; % Edge is integral and in a path
+        DEF_MULTI_MATCH = 5; % Edge is matched to multiple vertices
+        
+        debug = true;
+%         debug = false;
         
     end
     
@@ -26,6 +33,10 @@ classdef Validator
         end
         
         function offendingEdges = isValid(obj, force_complete)
+        % offendingEdges: N x 3 array of:
+            % equation index
+            % variable index
+            % offense type, see class attributes
             
             if nargin<2
                 force_complete = false;  % Force the matching to be complete on the variables
@@ -44,7 +55,7 @@ classdef Validator
                     if sum(row)>1
                         var_idx_array = find(row);
                         for var_idx = var_idx_array
-                            offendingEdges(end+1,:) = [row_idx, var_idx];
+                            offendingEdges(end+1,:) = [row_idx, var_idx, obj.DEF_MULTI_MATCH];
                         end
                     end
                 end
@@ -55,7 +66,7 @@ classdef Validator
                     if sum(col)>1
                         col_idx_array = find(col);
                         for equ_idx = col_idx_array
-                            offendingEdges(end+1,:) = [equ_idx, col_idx];
+                            offendingEdges(end+1,:) = [equ_idx, col_idx, obj.DEF_MULTI_MATCH];
                         end
                     end
                 end
@@ -65,8 +76,6 @@ classdef Validator
                     return;
                 end
             end
-            
-            
             
             % Break all integrations and differentiations
             if obj.debug; fprintf('Validator/isValid: Breaking derivations\n'); end
@@ -151,7 +160,7 @@ classdef Validator
                     varId = IDs(varIndices(col(j)));
 %                     equId = equIds_NoAE(row(i));
 %                     varId = varIds_NoAE(col(i));
-                    offendingEdges(end+1,:) = [equId varId];
+                    offendingEdges(end+1,:) = [equId varId obj.DEF_NI_IN_DYN];
                     if obj.debug; fprintf('Validator/isValid: INVALID - found NI edge in dynamic loop\n'); end
                 end
                 
@@ -173,7 +182,7 @@ classdef Validator
                     varId = IDs(varIndices(col(j)));
 %                     equId = equIds_NoAE(row(i));
 %                     varId = varIds_NoAE(col(i));
-                    offendingEdges(end+1,:) = [equId varId];
+                    offendingEdges(end+1,:) = [equId varId obj.DEF_DER_IN_DYN];
                     if obj.debug; fprintf('Validator/isValid: INVALID - found matched derivative edge in dynamic loop\n'); end
                 end
             end
@@ -200,7 +209,7 @@ classdef Validator
             for i=1:length(row)
                 equId = equIds_NoSCC(row(i));
                 varId = varIds_NoSCC(col(i));
-                offendingEdges(end+1,:) = [equId varId];
+                offendingEdges(end+1,:) = [equId varId obj.DEF_NI_IN_PATH];
                 if obj.debug; fprintf('Validator/isValid: INVALID - found matched NI edge in path\n'); end
             end
             
@@ -212,7 +221,7 @@ classdef Validator
             for i=1:length(row)
                 equId = equIds_NoSCC(row(i));
                 varId = varIds_NoSCC(col(i));
-                offendingEdges(end+1,:) = [equId varId];
+                offendingEdges(end+1,:) = [equId varId obj.DEF_INT_IN_PATH];
                 if obj.debug; fprintf('Validator/isValid: INVALID - found matched integral edge in path\n'); end
             end
             
