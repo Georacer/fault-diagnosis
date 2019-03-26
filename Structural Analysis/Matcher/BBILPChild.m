@@ -23,7 +23,7 @@ classdef BBILPChild < matlab.mixin.Copyable
         DEF_MULTI_MATCH = 5; % Edge is matched to multiple vertices
         DEF_RES_GEN_MATCHED = 6; % An equation marked for residual generation has been matched
         
-        DEF_MAX_CYCLES = 1; % Maximum results to query when seaching for cycles where an edge participates
+        DEF_MAX_CYCLES = 10; % Maximum results to query when seaching for cycles where an edge participates
         
         edgesInhibited = [];
         equIdArray = [];
@@ -407,7 +407,7 @@ classdef BBILPChild < matlab.mixin.Copyable
                     parent_id = sequence(edge_idx);
                     child_id = sequence(edge_idx+1);
                     if parent_id==child_id
-                        warning('BBILPChild: parent and child vertex ids are identical');
+%                         warning('BBILPChild: parent and child vertex ids are identical');
                         continue;
                     end
                     try

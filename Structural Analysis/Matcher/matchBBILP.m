@@ -15,10 +15,12 @@ p = inputParser;
 
 p.addRequired('matcher',@(x) true);
 p.addParameter('branchMethod','cheap',@isstr);
+p.addParameter('exitAtFirstValid', true, @islogical);
 
 p.parse(matcher, varargin{:});
 opts = p.Results;
 branchMethod = opts.branchMethod;
+exitAtFirstValid = opts.exitAtFirstValid;
 
 gi = matcher.gi;
 
@@ -100,6 +102,9 @@ while (~isempty(activeSet))
                     if debug; fprintf('and found a valid solution, setting upper bound\n'); end
                     U = lb;
                     Mvalid = childProb.matching;
+                    if exitAtFirstValid
+                        break;
+                    end
                 else % Else store the child and proceed to next
                     activeSet{end+1} = childProb;
                     setCosts(end+1) = childProb.cost;
@@ -137,11 +142,3 @@ function index = chooseProblem(costlist,branchMethod)
             index = length(costlist);
     end
 end
-
-% function edgeIds = getCycleEdges(cycles)
-%     edgeIds = [];
-%     for i=1:length(cycles)
-%         edgeIds = [edgeIds cycles{i}];
-%     end
-%     edgeIds = unique(edgeIds);
-% end
