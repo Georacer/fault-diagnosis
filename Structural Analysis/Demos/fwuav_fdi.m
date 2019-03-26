@@ -55,21 +55,16 @@ SA_settings.plotGraphMatched = true;
 
 
 %% Perform Structural Analsysis and Matching, extract residual generators
-SA_results = structural_analysis(model, SA_settings);
-
-% Inspection: Display the total number of residual generators found
-counter = 0;
-for i=1:length(SA_results.matchings_set)
-    for j=1:length(SA_results.matchings_set{i})
-        if ~isempty(SA_results.matchings_set{i}(j))
-            counter = counter + 1;
-        end
-    end
-end
+SA_results_orig = structural_analysis(model, SA_settings);
 
 %% Validate matchings
 % WARNING Does not apply for graphs with disconnected subgraphs
-validateMatchings(SA_results, SA_settings);
+
+[valid_pso_array, valid_matching_cell] = validateMatchings(SA_results_orig, SA_settings);
+% Delete invalid residuals
+SA_results = deleteInvalidMatchings(SA_results_orig, valid_pso_array);
+% Display matching statistics
+displayMatchingStatistics( SA_results_orig, SA_settings, valid_pso_array, valid_matching_cell );
 
 if strcmp(opMode,'breaking')
     input('\nPress Enter to proceed to the next step...');
@@ -121,7 +116,7 @@ for i=1:length(newFieldNames)
         assert(all(cellfun(@(x,y) isequal(x,y),stats.(newFieldName).matchingSets,oldStats.(newFieldName).matchingSets)),'Newer version of graph has differente matchingSets');
         oldStats.(newFieldName).timeSetGen = stats.(newFieldName).timeSetGen/recordedSamples + oldStats.(newFieldName).timeSetGen*(recordedSamples-1)/recordedSamples;
         oldStats.(newFieldName).timeMakeSG = stats.(newFieldName).timeMakeSG/recordedSamples + oldStats.(newFieldName).timeMakeSG*(recordedSamples-1)/recordedSamples;
-        oldStats.(newFieldName).timeSolveILP = stats.(newFieldName).timeSolveILP/recordedSamples + oldStats.(newFieldName).timeSolveILP*(recordedSamples-1)/recordedSamples;
+        oldStats.(newFieldName).timeSolveMatching = stats.(newFieldName).timeSolveMatching/recordedSamples + oldStats.(newFieldName).timeSolveMatching*(recordedSamples-1)/recordedSamples;
     else % New graph model
         oldStats.(newFieldName) = stats.(newFieldName);
         oldStats.(newFieldName).samples = 1;
@@ -138,7 +133,7 @@ tic
 RG_results = get_res_gens(SA_results, RG_settings);
 time_generate_residual_generators = toc
 
-%% Find which of the PSOs actually got a residual
+%% Find which of the PSOs actually got an implemented residual generator
 % Warning: works only for a single connected subgraph
 realizable_matching_mask = zeros(1,length(SA_results.matchings_set{1}));
 for i=1:length(realizable_matching_mask)
