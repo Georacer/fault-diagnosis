@@ -2,8 +2,8 @@ function [ Mvalid ] = matchBBILP( matcher, varargin )
 %MATCHVALID Find valid residuals in provided MTES
 %   Uses Branch-and-Bound Integer Linear Programming
 
-% debug = false;
-debug = true;
+debug = false;
+% debug = true;
 
 if debug
     if ~evalin('base','exist(''examinations'')')
@@ -73,8 +73,9 @@ while (~isempty(activeSet))
     % Create children
     branching_edges = subprob.get_branching_edges();
     for i=1:length(branching_edges)
+        current_restriction = branching_edges{i};
         % Check if this child has already been created
-        restriction = unique([subprob.edgesInhibited branching_edges(i)]);  % This is likely unnecessary:
+        restriction = unique([subprob.edgesInhibited current_restriction]);  % This is likely unnecessary:
         % the subproblem cannot have a branching edge already inhibited, because inhibited edges cannot partake in a
         % matching, hance they cannot be thrown as violating validity
         key = num2str(restriction);

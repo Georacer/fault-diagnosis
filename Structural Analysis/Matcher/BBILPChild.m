@@ -23,6 +23,8 @@ classdef BBILPChild < matlab.mixin.Copyable
         DEF_MULTI_MATCH = 5; % Edge is matched to multiple vertices
         DEF_RES_GEN_MATCHED = 6; % An equation marked for residual generation has been matched
         
+        DEF_MAX_CYCLES = 1; % Maximum results to query when seaching for cycles where an edge participates
+        
         edgesInhibited = [];
         equIdArray = [];
         varIdArray = [];
@@ -226,8 +228,11 @@ classdef BBILPChild < matlab.mixin.Copyable
         function branching_edges = get_branching_edges(obj)
             % Return edge IDs. Their restriction will drive the branching procedure, creating subproblems.
             % Only subproblems with invalid matchings get branched.
+            % OUTPUT:
+            %       branching_edges: cell array of edge ID arrays. Each edge ID array should be restricted
+            %       simultaneously
             
-            branching_edges = [];
+            branching_edges = {};
             
             % Gather the offending edges
             % Edge IDs available in obj.offedingEdges
@@ -252,7 +257,7 @@ classdef BBILPChild < matlab.mixin.Copyable
                 var_idx = find(obj.varIdArray==var_id);
                 
                 % The offender edge is a candidate for restriction
-                branching_edges(end+1) = offendingEdge;
+                branching_edges(end+1) = {offendingEdge};
                 
                 % The other case is that the offending edge stays in the matching but throws other edges out of it.
                 offenseType = obj.offendingEdgesTypes(i);
@@ -264,14 +269,13 @@ classdef BBILPChild < matlab.mixin.Copyable
                         % graph)
                         
                         % Find the loops containing this edge
-                        [ cycles, edge_list ] = findCyclesWithEdge( BD, [equ_idx, var_idx]);
+                        [ cycles, edge_list ] = findCyclesWithEdge( BD, [equ_idx, var_idx], obj.DEF_MAX_CYCLES);
                         [ results ] = parseEdgeMask( [obj.varIdArray obj.equIdArray], edge_list, cycles );
                         
                         edge_cycles = obj.vertexSeq2edgeSeq(results, obj.gi);
                         
                         % If there are such loops...
                         if ~isempty(edge_cycles)
-                            cycle_entries = [];
                             for cycle_idx = 1:length(edge_cycles)
                                 
                                 % Make sure they are algebraic
@@ -283,14 +287,17 @@ classdef BBILPChild < matlab.mixin.Copyable
                                 % Find their entry edges
                                 var_ids = obj.gi.getVariables(loop_edge_ids);
                                 all_edge_ids = obj.gi.getEdges(var_ids);
-                                cycle_entries = [cycle_entries setdiff(all_edge_ids, loop_edge_ids)];
+                                cycle_entries = setdiff(all_edge_ids, loop_edge_ids);
+                                
+                                % Restrict them
+                                branching_edges(end+1) = {sort(cycle_entries)};
                             end
-                            
-                            % Restrict them
-                            branching_edges = [branching_edges cycle_entries];
                         end                        
                         
                     case obj.DEF_DER_IN_DYN % Edge is derivative and in a dynamic loop
+                        % Need to break down dynamic loop
+                        % Restrict each edges of this loop matching which is an exit
+                        % (exit: an edge matching a variable which is used by equations outside of the dynamic loop)
                         
                         % Get fully directed (matched) graph obj.BDMatched (already available)
                         
@@ -326,7 +333,7 @@ classdef BBILPChild < matlab.mixin.Copyable
                             var_edges = obj.gi.getEdges(var_id);
                             % Check if this variable is used outside of this loop
                             if ~all(ismember(var_edges, loop_edges))
-                                branching_edges(end+1) = edge_id; % Restrict this loop exit edge
+                                branching_edges(end+1) = {edge_id}; % Restrict this loop exit edge
                             end
                         end
                         
@@ -336,14 +343,13 @@ classdef BBILPChild < matlab.mixin.Copyable
                         % graph)
                         
                         % Find the loops containing this edge
-                        [ cycles, edge_list ] = findCyclesWithEdge( BD, [equ_idx, var_idx]);
+                        [ cycles, edge_list ] = findCyclesWithEdge( BD, [equ_idx, var_idx], obj.DEF_MAX_CYCLES);
                         [ results ] = parseEdgeMask( [obj.varIdArray obj.equIdArray], edge_list, cycles );
                         
                         edge_cycles = obj.vertexSeq2edgeSeq(results, obj.gi);
                         
                         % If there are such loops...
                         if ~isempty(edge_cycles)
-                            cycle_entries = [];
                             for cycle_idx = 1:length(edge_cycles)
                                 
                                 % Make sure they are dynamic
@@ -355,11 +361,11 @@ classdef BBILPChild < matlab.mixin.Copyable
                                 % Find their entry edges
                                 var_ids = obj.gi.getVariables(loop_edge_ids);
                                 all_edge_ids = obj.gi.getEdges(var_ids);
-                                cycle_entries = [cycle_entries setdiff(all_edge_ids, loop_edge_ids)];
+                                cycle_entries = setdiff(all_edge_ids, loop_edge_ids);
+                                
+                                % Restrict them
+                                branching_edges(end+1) = {sort(cycle_entries)};
                             end
-                            
-                            % Restrict them
-                            branching_edges = [branching_edges cycle_entries];
                         end        
                                                 
                         
@@ -375,7 +381,9 @@ classdef BBILPChild < matlab.mixin.Copyable
             end
             
             % Verify each edge is staged only once for restriction
-            branching_edges = unique(branching_edges);
+            edge_strings = cellfun(@(x)(mat2str(x)), branching_edges, 'uniformoutput', false);
+            [~, unique_idx, ~] = unique(edge_strings);
+            branching_edges = branching_edges(unique_idx);
             
         end
         
@@ -398,7 +406,17 @@ classdef BBILPChild < matlab.mixin.Copyable
                 for edge_idx=1:(length(sequence)-1)
                     parent_id = sequence(edge_idx);
                     child_id = sequence(edge_idx+1);
-                    edge_id = gi.getEdgeIdByVertices(parent_id, child_id);
+                    if parent_id==child_id
+                        warning('BBILPChild: parent and child vertex ids are identical');
+                        continue;
+                    end
+                    try
+                        edge_id = gi.getEdgeIdByVertices(parent_id, child_id);
+                    catch me
+%                         warning('BBILPChild: Could not acquire edge from vertices');
+                        continue;
+                    end
+                        
                     if ~isempty(edge_id)
                         cycle_edge_ids(end+1) = edge_id;
                     end

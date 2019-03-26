@@ -1,11 +1,16 @@
-function [ cycles, edge_list ] = findCyclesWithEdge( adjacency_array, edge )
+function [ cycles, edge_list ] = findCyclesWithEdge( adjacency_array, edge, max_cycles )
 %FINDCYCLES Find all cycles of the undirected graph adjacency_array which contain edge
 %   INPUTS:
 %       adjacency_array: a N x N undirected adjacency array
 %       edge: a 1 x 2 array, specifying an edge in the adjacency_array
+%       max_cycles: a maximum numer of cycles to stop at
 %   OUTPUTS:
 %       cycles: An |E| x |C| mask array, where E is the number of edges and C is the number of cycles
 %       edge_list: An |E| x 2 array of edges which cycles refers to
+
+if nargin<3
+    max_cycles = [];
+end
 
 % Make sure adjacency array is undirected
 A = triu(symmetrize(adjacency_array));
@@ -58,7 +63,7 @@ end
 process_idx = 1;
 
 % Combine them with the  basis cycles which do not cover edge
-while process_idx <= size(cycles,2) % While there are new cycles to combine
+while process_idx <= size(cycles,2) && (size(cycles,2) < max_cycles) % While there are new cycles to combine
 
     cycle = cycles(:,process_idx); % Get current cycle
     bitstring = bitstrings_cov(process_idx);

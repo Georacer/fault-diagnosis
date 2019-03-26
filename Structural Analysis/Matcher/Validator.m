@@ -19,8 +19,8 @@ classdef Validator
         DEF_INT_IN_PATH = 4; % Edge is integral and in a path
         DEF_MULTI_MATCH = 5; % Edge is matched to multiple vertices
         
-        debug = true;
-%         debug = false;
+%         debug = true;
+        debug = false;
         
     end
     
