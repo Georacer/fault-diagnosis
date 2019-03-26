@@ -42,14 +42,16 @@ graphInitial.createAdjacency(); % Also create the adjacency matrix
 % If matchMethod = Flaugergues, the initial model needs to be modified.
 if strcmp(matchMethod,'Flaugergues')
     sg = SubgraphGenerator(graphInitial);
-    graphInitial = sg.flaugergues();
+    graph = sg.flaugergues();
+else
+    graph = graphInitial;
 end
 
 timeCreateGI = toc; % Save the creattion time
 
 % Create a GraphViz plot of the initial graph in the model folder
 if plotGraphInitial
-    plotter = Plotter(graphInitial);
+    plotter = Plotter(graph);
     plotter.plotDot('initial');
 end
 
@@ -63,7 +65,7 @@ stats.(name).num_invalid_matchings = 0;
 
 %% Create the overconstrained graph
 
-sgInitial = SubgraphGenerator(graphInitial); % Create a SubgraphGenerator based on the initial model
+sgInitial = SubgraphGenerator(graph); % Create a SubgraphGenerator based on the initial model
 sgInitial.buildLiUSM(); % Generate the LiUSM object
 fprintf('Done creating initial LiUSM model\n');
 graphOver = sgInitial.getOver(); % Build the overconstrained part as a separate graph
@@ -268,13 +270,15 @@ for graph_index=1:length(graphs_conn)
     % For each subgraph
     h = waitbar(0,'Examining SO graph');
     
-    tic
-    profile on
+    tic;
     
     SOindices = 1:length(SOSubgraphs);
     
+    stats.(name).PSOSolutionTimes = zeros(1,length(SOindices));
+    
     % Iterate over all Structurally Overconstrained sets
     for i=1:length(SOindices)
+        tic
         index = SOindices(i);
         fprintf('\n');
         tempGI = SOSubgraphs(index);
@@ -304,6 +308,10 @@ for graph_index=1:length(graphs_conn)
         
         waitbar(i/length(SOSubgraphs),h);
         
+        PSOSolutionTime = toc;
+        fprintf('Time required to solve this PSO: %fs\n',PSOSolutionTime);
+        stats.(name).PSOSolutionTimes(i) = PSOSolutionTime;
+        
         % Plot resulting matchings
         if ~isempty(matching) % Skip if no matching was feasible
             SOSubgraphs(index).adjacency.parseModel(); % Build the adjacency matrix
@@ -317,10 +325,9 @@ for graph_index=1:length(graphs_conn)
     end
     
     % Store the stat about matching time
-    timeSolveILP = toc
-    stats.(name).timeSolveILP(graph_index) = timeSolveILP;
+    timeSolveMatching = sum(stats.(name).PSOSolutionTimes);    
+    stats.(name).timeSolveMatching(graph_index) = timeSolveMatching;
     close(h)
-    profile off
     
     % Printout the matchings found for this WCC
     fprintf('\nResulting matchings:\n');
