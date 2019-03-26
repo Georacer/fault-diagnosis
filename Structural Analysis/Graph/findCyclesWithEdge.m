@@ -9,7 +9,7 @@ function [ cycles, edge_list ] = findCyclesWithEdge( adjacency_array, edge, max_
 %       edge_list: An |E| x 2 array of edges which cycles refers to
 
 if nargin<3
-    max_cycles = [];
+    max_cycles = inf;
 end
 
 % Make sure adjacency array is undirected
