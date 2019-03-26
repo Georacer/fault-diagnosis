@@ -740,7 +740,7 @@ classdef GraphInterface < handle
                     varIds = temp;
                 end
                 
-                if ~all(gh.isEquation(equIds)) && ~all(gh.isVariable(varIds))
+                if ~all(gh.isEquation(equIds)) || ~all(gh.isVariable(varIds))
                     error('Bad arguments given. Check that they constist of sets of equations and variables');
                 end
             
