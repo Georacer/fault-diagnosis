@@ -116,6 +116,18 @@ classdef Differentiator < Evaluator
             end
         end
         
+        function [ ] = displayEquations(obj)
+            integral_alias = obj.gi.getAliasById(obj.integral_id);
+            derivative_alias = obj.gi.getAliasById(obj.derivative_id);
+            if obj.is_res_gen
+                fprintf('R = %s - d(%s)/dt\n', derivative_alias{1}, integral_alias{1});
+            elseif obj.isIntegrator
+                fprintf('%s = int(%s,dt)\n', integral_alias{1}, derivative_alias{1});
+            elseif obj.isDifferentiator
+                fprintf('%s = d(%s)/dt\n', derivative_alias{1}, integral_alias{1});
+            end
+        end
+        
     end
     
 end

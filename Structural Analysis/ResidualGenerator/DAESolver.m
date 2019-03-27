@@ -63,6 +63,15 @@ classdef DAESolver < Evaluator
             end
         end
         
+        function [ ] = displayEquations(obj)
+            fprintf('--- DAE start -------------------------\n');
+            for eval_idx = 1:length(obj.sub_evaluators)
+                sub_evaluator = obj.sub_evaluators{eval_idx};
+                sub_evaluator.displayEquations();
+            end
+            fprintf('--- DAE end ---------------------------\n');
+        end
+        
     end
     
 end

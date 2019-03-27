@@ -949,7 +949,7 @@ classdef GraphInterface < handle
                     equIndex = gh.getIndexById(id);
                     matchedID = gh.graph.equations(equIndex).matchedTo;
                     if isempty(matchedID)
-                        warning('Equation %d is not matched', id);
+%                         warning('Equation %d is not matched', id);
                     else
                         ids(end+1) = matchedID;
                     end

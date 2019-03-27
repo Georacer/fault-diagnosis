@@ -13,12 +13,18 @@ classdef Evaluator < handle
         var_matched_ids;
         sym_var_matched_array;  % array of symbolic variables to be solved for
         expressions;  % array of symbolic expressions
+        expressions_fhandle; % Numeric anonymous function handle for algebraic equations set
         expressions_solved;  % Array of pre-solved symbolic expressions
         expressions_solved_handle;  % Array of pre-solve numeric expressions
+        scc_solver_method = 0;
         values;  % dictionary of all values
         initial_state;  % Initialization state
         is_res_gen = false;
         is_dynamic = false;
+        
+        DEF_SCC_SOLVER_SOLVE = 1;
+        DEF_SCC_SOLVER_VPA = 2;
+        DEF_SCC_SOLVER_FSOLVE = 3;
         
 %         debug = true;
         debug = false;
@@ -133,31 +139,31 @@ classdef Evaluator < handle
                         obj.is_dynamic = true;
                         error('DAEs should be handled by a DAESolver object');
                     else  % This is an algebraic SCC
-                            
                         try
+                            obj.scc_solver_method = obj.DEF_SCC_SOLVER_VPA;
                             obj.expressions_solved = vpasolve(obj.expressions, obj.sym_var_matched_array, 'random', true);
-                        catch e
-%                             try
-%                                 obj.expressions_solved = solve(obj.expressions, obj.sym_var_matched_array);
-%                             catch e
+                            
+                            % Since vpasolve sorts the output arguments, I have to
+                            % re-sort them in the order of their var_matched_ids
+                            field_names = obj.gi.getAliasById(obj.var_matched_ids);
+                            [field_names_sorted, permutations] = sort(field_names);
+                            solution_names = fieldnames(obj.expressions_solved);
+                            assert(isempty(setxor(field_names, solution_names))); % Verify the expected matched variable names
+                            function_array = sym.empty;
+                            for i=1:length(field_names)
+                                function_array(permutations(i)) = obj.expressions_solved.(field_names_sorted{i});
+                            end
+                            obj.expressions_solved_handle = matlabFunction(function_array, 'Vars', obj.sym_var_input_array, 'Outputs', obj.gi.getAliasById(obj.var_matched_ids));
+                            
+                        catch e % vpasolve couldn't find an analytic solution, using numerical fsolve
+                            try
+                                obj.scc_solver_method = obj.DEF_SCC_SOLVER_FSOLVE;
+                                f = symfun(obj.expressions, [obj.sym_var_matched_array obj.sym_var_input_array]); % Create a symbolic function
+                                obj.expressions_fhandle = matlabFunction(f, 'Vars', {obj.sym_var_matched_array obj.sym_var_input_array}); % Create an anonymous function, splitting input and parameter variables
+                            catch e
                                 if obj.debug; fprintf('Evaluator: Failed to solve non-singular SCC\n'); end
                                 rethrow(e);  %This equation cannot be solved at all with MATLAB's computer methods
-%                             end
-                        end
-                        % Since vpasolve sorts the output arguments, I have to
-                        % re-sort them in the order of their var_matched_ids
-                        field_names = obj.gi.getAliasById(obj.var_matched_ids);
-                        [field_names_sorted, permutations] = sort(field_names);
-                        solution_names = fieldnames(obj.expressions_solved);
-                        assert(isempty(setxor(field_names, solution_names))); % Verify the expected matched variable names
-                        function_array = sym.empty;
-                        for i=1:length(field_names)
-                            function_array(permutations(i)) = obj.expressions_solved.(field_names_sorted{i});
-                        end
-                        try
-                            obj.expressions_solved_handle = matlabFunction(function_array, 'Vars', obj.sym_var_input_array, 'Outputs', obj.gi.getAliasById(obj.var_matched_ids));
-                        catch e
-                            rethrow(e);                            
+                            end
                         end
                     end
                 end
@@ -178,11 +184,9 @@ classdef Evaluator < handle
         function [ answer ] = evaluate(obj)
             % Evaluate the involved expressions given the stored values
             
-%             lexicon = obj.values.create_lexicon(obj.var_input_ids);
             values_vector = obj.values.getValue(obj.var_input_ids);
             if length(obj.scc)==1  % This is a singular SCC
                 if obj.is_res_gen
-%                     answer = subs(obj.expressions, lexicon);
                     argument_cell = num2cell(values_vector);
                     answer = obj.expressions_solved_handle(argument_cell{:});
                     answer = real(answer);  %TODO: must decide about the answer domain policy
@@ -191,7 +195,6 @@ classdef Evaluator < handle
                     end
                     if obj.debug; fprintf('Evaluator: Residual evaluated to %g\n',answer); end
                 else
-%                     answer = subs(obj.expressions_solved, lexicon);
                     argument_cell = num2cell(values_vector);
                     answer = obj.expressions_solved_handle(argument_cell{:});
                     answer = real(answer);  %TODO: must decide about the answer domain policy
@@ -208,19 +211,60 @@ classdef Evaluator < handle
                 if obj.is_dynamic
                     error('DAEs should be handled by a DAESolver object');                    
                 else  % This is an algebraic SCC
-%                     answer = struct();
-%                     answer_fields = fieldnames(obj.expressions_solved);
-%                     for i=1:length(answer_fields)
-%                         answer.(answer_fields{i}) = subs(obj.expressions_solved.(answer_fields{i}), lexicon);
-%                     end
-%                     obj.values.parse_lexicon(answer);
-                    argument_cell = num2cell(values_vector);
-                    answer = obj.expressions_solved_handle(argument_cell{:});
-                    answer = real(answer);  %TODO: must decide about the answer domain policy
-                    obj.values.setValue(obj.var_matched_ids, [], answer);
+                    switch obj.scc_solver_method
+                        case obj.DEF_SCC_SOLVER_VPA
+                            argument_cell = num2cell(values_vector);
+                            answer = obj.expressions_solved_handle(argument_cell{:});
+                            answer = real(answer);  %TODO: must decide about the answer domain policy
+                            obj.values.setValue(obj.var_matched_ids, [], answer);
+                        case obj.DEF_SCC_SOLVER_FSOLVE
+                            g = @(x)obj.expressions_fhandle(x,values_vector);
+                            prev_answer = obj.values.getValue(obj.var_matched_ids);
+                            [answer, ~, exitflag] = fsolve(g, prev_answer, optimoptions('fsolve', 'Display', 'off'));
+                            switch exitflag
+                                case {1,2,3,4}
+                                    % System solved
+                                    obj.values.setValue(obj.var_matched_ids, [], answer);                                    
+                                case {0, -2, -3}
+                                    obj.values.setValue(obj.var_matched_ids, [], answer); 
+                                    warning('Could not solve algebraic equation system. Returning best answer');
+                                otherwise
+                                    error('Unhandled fsolve flag %d', exitflag);
+                            end
+                        otherwise
+                            error('Unhandled SCC solver method');
+                    end
                 end
             end
             
+        end
+        
+        function [ ] = displayEquations(obj)
+            if length(obj.scc)==1
+                if obj.is_res_gen
+                    fprintf('R = %s\n', char(obj.expressions));
+                else
+                    output_alias = obj.gi.getAliasById(obj.var_matched_ids);
+                    fprintf('%s = %s\n', output_alias{1}, char(obj.expressions_solved));
+                end
+            else
+                fprintf('--- SCC start ---------------\n');
+                if obj.scc_solver_method == obj.DEF_SCC_SOLVER_VPA
+                    output_aliases = fieldnames(obj.expressions_solved);
+                    for output_idx = 1:length(obj.scc)
+                        var_alias = output_aliases{output_idx};
+                        expression = char(obj.expressions_solved.(var_alias));
+                        fprintf('%s = %s\n', var_alias, expression);
+                    end
+                elseif obj.scc_solver_method == obj.DEF_SCC_SOLVER_FSOLVE                    
+                    output_aliases = obj.gi.getAliasById(obj.var_matched_ids);
+                    for output_idx = 1:length(obj.scc)
+                        expression = char(obj.expressions(output_idx));
+                    fprintf('%s: 0 = %s\n', output_aliases, expression);
+                    end
+                end
+                fprintf('--- SCC end -----------------\n');
+            end
         end
         
     end

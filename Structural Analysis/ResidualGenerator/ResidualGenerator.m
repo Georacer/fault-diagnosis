@@ -108,6 +108,14 @@ classdef ResidualGenerator < handle
             end
         end
         
+        function [ ] = displayEquations(obj)
+            % Print the calculation sequence
+            for evaluator_idx = 1:length(obj.evaluators_list)
+                evaluator = obj.evaluators_list{evaluator_idx};
+                evaluator.displayEquations();
+            end            
+        end
+        
     end
     
 end
