@@ -34,7 +34,7 @@ for i=1:1
     total_matching_array = zeros(1,length(original_matching_array{i})); % Holds the total number of generated matchings
     for j=1:length(valid_matching_cell) % Select subgraph
         matchings_this_pso = valid_matching_cell{j}; % Select PSO
-        total_matching_array(j) = length(original_matching_array{i}{j}); % Count the matchings of this PSO
+        total_matching_array(j) = length(original_matching_array{i}(j)); % Count the matchings of this PSO
         
         for k=1:length(matchings_this_pso) % Select matching
             matching = matchings_this_pso{k};
