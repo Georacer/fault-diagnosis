@@ -39,7 +39,8 @@ classdef Differentiator < Evaluator
                     error('Differentiator must be in either derivative or integral causality');
                 end
             else % The differentiator is a residual generator, use it in differential causality
-                
+                obj.is_res_gen = true;
+                obj.isDifferentiator = true;
             end
             
             % Find the integral and derivative variables
@@ -102,7 +103,11 @@ classdef Differentiator < Evaluator
         end
         
         function [answer] = evaluate(obj)
-            if obj.isIntegrator
+            if obj.is_res_gen % The Differentiator is a residual generator
+                % We shall solve it in derivative causality
+                answer = obj.values.getValue(obj.derivative_id, []) - obj.get_derivative() ;
+                if obj.debug; fprintf('Differentiator: resolved residual to %g\n', answer); end
+            elseif obj.isIntegrator
                 answer = obj.get_integral();
                 obj.values.setValue(obj.integral_id,[],answer);
                 if obj.debug; fprintf('Differentiator: Adding %g*%g to integral\n', obj.prev_state, obj.dt); end
@@ -110,9 +115,8 @@ classdef Differentiator < Evaluator
                 answer = obj.get_derivative();
                 obj.values.setValue(obj.derivative_id,[],answer);
                 if obj.debug; fprintf('Differentiator: Got %g and differentiated by %g\n', obj.prev_state, obj.dt); end
-            else  % The Differentiator is a residual generator
-                % We shall solve it in derivative causality
-                answer = obj.values.getValue(obj.derivative_id, []) - obj.get_derivative() ;
+            else
+                error('Unhandled Differentiation state during evaluation');
             end
         end
         

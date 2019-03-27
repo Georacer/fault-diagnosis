@@ -55,7 +55,7 @@ end
 
 %% Create dictionary with values
 dict_name = sprintf('makeDictionary_%s(gi)',gi.name);
-eval(['values = ' dict_name]);
+eval(['values = ' dict_name ';']);
 
 %% Generate the residual generators
 
@@ -64,7 +64,7 @@ res_gen_cell = cell(1,length(solutionOrder));
 
 % Disable deprecation warnings. These are thrown by instantiation of
 % symbolic expression from strings
-warning('off', 'symbolic:sym:sym:DeprecateExpressions');
+warning('off', 'symbolic:sym:sym:DeprecateExpressions'); % This is bugged and may suppress all warnings
 
 tic
 h = waitbar(0,'Implementing residual generators');
@@ -72,11 +72,12 @@ h = waitbar(0,'Implementing residual generators');
 for i=1:length(solutionOrder)
     % Skip problematic SCCs
     if ismember(i,[0])
-        continue;
+        error('I should not be here');
     end
     
     waitbar(i/length(solutionOrder),h);
     if isempty(solutionOrder{i})
+        warning('Solution order was empty');
         continue;
     end
     

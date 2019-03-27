@@ -16,15 +16,15 @@ classdef Evaluator < handle
         expressions_fhandle; % Numeric anonymous function handle for algebraic equations set
         expressions_solved;  % Array of pre-solved symbolic expressions
         expressions_solved_handle;  % Array of pre-solve numeric expressions
-        scc_solver_method = 0;
+        solver_method = 0;
         values;  % dictionary of all values
         initial_state;  % Initialization state
         is_res_gen = false;
         is_dynamic = false;
         
-        DEF_SCC_SOLVER_SOLVE = 1;
-        DEF_SCC_SOLVER_VPA = 2;
-        DEF_SCC_SOLVER_FSOLVE = 3;
+        DEF_SOLVER_SOLVE = 1;
+        DEF_SOLVER_VPA = 2;
+        DEF_SOLVER_FSOLVE = 3;
         
 %         debug = true;
         debug = false;
@@ -104,6 +104,7 @@ classdef Evaluator < handle
                     if ~isempty(obj.var_matched_ids)  % If this is not a residual generator
                         try
                             obj.expressions_solved = vpasolve(obj.expressions, obj.sym_var_matched_array); % Store the pre-solved expressions
+                            obj.solver_method = obj.DEF_SOLVER_VPA;
                             if isempty(obj.expressions_solved)
                                 error('vpasolve could not solve for expression');
                             end
@@ -111,12 +112,19 @@ classdef Evaluator < handle
                             warning('vpasolve could not solve for expression');
                             try
                                 obj.expressions_solved = solve(obj.expressions, obj.sym_var_matched_array); % Store the pre-solved expressions
+                                obj.solver_method = obj.DEF_SOLVER_SOLVE;
                                 if isempty(obj.expressions_solved)
                                     error('solve could not solve for expression');
                                 end
                             catch e
-                                if obj.debug; fprintf('Evaluator: Failed to solve singular SCC\n'); end
-                                rethrow(e);  %This equation cannot be solved at all with MATLAB's computer methods
+                                try % solve couldn't find an analytical expression. Trying a numerical one.
+                                    obj.solver_method = obj.DEF_SOLVER_FSOLVE;
+                                    f = symfun(obj.expressions, [obj.sym_var_matched_array obj.sym_var_input_array]); % Create a symbolic function
+                                    obj.expressions_fhandle = matlabFunction(f, 'Vars', {obj.sym_var_matched_array obj.sym_var_input_array}); % Create an anonymous function, splitting input and parameter variables
+                                catch e
+                                    if obj.debug; fprintf('Evaluator: Failed to solve singular SCC\n'); end
+                                    rethrow(e);  %This equation cannot be solved at all with MATLAB's computer methods
+                                end
                             end
                         end
                         try
@@ -140,7 +148,7 @@ classdef Evaluator < handle
                         error('DAEs should be handled by a DAESolver object');
                     else  % This is an algebraic SCC
                         try
-                            obj.scc_solver_method = obj.DEF_SCC_SOLVER_VPA;
+                            obj.solver_method = obj.DEF_SOLVER_VPA;
                             obj.expressions_solved = vpasolve(obj.expressions, obj.sym_var_matched_array, 'random', true);
                             
                             % Since vpasolve sorts the output arguments, I have to
@@ -157,7 +165,7 @@ classdef Evaluator < handle
                             
                         catch e % vpasolve couldn't find an analytic solution, using numerical fsolve
                             try
-                                obj.scc_solver_method = obj.DEF_SCC_SOLVER_FSOLVE;
+                                obj.solver_method = obj.DEF_SOLVER_FSOLVE;
                                 f = symfun(obj.expressions, [obj.sym_var_matched_array obj.sym_var_input_array]); % Create a symbolic function
                                 obj.expressions_fhandle = matlabFunction(f, 'Vars', {obj.sym_var_matched_array obj.sym_var_input_array}); % Create an anonymous function, splitting input and parameter variables
                             catch e
@@ -195,13 +203,32 @@ classdef Evaluator < handle
                     end
                     if obj.debug; fprintf('Evaluator: Residual evaluated to %g\n',answer); end
                 else
-                    argument_cell = num2cell(values_vector);
-                    answer = obj.expressions_solved_handle(argument_cell{:});
-                    answer = real(answer);  %TODO: must decide about the answer domain policy
-                    if length(answer)>1
-                        answer = answer(1);
+                    switch obj.solver_method
+                        case {obj.DEF_SOLVER_SOLVE, obj.DEF_SOLVER_VPA}
+                            argument_cell = num2cell(values_vector);
+                            answer = obj.expressions_solved_handle(argument_cell{:});
+                            answer = real(answer);  %TODO: must decide about the answer domain policy
+                            if length(answer)>1 % This may return a correct answer but which may throw a residual off
+                                answer = answer(1);
+                            end
+                            obj.values.setValue(obj.var_matched_ids, [], answer);
+                        case obj.DEF_SOLVER_FSOLVE
+                            g = @(x)obj.expressions_fhandle(x,values_vector);
+                            prev_answer = obj.values.getValue(obj.var_matched_ids);
+                            [answer, ~, exitflag] = fzero(g, prev_answer, optimset('Display', 'off'));
+                            switch exitflag
+                                case {1}
+                                    % System solved
+                                    obj.values.setValue(obj.var_matched_ids, [], answer);
+                                case {-5}
+                                    obj.values.setValue(obj.var_matched_ids, [], answer);
+                                    warning('Could not solve algebraic equation system. Returning best answer');
+                                otherwise
+                                    error('Unhandled fsolve flag %d', exitflag);
+                            end
+                        otherwise
+                            error('Unhandled solver method');
                     end
-                    obj.values.setValue(obj.var_matched_ids, [], answer);
                 end
                 
                 if obj.debug; fprintf('Evaluator: Evaluated %s to %g\n', obj.expressions, answer); end
@@ -211,13 +238,13 @@ classdef Evaluator < handle
                 if obj.is_dynamic
                     error('DAEs should be handled by a DAESolver object');                    
                 else  % This is an algebraic SCC
-                    switch obj.scc_solver_method
-                        case obj.DEF_SCC_SOLVER_VPA
+                    switch obj.solver_method
+                        case obj.DEF_SOLVER_VPA
                             argument_cell = num2cell(values_vector);
                             answer = obj.expressions_solved_handle(argument_cell{:});
                             answer = real(answer);  %TODO: must decide about the answer domain policy
                             obj.values.setValue(obj.var_matched_ids, [], answer);
-                        case obj.DEF_SCC_SOLVER_FSOLVE
+                        case obj.DEF_SOLVER_FSOLVE
                             g = @(x)obj.expressions_fhandle(x,values_vector);
                             prev_answer = obj.values.getValue(obj.var_matched_ids);
                             [answer, ~, exitflag] = fsolve(g, prev_answer, optimoptions('fsolve', 'Display', 'off'));
@@ -244,23 +271,32 @@ classdef Evaluator < handle
                 if obj.is_res_gen
                     fprintf('R = %s\n', char(obj.expressions));
                 else
-                    output_alias = obj.gi.getAliasById(obj.var_matched_ids);
-                    fprintf('%s = %s\n', output_alias{1}, char(obj.expressions_solved));
+                    switch obj.solver_method
+                        case {obj.DEF_SOLVER_VPA, obj.DEF_SOLVER_SOLVE}
+                            output_alias = obj.gi.getAliasById(obj.var_matched_ids);
+                            fprintf('%s = %s\n', output_alias{1}, char(obj.expressions_solved));
+                            
+                        case obj.DEF_SOLVER_FSOLVE
+                            output_alias = obj.gi.getAliasById(obj.var_matched_ids);
+                            fprintf('%s: 0 = %s\n', output_alias{1}, char(obj.expressions));
+                        otherwise
+                            error('Unhandled solver type');
+                    end
                 end
             else
                 fprintf('--- SCC start ---------------\n');
-                if obj.scc_solver_method == obj.DEF_SCC_SOLVER_VPA
+                if obj.solver_method == obj.DEF_SOLVER_VPA
                     output_aliases = fieldnames(obj.expressions_solved);
                     for output_idx = 1:length(obj.scc)
                         var_alias = output_aliases{output_idx};
                         expression = char(obj.expressions_solved.(var_alias));
                         fprintf('%s = %s\n', var_alias, expression);
                     end
-                elseif obj.scc_solver_method == obj.DEF_SCC_SOLVER_FSOLVE                    
+                elseif obj.solver_method == obj.DEF_SOLVER_FSOLVE                    
                     output_aliases = obj.gi.getAliasById(obj.var_matched_ids);
                     for output_idx = 1:length(obj.scc)
                         expression = char(obj.expressions(output_idx));
-                    fprintf('%s: 0 = %s\n', output_aliases, expression);
+                        fprintf('%s: 0 = %s\n', output_aliases{output_idx}, expression);
                     end
                 end
                 fprintf('--- SCC end -----------------\n');
