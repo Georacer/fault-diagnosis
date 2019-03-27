@@ -222,7 +222,9 @@ classdef Evaluator < handle
                                     obj.values.setValue(obj.var_matched_ids, [], answer);
                                 case {-5}
                                     obj.values.setValue(obj.var_matched_ids, [], answer);
-                                    warning('Could not solve algebraic equation system. Returning best answer');
+                                    warning('Could not solve algebraic equation system. Returning best answer.');
+                                case {-3}
+                                    warning('NaN generated while trying to solve a singular SCC. No answer generated.');
                                 otherwise
                                     error('Unhandled fsolve flag %d', exitflag);
                             end
