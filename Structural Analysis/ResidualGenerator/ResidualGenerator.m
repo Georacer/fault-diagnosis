@@ -15,6 +15,9 @@ classdef ResidualGenerator < handle
         
         is_dynamic = false;
         has_failed = false;
+        contains_differentiator = false;
+        contains_algebraic_scc = false;
+        contains_dae = false;
         
     end
     
@@ -45,12 +48,23 @@ classdef ResidualGenerator < handle
             % Build and store all system input ids
             obj.all_input_ids = unique([ obj.gi.getVarIdByProperty('isInput') obj.gi.getVarIdByProperty('isMeasured')]);
             
-            % Check if this res generator represents a dynamic system
+            % Examine the evaluators list
             for i=1:length(obj.evaluators_list)
-                if isa(obj.evaluators_list{i},'DAESolver')
+                evaluator = obj.evaluators_list{i};
+                if evaluator.contains_algebraic_scc
+                    obj.contains_algebraic_scc = true;
+                end
+                if isa(evaluator,'DAESolver')
+                    obj.contains_dae = true;
                     obj.is_dynamic = true;
                 end
+                if isa(evaluator, 'Differntiator')
+                    if evaluator.isDifferentiator
+                        obj.contains_differentiator = true;
+                    end
+                end
             end
+            
         end
         
         function [ residual ] = evaluate(obj, new_inputs)

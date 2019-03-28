@@ -22,6 +22,8 @@ classdef Evaluator < handle
         is_res_gen = false;
         is_dynamic = false;
         
+        contains_algebraic_scc = false;
+        
         DEF_SOLVER_SOLVE = 1;
         DEF_SOLVER_VPA = 2;
         DEF_SOLVER_FSOLVE = 3;
@@ -143,6 +145,7 @@ classdef Evaluator < handle
                         end
                     end
                 else  % This is a non-singular SCC
+                    obj.contains_algebraic_scc = true;
                     if any(obj.gi.getPropertyById(obj.scc,'isDynamic'))
                         obj.is_dynamic = true;
                         error('DAEs should be handled by a DAESolver object');

@@ -38,6 +38,21 @@ classdef DAESolver < Evaluator
                 error('One of the subevaluators of the DAE did not instantiate');
             end
             
+            % Examine sub_evaluators contents
+            for eval_idx = 1:length(obj.sub_evaluators)
+                evaluator = obj.sub_evaluators{eval_idx};
+                if ~isa(evaluator, 'Differentiator') % This is a simple Evaluator
+                    if length(evaluator.scc)>1 % This is an Algebraic Equations system
+                        obj.contains_algebraic_scc = true;
+                    end
+                end
+                if isa(evaluator, 'Differentiator')
+                    if evaluator.isDifferentiator
+                        error('No differentiations should take place in a DAE');
+                    end
+                end
+            end
+            
         end
 
         function [] = set_dt(obj, value)
