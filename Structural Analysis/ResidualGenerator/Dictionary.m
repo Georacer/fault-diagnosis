@@ -55,7 +55,11 @@ classdef Dictionary < handle
             elseif ~isempty(aliases)
                 assert(length(aliases)==length(values));
                 alias_indices = obj.getAliasIndex(aliases);
-                obj.values_array(alias_indices) = values;
+                valid_aliases = logical(alias_indices>0);
+                if any(~valid_aliases)
+                    warning('The dictionary does not contain some of the variables passed to it');
+                end
+                obj.values_array(alias_indices(valid_aliases)) = values(valid_aliases);
             else
                 error('Must provide either id or alias');
             end

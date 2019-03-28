@@ -58,7 +58,7 @@ classdef ResidualGenerator < handle
                     obj.contains_dae = true;
                     obj.is_dynamic = true;
                 end
-                if isa(evaluator, 'Differntiator')
+                if isa(evaluator, 'Differentiator')
                     if evaluator.isDifferentiator
                         obj.contains_differentiator = true;
                     end
