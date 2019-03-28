@@ -58,6 +58,7 @@ end
 close(h);
 
 RE_results.residuals = residuals;
+RE_results.time_vector = time_vector;
 
 
 end
