@@ -15,6 +15,8 @@ classdef ResidualGenerator < handle
         
         is_dynamic = false;
         has_failed = false;
+        solver_errors_occurred = false;
+        
         contains_differentiator = false;
         contains_algebraic_scc = false;
         contains_dae = false;
@@ -85,6 +87,9 @@ classdef ResidualGenerator < handle
             for i=1:length(obj.evaluators_list)
                 evaluator = obj.evaluators_list{i};  % Grab the evaluator object
                 [answer] = evaluator.evaluate();  % Perform the evaluation
+                if evaluator.solver_errors_occurred
+                    obj.solver_errors_occurred = true;
+                end
             end
             
             % The last evaluation is the residual value

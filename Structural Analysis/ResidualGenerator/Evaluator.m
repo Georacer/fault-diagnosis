@@ -12,11 +12,14 @@ classdef Evaluator < handle
         sym_var_input_array;  % array of input symbolic variables
         var_matched_ids;
         sym_var_matched_array;  % array of symbolic variables to be solved for
+        
         expressions;  % array of symbolic expressions
         expressions_fhandle; % Numeric anonymous function handle for algebraic equations set
         expressions_solved;  % Array of pre-solved symbolic expressions
         expressions_solved_handle;  % Array of pre-solve numeric expressions
         solver_method = 0;
+        solver_errors_occurred = false;
+        
         values;  % dictionary of all values
         initial_state;  % Initialization state
         is_res_gen = false;
@@ -225,8 +228,10 @@ classdef Evaluator < handle
                                     obj.values.setValue(obj.var_matched_ids, [], answer);
                                 case {-5}
                                     obj.values.setValue(obj.var_matched_ids, [], answer);
+                                    obj.solver_errors_occurred = true;
                                     warning('Could not solve algebraic equation system. Returning best answer.');
                                 case {-3}
+                                    obj.solver_errors_occurred = true;
                                     warning('NaN generated while trying to solve a singular SCC. No answer generated.');
                                 otherwise
                                     error('Unhandled fsolve flag %d', exitflag);
@@ -258,6 +263,7 @@ classdef Evaluator < handle
                                     % System solved
                                     obj.values.setValue(obj.var_matched_ids, [], answer);                                    
                                 case {0, -2, -3}
+                                    obj.solver_errors_occurred = true;
                                     obj.values.setValue(obj.var_matched_ids, [], answer); 
                                     warning('Could not solve algebraic equation system. Returning best answer');
                                 otherwise
