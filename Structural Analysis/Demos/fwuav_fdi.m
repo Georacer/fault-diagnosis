@@ -4,7 +4,7 @@
 % Utilizes simulated flight logs, where an x-axis gyro fault occurs at t=50s.
 % Will create a 'residuals' folder, containing csv files with the residual timeseries.
 
-% Execution time: around 3.5mins, depending on your machine.
+% Execution time: around 5mins, depending on your machine.
 
 % This script involves
 % * Generation of the Structural Model
@@ -254,7 +254,7 @@ state_time_fixed = linspace(min(state_time), max(state_time), length(state_time)
 
 tstart = 40;
 tend = 60;
-tfault = 50;
+tfault = 55;
 dt = 0.01;
 time_vec = tstart:dt:tend;
 
@@ -274,7 +274,7 @@ data_resampled.Psim = interp1(state_time_fixed, Psim, time_vec, 'linear');
 
 % Construct freezing roll gyro fault
 fault_Vam = zeros(size(time_vec));
-fault_tstart = tend-10;
+fault_tstart = tfault;
 fault_idxstart = find(time_vec>=fault_tstart,1,'first');
 fault_tend = tend;
 fault_idxend = find(time_vec<fault_tend,1,'last');
@@ -299,28 +299,26 @@ end
 % Evaluate the residuals
 RE_results = evaluateResiduals(SA_results, RG_results, data_resampled);  % Evaluate the residual generator bank
 
-figure()
-valid_residual_idx = find(realizable_residuals_mask);
-plot_tstart = tstart+5;
-plot_tend = tend;
-plot_idxstart = find(data_resampled.timestamp>=plot_tstart, 1, 'first');
-plot_idxend = find(data_resampled.timestamp<plot_tend, 1, 'last');
-counter = 1;
-for i=valid_residual_idx
-    subplot(ceil(length(valid_residual_idx)/2),2,counter);
-    series = RE_results.residuals(i,:);
-    plot(data_resampled.timestamp(plot_idxstart:plot_idxend), series(plot_idxstart:plot_idxend));
-    grid on
-    line([tfault tfault], [min(series(plot_idxstart:plot_idxend)), max(series(plot_idxstart:plot_idxend))],...
-        'LineStyle', '--', 'Color', 'r', 'LineWidth', 1.5);
-    counter = counter + 1;
-end
+%% Plot the residuals
 
-% Write-out the results
+residual_indices = find(realizable_residuals_mask); % Select which residuals to plot
+fault_alias = 'fseq6'; % Select fault, to highlight affected residuals
+t_start = tstart +10; % Allow some time for residuals to settle
+t_end = tend;
+t_fault = tfault; % Set fault occurrence time, for plotting its onset
+
+plotResiduals2( residual_indices, t_start, t_end, t_fault, SA_results, RG_results, RE_results, fault_alias);
+
+%% Write-out the results
+
+time_vector = RE_results.time_vector;
+plot_idxstart = find(time_vector>=t_start, 1, 'first');
+plot_idxend = find(time_vector<t_end, 1, 'last');
+
 mkdir('residuals');
-for i=1:size(RE_results.residuals,1)
+for i = residual_indices
     filename = sprintf('residuals/res%d.csv',i);
-    dlmwrite(filename, [data_resampled.timestamp(plot_idxstart:plot_idxend)' RE_results.residuals(i,plot_idxstart:plot_idxend)']);
+    dlmwrite(filename, [RE_results.time_vector(plot_idxstart:plot_idxend)' RE_results.residuals(i,plot_idxstart:plot_idxend)']);
 end
 
 return
