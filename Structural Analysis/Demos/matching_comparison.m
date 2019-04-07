@@ -4,7 +4,7 @@
 % Technical University of Athens
 % email: gzogop@mail.ntua.gr
 % Website: https://github.com/Georacer
-% November 2018; Last revision: -
+% November 2018; Last revision: April 2019
 
 % This demo is a comparison between structural matching algorithms, specifically:
 % * Reachable subgraph methodology from Flaugergues2009

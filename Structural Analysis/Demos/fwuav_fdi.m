@@ -1,4 +1,11 @@
 % FWUAV_FDI Demonstration of automated FDI on a fixed-wing UAV
+% Author: George Zogopoulos-Papaliakos
+% Control Systems Laboratories, School of Mechanical Engineering, National
+% Technical University of Athens
+% email: gzogop@mail.ntua.gr
+% Website: https://github.com/Georacer
+% Last revision: April 2019
+
 % Automated Fault Detection and Identification script on a fixed-wing UAV model, derived from Beard/McLain's Small
 % Unmanned Aircraft Book.
 % Utilizes simulated flight logs, where an x-axis gyro fault occurs at t=50s.
