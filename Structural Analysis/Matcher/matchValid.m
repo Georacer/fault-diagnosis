@@ -1,9 +1,21 @@
-function [ Mvalid ] = matchValid( matcher )
+function [ Mvalid ] = matchValid( matcher, varargin )
 %MATCHVALID Find valid residuals in provided MSO
 %   Detailed explanation goes here
 
-% debug = false;
-debug = true;
+debug = false;
+% debug = true;
+
+p = inputParser;
+
+p.addParameter('maxSearchTime', inf, @isnumeric);
+
+p.parse(varargin{:});
+opts = p.Results;
+
+maxSearchTime = opts.maxSearchTime;
+if ~isinf(maxSearchTime)
+    warning('maxSearchTime argument not supported for weightedElimination, because function is expected to return quickly');
+end
 
 gi = matcher.gi;
 numEqs = gi.graph.numEqs;

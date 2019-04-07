@@ -9,12 +9,17 @@ p = inputParser;
 p.addRequired('mh',@(x) true);
 p.addParameter('maxRank',inf,@(x) floor(x)==x);
 p.addParameter('maxMatchings',inf,@(x) floor(x)==x);
+p.addParameter('maxSearchTime', inf, @isnumeric);
 
 p.parse(mh, varargin{:});
 opts = p.Results;
 
 maxRankAllowed = opts.maxRank; % The highest rank which matching is allowed to reach
 maxMatchingsAllowed = opts.maxMatchings; % Maximum number of matchings allowed to be performed
+maxSearchTime = opts.maxSearchTime;
+if ~isinf(maxSearchTime)
+    warning('maxSearchTime argument not supported for weightedElimination, because function is expected to return quickly');
+end
 
 debug = true;
 % debug = false;

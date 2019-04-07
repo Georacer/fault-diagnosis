@@ -10,6 +10,7 @@ p.addParameter('faultsOnly', true, @islogical);
 p.addParameter('maxMSOsExamined', 0, @isnumeric);
 p.addParameter('matchingsPerMSO', 0, @isnumeric);
 p.addParameter('exitAtFirstValid', false, @islogical);
+p.addParameter('maxSearchTime', inf, @isnumeric);
 
 p.parse(matcher, varargin{:});
 opts = p.Results;
@@ -18,6 +19,10 @@ faultsOnly = opts.faultsOnly; % Generate only residuals which are sensitive to f
 maxMSOsExamined = opts.maxMSOsExamined;
 matchingsPerMSO = opts.matchingsPerMSO;
 exitAtFirstValid = opts.exitAtFirstValid;
+maxSearchTime = opts.maxSearchTime;
+if ~isinf(maxSearchTime)
+    warning('maxSearchTime argument not supported for weightedElimination, because function is expected to return quickly');
+end
 
 % debug = false;
 debug = true;

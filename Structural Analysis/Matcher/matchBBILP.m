@@ -16,11 +16,13 @@ p = inputParser;
 p.addRequired('matcher',@(x) true);
 p.addParameter('branchMethod','cheap',@isstr);
 p.addParameter('exitAtFirstValid', true, @islogical);
+p.addParameter('maxSearchTime', inf, @isnumeric);
 
 p.parse(matcher, varargin{:});
 opts = p.Results;
 branchMethod = opts.branchMethod;
 exitAtFirstValid = opts.exitAtFirstValid;
+maxSearchTime = opts.maxSearchTime;
 
 gi = matcher.gi;
 
@@ -54,8 +56,15 @@ Mvalid = [];
 
 examinations = 0;
 
+tstart = tic; % Mark start of matching search
+
 while (~isempty(activeSet))
     
+    % Check if available search time expired
+    if toc(tstart)>maxSearchTime
+        warning('Allotted matching search time expired');
+        break;
+    end
     
     probIndex = chooseProblem(setCosts,branchMethod); % Choose a subproblem
     

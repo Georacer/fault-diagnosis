@@ -12,11 +12,16 @@ p = inputParser;
 
 p.addRequired('matcher',@(x) true);
 p.addParameter('max_num_matchings', 0, @isnumeric);
+p.addParameter('maxSearchTime', inf, @isnumeric);
 
 p.parse(matcher, varargin{:});
 opts = p.Results;
 
 max_num_matchings = opts.max_num_matchings;
+maxSearchTime = opts.maxSearchTime;
+if ~isinf(maxSearchTime)
+    warning('maxSearchTime argument not supported for weightedElimination, because function is expected to return quickly');
+end
 
 debug = false;
 % debug = true;

@@ -11,11 +11,17 @@ classdef Matcher < matlab.mixin.Copyable
         causalitySet = {'None', 'Integral', 'Differential', 'Mixed', 'Realistic'}
         matcherSet = {'Murty', 'WeightedElimination', 'SVE', 'Mixed', 'ValidJust', 'Valid', 'Valid2', 'BBILP', 'BBILP2'};
         matchingSet = []; % Set of edge IDs
+        maxSearchTime = inf;  % Maximum search time for a matching in each PSO
     end
     
     methods
-        function obj = Matcher(gi)
+        function obj = Matcher(gi, maxSearchTime)
             % Class constructor
+            if nargin<2
+                maxSearchTime = inf;
+            end
+            obj.maxSearchTime = maxSearchTime;
+            
             obj.gi = gi;
             obj.matchedEquArray = gi.getMatchedEqus();
             obj.matchedVarArray = gi.getMatchedVars();
@@ -34,6 +40,9 @@ classdef Matcher < matlab.mixin.Copyable
             if ~ismember(matcher,this.matcherSet)
                 error('Tried to use a non-existing matcher %s',matcher);
             end
+            % Inject the maximum matching time
+            varargin = [varargin {'maxSearchTime', this.maxSearchTime}];
+            
             switch matcher
                 case 'Murty'
                     resp = matchMurty(this,varargin{:});

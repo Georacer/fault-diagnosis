@@ -77,6 +77,7 @@ index = 1;
 
 % For each next matching
 for i=2:k
+    
     % Partition the cheapest node
     [newnodes, newcosts] = murtyPartition(C,nodeArray(index));
     % Add its components to the node list

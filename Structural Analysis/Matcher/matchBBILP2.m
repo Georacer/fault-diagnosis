@@ -19,6 +19,7 @@ p.addParameter('branchMethod','cheap',@isstr);
 p.addParameter('maxMSOsExamined', 0, @isnumeric);
 p.addParameter('faultsOnly',true, @islogical);
 p.addParameter('exitAtFirstValid', false, @islogical);
+p.addParameter('maxSearchTime', inf, @isnumeric);
 
 p.parse(matcher, varargin{:});
 opts = p.Results;
@@ -26,6 +27,7 @@ branchMethod = opts.branchMethod;
 maxMSOsExamined = opts.maxMSOsExamined;
 faultsOnly = opts.faultsOnly; % Generate only residuals which are sensitive to faults
 exitAtFirstValid = opts.exitAtFirstValid;
+maxSearchTime = opts.maxSearchTime;
 
 gi = matcher.gi;
 
@@ -146,7 +148,7 @@ tempGI = tempSG.buildSubgraph(mso,'postfix','temp');
 tempGI.createAdjacency();
 
 tempMatcher = Matcher(tempGI);
-MValid = tempMatcher.match('BBILP','branchMethod',branchMethod);
+MValid = tempMatcher.match('BBILP','branchMethod',branchMethod,'maxSearchTime',maxSearchTime);
 if ~isempty(MValid)
     cost = sum(tempGI.getEdgeWeight(MValid));
 else

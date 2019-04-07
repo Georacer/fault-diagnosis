@@ -11,6 +11,7 @@ p.addRequired('mh',@(x) true);
 p.addParameter('faultsOnly',true, @islogical);
 p.addParameter('maxMSOsExamined', 0, @isnumeric);
 p.addParameter('exitAtFirstValid', true, @islogical);
+p.addParameter('maxSearchTime', inf, @isnumeric);
 
 p.parse(mh, varargin{:});
 opts = p.Results;
@@ -18,6 +19,7 @@ opts = p.Results;
 faultsOnly = opts.faultsOnly; % Generate only residuals which are sensitive to faults
 maxMSOsExamined = opts.maxMSOsExamined;
 exitAtFirstValid = opts.exitAtFirstValid;
+maxSearchTime = opts.maxSearchTime;
 
 debug = true;
 % debug = false;
@@ -92,7 +94,15 @@ PSOMatchings = cell(1,0);
 MSOsExamined = 0;
 examination_array = zeros(1,length(msoSet)); % How many residual generators have been examined
 valid_matching_found = false;
+tstart = tic; % Mark start of matching search
+
 for i=1:length(msoSet)
+    % Check if available search time expired
+    if toc(tstart)>maxSearchTime
+        warning('Allotted matching search time expired');
+        break;
+    end
+    
     if debug; fprintf('Mixed: Testing MSO %d/%d with size %d\n',i,length(msoSet),length(msoSet{i})); end
     
     % Test for faultable equations

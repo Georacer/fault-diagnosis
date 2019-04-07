@@ -59,6 +59,7 @@ for matchIndex = 1:length(matchMethodSet)
         SA_settings.branchMethod = branchMethod;
         SA_settings.maxMSOsExamined = 0;
         SA_settings.exitAtFirstValid = true;
+        SA_settings.maxSearchTime = 20; % Maximum allotted time per PSO to find a valid matching
         SA_settings.plotGraphInitial = false;
         SA_settings.plotGraphOver = false;
         SA_settings.plotGraphRemaining = false;
@@ -81,19 +82,19 @@ for matchIndex = 1:length(matchMethodSet)
             % TODO Does not apply for graphs with disconnected subgraphs
             
             % Check matchings for validity
-            [valid_pso_array, valid_matching_cell] = validate_matchings(SA_results, SA_settings);
+            [valid_pso_array, valid_matching_cell] = validateMatchings(SA_results, SA_settings);
             % Delete invalid residuals
-            SA_results = deleteINvalidMatchings(SA_results, valid_pso_array);
+            SA_results = deleteInvalidMatchings(SA_results, valid_pso_array);
             % Display matching statistics
-            displayMatchingStatistics( SA_results, valid_pso_array, valid_matching_cell );
+            displayMatchingStatistics( SA_results, SA_settings, valid_pso_array, valid_matching_cell );
             
             %% Process statistics and save
             
-            stats.(model.name) = SA_results.stats.(graphName);            
+            stats.(model.name) = SA_results.stats.(model.name);            
             
-            stats.(model.name).num_valid_matchings = valid_matchings;
+            stats.(model.name).num_valid_matchings = sum(cellfun(@(x)length(x), valid_matching_cell));
             stats.(model.name).num_valid_psos = sum(valid_pso_array);
-            stats.(model.name).num_invalid_matchings = sum(total_matching_array) - valid_matchings;
+            stats.(model.name).num_invalid_matchings = parseCellRecursive(SA_results.matchings_set) - stats.(model.name).num_valid_matchings;
             fileName = sprintf('%s.mat',matchMethod);
             
             % If no statistics have previously been saved
@@ -119,7 +120,7 @@ for matchIndex = 1:length(matchMethodSet)
                         assert(all(cellfun(@(x,y) isequal(x,y),stats.(newFieldName).matchingSets,oldStats.(newFieldName).matchingSets)),'Newer version of graph has different matchingSets');
                         oldStats.(newFieldName).timeSetGen = stats.(newFieldName).timeSetGen/recordedSamples + oldStats.(newFieldName).timeSetGen*(recordedSamples-1)/recordedSamples;
                         oldStats.(newFieldName).timeMakeSG = stats.(newFieldName).timeMakeSG/recordedSamples + oldStats.(newFieldName).timeMakeSG*(recordedSamples-1)/recordedSamples;
-                        oldStats.(newFieldName).timeSolveILP = stats.(newFieldName).timeSolveILP/recordedSamples + oldStats.(newFieldName).timeSolveILP*(recordedSamples-1)/recordedSamples;
+                        oldStats.(newFieldName).timeSolveMatching = stats.(newFieldName).timeSolveMatching/recordedSamples + oldStats.(newFieldName).timeSolveMatching*(recordedSamples-1)/recordedSamples;
                     else % New graph model
                         oldStats.(newFieldName) = stats.(newFieldName);
                         oldStats.(newFieldName).samples = 1;
@@ -167,7 +168,7 @@ for i=1:length(data)
     point.name = methodTitle{i};
     load(file_names{i}); 
     point.num_valid_psos = stats.(model_name).num_valid_psos;
-    point.time = stats.(model_name).timeSolveILP;
+    point.time = stats.(model_name).timeSolveMatching;
     point.graphic = point_graphic{i};
     data{i} = point;
 end
@@ -183,8 +184,8 @@ end
 %  
 % Set axis properties 
 ah = fh.Children; 
-ah.YLim = [0 400]; 
-ah.XLim = [2 7]; 
+ah.YLim = [0 350]; 
+ah.XLim = [0 21]; 
 % set(ah, 'YScale', 'log');
 ah.YLabel.String = 'Time (s)'; 
 ah.XLabel.String = sprintf('Number of PSOs with a Realizable Matching (Out of %d Total)',length(stats.(model_name).ResGenSets{1})); 

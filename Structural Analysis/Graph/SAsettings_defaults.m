@@ -6,6 +6,7 @@ SAsettings.SOType = 'MTES';
 SAsettings.branchMethod = 'DFS';
 SAsettings.maxMSOsExamined = 0;
 SAsettings.exitAtFirstValid = false;
+SAsettings.maxSearchTime = inf;  % Maximum search time for a matching in each PSO
 SAsettings.plotGraphInitial = false;
 SAsettings.plotGraphOver = false;
 SAsettings.plotGraphRemaining = false;

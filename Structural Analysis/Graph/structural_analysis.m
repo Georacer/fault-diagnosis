@@ -27,6 +27,7 @@ SOType = SAsettings.SOType;
 branchMethod = SAsettings.branchMethod;
 maxMSOsExamined = SAsettings.maxMSOsExamined;
 exitAtFirstValid = SAsettings.exitAtFirstValid;
+maxSearchTime = SAsettings.maxSearchTime; % Maximum search time for a matching in each PSO
 plotGraphInitial = SAsettings.plotGraphInitial;
 plotGraphOver = SAsettings.plotGraphOver;
 plotGraphRemaining = SAsettings.plotGraphRemaining;
@@ -283,7 +284,7 @@ for graph_index=1:length(graphs_conn)
         fprintf('\n');
         tempGI = SOSubgraphs(index);
         fprintf('Examining SO graph %d/%d with size %d\n', i, length(SOindices), length(tempGI.reg.equIdArray));
-        matchers(i) = Matcher(tempGI); % Instantiate the matcher for this SO
+        matchers(i) = Matcher(tempGI, maxSearchTime); % Instantiate the matcher for this SO
         switch matchMethod
             case 'BBILP' % Use the BBILP method to match
                 matching = matchers(i).match('BBILP','branchMethod',branchMethod);
