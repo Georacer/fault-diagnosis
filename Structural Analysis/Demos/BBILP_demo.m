@@ -69,6 +69,7 @@ for matchIndex = 1:length(matchMethodSet)
         SOType = SOTypeSet{SOTypeIndex};
         
         % Build the options structure
+        SA_settings = SAsettings_defaults();
         SA_settings.matchMethod = matchMethod;
         SA_settings.SOType = SOType;
         SA_settings.branchMethod = branchMethod;
@@ -257,33 +258,33 @@ data_MSO = data_MTES;
 % Load MTES data 
 timeSetGen = zeros(length(files_MTES),length(names)); 
 timeMakeSG = timeSetGen; 
-timeSolveILP = timeSetGen; 
+timeSolveMatching = timeSetGen; 
 for i=1:length(files_MTES) 
     load(files_MTES{i}); 
     for j=1:length(names)
         timeSetGen(i,j) = stats.(names{j}).timeSetGen; 
         timeMakeSG(i,j) = stats.(names{j}).timeMakeSG; 
-        timeSolveILP(i,j) = stats.(names{j}).timeSolveILP; 
+        timeSolveMatching(i,j) = stats.(names{j}).timeSolveMatching; 
     end 
     clear stats 
 end 
-totalTime = timeSetGen + timeSolveILP; 
+totalTime = timeSetGen + timeSolveMatching; 
 data_MTES = totalTime; 
  
 % Load MSO data 
 timeSetGen = zeros(length(files_MSO),length(names)); 
 timeMakeSG = timeSetGen; 
-timeSolveILP = timeSetGen; 
+timeSolveMatching = timeSetGen; 
 for i=1:length(files_MSO) 
     load(files_MSO{i}); 
     for j=1:length(names)
         timeSetGen(i,j) = stats.(names{j}).timeSetGen; 
         timeMakeSG(i,j) = stats.(names{j}).timeMakeSG; 
-        timeSolveILP(i,j) = stats.(names{j}).timeSolveILP; 
+        timeSolveMatching(i,j) = stats.(names{j}).timeSolveMatching; 
     end 
     clear stats 
 end 
-totalTime = timeSetGen + timeSolveILP; 
+totalTime = timeSetGen + timeSolveMatching; 
 data_MSO = totalTime; 
  
 fh = figure(); 

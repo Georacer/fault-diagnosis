@@ -257,7 +257,12 @@ classdef Evaluator < handle
                         case obj.DEF_SOLVER_FSOLVE
                             g = @(x)obj.expressions_fhandle(x,values_vector);
                             prev_answer = obj.values.getValue(obj.var_matched_ids);
-                            [answer, ~, exitflag] = fsolve(g, prev_answer, optimoptions('fsolve', 'Display', 'off'));
+                            try
+                                [answer, ~, exitflag] = fsolve(g, prev_answer, optimoptions('fsolve', 'Display', 'off'));
+                            catch
+                                % fsolve couldn't run
+                                exitflag = -4;
+                            end
                             switch exitflag
                                 case {1,2,3,4}
                                     % System solved
@@ -266,6 +271,10 @@ classdef Evaluator < handle
                                     obj.solver_errors_occurred = true;
                                     obj.values.setValue(obj.var_matched_ids, [], answer); 
                                     warning('Could not solve algebraic equation system. Returning best answer');
+                                case -4 % Solve couldn't run at all
+                                    obj.solver_errors_occurred = true;
+                                    warning('Could not call solver function. Returning NaN');
+                                    answer = nan;
                                 otherwise
                                     error('Unhandled fsolve flag %d', exitflag);
                             end

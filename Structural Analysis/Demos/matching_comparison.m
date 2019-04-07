@@ -54,6 +54,7 @@ for matchIndex = 1:length(matchMethodSet)
         SOType = SOTypeSet{SOTypeIndex};
         
         % Build the options structure
+        SA_settings = SAsettings_defaults();
         SA_settings.matchMethod = matchMethod;
         SA_settings.SOType = SOType;
         SA_settings.branchMethod = branchMethod;
